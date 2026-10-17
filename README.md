@@ -24,6 +24,7 @@
 | `tools/build.py` | `src/game.html` から `index.html`（GitHub Pages 用）と `dist-artifact/trap-maiden.html`（claude.ai Artifact 用）を作る |
 | `docs/art-brief.html` | ChatGPT に頼むグラフィックと演出の提案 |
 | `art-src/` | ChatGPT に描いてもらった原画（4人の設定画 `<名前>_sheet.webp`、参考の絵は `reference/`） |
+| `tools/make_sprites.py` | 盤面で歩く4人のドット絵（48x48、4方向×4コマ＋待機）を `art/sprites/` に作る。確認用の拡大 GIF は `tools/sim/out/` |
 | `tools/cut_sheet.py` | 設定画から3方向を切り出して背景を抜き、`art/*.webp`（盤面用と立ち絵）を作る。ビルドで HTML に埋め込む |
 | `tools/sim/` | ヘッドレスブラウザでの動作確認（罠を活かす AI の比較、地形と仕掛けの確認） |
 
@@ -52,6 +53,7 @@ node tools/sim/shot_mobile.js     # スマホの縦・横でプレイ画面が1�
 node tools/sim/shot_map2.js       # 第6夜で東の書庫に移るか
 node tools/sim/shot_help.js       # 遊び方の全ページ
 node tools/sim/test_flick.js      # スマホのフリックで矢印のある罠の向きを決められるか
+node tools/sim/rec_walk.js lily   # 盤面で歩く様子を連続で撮る（止まったときにマスの中心にいるかも確認）
 ```
 
 127.0.0.1 で開いたときだけ、デバッグ用に `window.__wanakan.G` でゲーム状態を読めます。

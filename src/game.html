@@ -388,6 +388,8 @@ const ART = {
   lily_down: '../art/lily_down.webp', lily_side: '../art/lily_side.webp', lily_up: '../art/lily_up.webp', portrait_lily: '../art/portrait_lily.webp',
   mina_down: '../art/mina_down.webp', mina_side: '../art/mina_side.webp', mina_up: '../art/mina_up.webp', portrait_mina: '../art/portrait_mina.webp',
   noel_down: '../art/noel_down.webp', noel_side: '../art/noel_side.webp', noel_up: '../art/noel_up.webp', portrait_noel: '../art/portrait_noel.webp',
+  lily_walk: '../art/sprites/lily_walk.png', lily_idle: '../art/sprites/lily_idle.png', mina_walk: '../art/sprites/mina_walk.png', mina_idle: '../art/sprites/mina_idle.png',
+  noel_walk: '../art/sprites/noel_walk.png', noel_idle: '../art/sprites/noel_idle.png', cecil_walk: '../art/sprites/cecil_walk.png', cecil_idle: '../art/sprites/cecil_idle.png',
   cecil_down: '../art/cecil_down.webp', cecil_side: '../art/cecil_side.webp', cecil_up: '../art/cecil_up.webp', portrait_cecil: '../art/portrait_cecil.webp',
 };
 const IMG = {};
@@ -1094,12 +1096,14 @@ function updateHero(dt) {
   h.inv = Math.max(0, h.inv - dt); h.hurt = Math.max(0, h.hurt - dt);
   h.confused = Math.max(0, h.confused - dt); h.idle = Math.max(0, h.idle - dt); h.bubbleT = Math.max(0, h.bubbleT - dt);
   if (h.moving) {
-    h.prog += dt * stat.speed() * (h.confused > 0 ? .8 : 1);
+    const stepLen = dt * stat.speed() * (h.confused > 0 ? .8 : 1);
+    h.prog += stepLen; h.walk = (h.walk || 0) + stepLen; h.stillT = 0;
     if (h.prog >= 1) {
       h.tx = h.nx; h.ty = h.ny; h.prog -= 1; h.moving = false;
       if (G.char === 'noel' && fdist(h.tx, h.ty) <= 6 && Math.random() < .035) { h.trip = .7; h.prog = 0; heroBubble('わわっ', .9); } // ノエルのドジ
     }
   }
+  if (!h.moving) { h.stillT = (h.stillT || 0) + dt; if (h.stillT > .15) h.walk = 0; } // 止まったら次の歩き出しは1コマ目から
   if (h.trip > 0) { h.trip -= dt; h.x = h.tx; h.y = h.ty; return; }
   if (!h.moving) {
     h.think -= dt; let stepped = false;
@@ -1407,10 +1411,23 @@ function drawPreview() {
   ctx.globalAlpha = .55; drawTrapIcon(ctx, G.selected, hv.x * T + T / 2, hv.y * T + T / 2, 1, G.springDir, G.time, false); ctx.globalAlpha = 1;
 }
 
+const WALK_STEP = .34; // 1コマで進む距離（マス）。速さ 3.4 マス/秒で 1コマ約 100ms
+const PIX_ROW = { 2: 0, 3: 1, 1: 2, 0: 3 }; // 向き → スプライトの行（下・左・右・上）
 function drawHero() {
   const h = G.hero, t = G.time;
   const px = h.x * T + T / 2, py = h.y * T + T / 2 + 2;
   if (h.inv > 0 && Math.floor(t * 18) % 2 === 0) ctx.globalAlpha = .35;
+  const pk = CH().art;
+  if (pk && imgReady(`${pk}_walk`) && imgReady(`${pk}_idle`)) { // ドット絵の歩行（4方向×4コマ、止まると待機姿勢）
+    const footY = Math.round(h.y * T + T / 2 + 12), left = Math.round(px - 24), row = PIX_ROW[h.facing];
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 8, 2.5);
+    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
+    if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * 48, row * 48, 48, 48, left, footY - 44, 48, 48);
+    else ctx.drawImage(IMG[`${pk}_idle`], row * 48, 0, 48, 48, left, footY - 44, 48, 48);
+    ctx.imageSmoothingEnabled = sm; ctx.globalAlpha = 1;
+    drawHeroBubble(px, footY - 46 - 6 * (TS - 1));
+    return;
+  }
   ctx.save(); ctx.translate(px, py);
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(0, 17, 12, 4);
   const spriteKey = CH().art ? `${CH().art}_${h.facing === 0 ? 'up' : h.facing === 2 ? 'down' : 'side'}` : null;
@@ -1484,8 +1501,11 @@ function drawHero() {
   ctx.fillStyle = '#ff7a92'; ell(6, hy - 10, 2.2, 2.2);
   }
   ctx.restore(); ctx.globalAlpha = 1;
+  drawHeroBubble(px, py - (useArt ? 62 : 42) - 6 * (TS - 1));
+}
+function drawHeroBubble(px, by) {
+  const h = G.hero;
   if (h.bubbleT > 0 && h.bubble) { // 吹き出し
-    const by = py - (useArt ? 62 : 42) - 6 * (TS - 1);
     ctx.font = `700 ${Math.round(14 * TS)}px "Zen Maru Gothic", sans-serif`;
     const w = Math.max(24, ctx.measureText(h.bubble).width + 14);
     ctx.fillStyle = '#eadbbd'; ctx.strokeStyle = '#7d5f22'; ctx.lineWidth = 1.5;

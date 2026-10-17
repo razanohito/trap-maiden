@@ -14,12 +14,13 @@ src = (ROOT / "src" / "game.html").read_text(encoding="utf-8")
 
 
 def embed(m: re.Match) -> str:
-    """'../art/xxx.webp' を data URI にする（HTML 1 枚で動かすため）"""
+    """'../art/xxx.webp' や '../art/sprites/xxx.png' を data URI にする（HTML 1 枚で動かすため）"""
     data = (ROOT / "art" / m.group(1)).read_bytes()
-    return "'data:image/webp;base64," + base64.b64encode(data).decode() + "'"
+    mime = "image/png" if m.group(1).endswith(".png") else "image/webp"
+    return f"'data:{mime};base64," + base64.b64encode(data).decode() + "'"
 
 
-src = re.sub(r"'\.\./art/([\w-]+\.webp)'", embed, src)
+src = re.sub(r"'\.\./art/([\w/-]+\.(?:webp|png))'", embed, src)
 
 (ROOT / "index.html").write_text('<!doctype html>\n<html lang="ja">\n' + src + "\n</html>\n", encoding="utf-8")
 out = ROOT / "dist-artifact" / "trap-maiden.html"
