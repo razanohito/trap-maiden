@@ -5,9 +5,9 @@ const RUNS = +(process.argv[2] || 3);
 const LOADOUTS = {
   定番: ['bear', 'spring', 'rock', 'fire'],
   足止め: ['bear', 'ice', 'blade', 'bell'],
-  毒と氷: ['ice', 'poison', 'fire', 'spring'],
-  一撃: ['bear', 'rock', 'blade', 'poison'],
-  誘い込み: ['bell', 'poison', 'fire', 'ice'],
+  氷と送り返し: ['ice', 'warp', 'fire', 'spring'],
+  一撃: ['bear', 'rock', 'blade', 'warp'],
+  誘い込み: ['bell', 'rock', 'fire', 'ice'],
 };
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -45,7 +45,7 @@ const LOADOUTS = {
               live.sort((a, b) => field[a.tx + a.ty * COLS] - field[b.tx + b.ty * COLS]);
               for (const f of live.slice(0, 2)) cands.push(...pathFrom(f.tx, f.ty, field, 5).slice(1, 5));
             } else {
-              const doors = [[0, 4], [14, 5], [7, 0]].slice(0, Math.min(3, G.wave));
+              const doors = A.doors().slice(0, Math.min(3, G.wave));
               for (const [dx, dy] of doors) cands.push(...pathFrom(dx, dy, field, 12).slice(2, 9));
             }
             cands = cands.filter(([x, y]) => A.canPlace(x, y) && !G.traps.has(x + ',' + y) && !tileFoe(x, y) && Math.abs(x - hx) + Math.abs(y - hy) > 1);
