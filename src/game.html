@@ -63,6 +63,7 @@ body{
 .btn{font:800 16px var(--f-display);letter-spacing:.08em;color:#2a1a0c;cursor:pointer;padding:10px 22px;margin-top:10px;
   background:linear-gradient(180deg,var(--gold-hi),var(--gold));border:1px solid var(--gold-dk);border-radius:2px;box-shadow:0 3px 0 var(--gold-dk)}
 .btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
 .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--gold-dk)}
 .result{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0}
 .result div{background:rgba(58,40,25,.08);border:1px solid rgba(58,40,25,.25);padding:6px 10px}
@@ -80,11 +81,11 @@ body{
 .up .c{font-size:12px;color:var(--rose);font-variant-numeric:tabular-nums}
 .up .lv{font-size:11px;color:var(--muted)}
 
-.palette{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.palette{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px 7px;cursor:pointer;color:var(--parch);font-family:var(--f-body);
   background:linear-gradient(180deg,var(--stone-hi),var(--stone));border:1px solid #000;box-shadow:inset 0 0 0 1px rgba(201,162,74,.35);border-radius:2px;min-width:0}
 .slot canvas{width:38px;height:38px}
-.slot .n{font:800 13px var(--f-display);white-space:nowrap}
+.slot .n{font:800 13px var(--f-display);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .slot .ds{font-size:10px;color:var(--muted);text-align:center;line-height:1.3}
 .slot .c{font-size:11px;color:var(--mana);font-variant-numeric:tabular-nums}
 .slot .k{position:absolute;top:3px;left:5px;font-size:10px;color:var(--muted)}
@@ -93,6 +94,28 @@ body{
 .slot.poor .c{color:var(--blood)}
 .slot.poor canvas{opacity:.45}
 .go{margin:0;width:100%;white-space:nowrap;box-shadow:0 3px 0 var(--gold-dk),0 0 18px rgba(241,217,142,.4)}
+.slot.skill{background:linear-gradient(180deg,#4a3a2a,#33281d)}
+.slot.skill .c{color:var(--gold-hi)}
+.slot.half .c{color:#9fe08a}
+.panel.wide{width:min(780px,100%)}
+.selh{font:800 15px var(--f-display);margin:12px 0 6px;color:#5a1e2c;display:flex;gap:10px;align-items:baseline}
+.selh span{font:700 13px var(--f-body);color:var(--parch-ink)}
+.chargrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:8px}
+.trapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+.pick{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;cursor:pointer;padding:8px 10px;color:var(--parch);background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;font-family:var(--f-body);min-width:0}
+.pick:hover{border-color:var(--gold-hi)}
+.pick.on{box-shadow:inset 0 0 0 2px var(--gold-hi);background:var(--stone-hi)}
+.pick.on::after{content:"選択中";position:absolute;top:-1px;right:-1px;font:700 9px var(--f-body);color:var(--ink);background:var(--gold-hi);padding:1px 6px;border-radius:2px}
+.stage.tall #cv{display:none}
+.stage.tall .overlay{position:static;background:none;backdrop-filter:none;padding:12px}
+.pick:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+.pick .row{display:flex;align-items:center;gap:8px}
+.pick canvas{width:34px;height:34px;flex:none}
+.pick .n{font:800 15px var(--f-display);color:var(--gold-hi);white-space:nowrap}
+.pick .t{font-size:11px;color:var(--muted)}
+.pick .d{font-size:12px;line-height:1.5}
+.pick .sk{font-size:12px;color:var(--rose);line-height:1.5}
+.pick .st{font-size:11px;color:var(--parch);font-variant-numeric:tabular-nums}
 .help{margin:2px 0 0;color:var(--muted);font-size:12px;line-height:1.7}
 .help b{color:var(--parch);font-weight:700}
 @media (max-width:640px){
@@ -100,6 +123,9 @@ body{
   .stage.has-ov .overlay{position:static;background:none;backdrop-filter:none;padding:10px}
   .slot .n{font-size:11px}
   .slot .k,.slot .ds{display:none}
+  .chargrid,.trapgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pick{padding:7px 8px}
+  .pick .d,.pick .sk,.pick .st{font-size:11px}
   .slot canvas{width:30px;height:30px}
   .help .pc{display:none}
 }
@@ -115,7 +141,7 @@ body{
     </div>
   </header>
 
-  <section class="hud" aria-label="リリィの状態">
+  <section class="hud" aria-label="逃げる子の状態">
     <div class="hearts" id="hearts" aria-label="体力"></div>
     <div class="mana"><span class="lbl">魔力</span><div class="bar" id="manaBar"><i id="manaFill"></i></div><b id="manaText">100/100</b></div>
     <div class="stats">
@@ -136,9 +162,10 @@ body{
       <div class="overlay" id="ovTitle">
         <div class="panel">
           <h2>罠館のリリィ</h2>
-          <p>夜になると、古い館に侵入者がやって来る。館の娘リリィは剣を持てず、逃げ回ることしかできない。あなたは館の罠を操って、リリィを守ろう。</p>          <button class="btn" id="btnStart" type="button">扉に鍵をかける（開始）</button>
+          <p>夜になると、古い館に侵入者がやって来る。館に暮らす少女たちは剣を持てず、逃げ回ることしかできない。あなたは館の罠を操って、彼女たちを守ろう。</p>          <button class="btn" id="btnStart" type="button">扉に鍵をかける（開始）</button>
           <ul>
-            <li>リリィは自分で逃げる。あなたは罠を置くだけ</li>
+            <li>始める前に、逃げる子を4人から1人、持っていく罠を8種類から4つ選ぶ。逃げる子はそれぞれ固有スキルを1つ持つ（Space かスキルのボタン）</li>
+            <li>逃げる子は自分で動く。あなたは罠を置くだけ</li>
             <li>かしこさが上がるほど上手に逃げ、罠の奥で待ち、侵入者を罠の上へ誘うようになる。慌てると混乱して走り回ることも</li>
             <li>魔力は時間で溜まる。罠を置くと減る</li>
             <li>夜は「準備」のあとフェイズ1〜3と進む。フェイズが進むたびに置ける罠が1つ増え、魔力も補充される</li>
@@ -148,10 +175,22 @@ body{
             <li>同じ罠をもう一度押すと撤去（魔力が半分戻る）。跳ね床は向きを変えて押すと向きだけ変わる</li>
             <li>罠を3秒以内に続けて当てると<b>連続</b>。続くほど得点と魂が増える</li>
             <li>跳ね床で飛ばした先に罠があれば<b>連鎖</b>ボーナス</li>
-            <li>夜を越えるたび、集めた魂で館とリリィを強くできる</li>
+            <li>夜を越えるたび、集めた魂で館と逃げる子を強くできる</li>
           </ul>
-          <p class="sm">罠: トラバサミ＝挟んで足止め／跳ね床＝矢印の向きへ吹き飛ばす／落石＝少し遅れて真上から／火柱＝十字に燃える。足止めしてから落石や火柱を当てるのが基本。</p>
+          <p class="sm">罠と逃げる子の説明は、次の支度の画面で見られる。足止めしてから落石や火柱を当てるのが基本。</p>
           <p class="sm" id="bestLine"></p>
+        </div>
+      </div>
+
+      <div class="overlay" id="ovSelect" hidden>
+        <div class="panel wide">
+          <h2>今夜の支度</h2>
+          <h3 class="selh">逃げる子を選ぶ</h3>
+          <div class="chargrid" id="charGrid"></div>
+          <h3 class="selh">持っていく罠を4つ選ぶ <span id="pickCount">0/4</span></h3>
+          <div class="trapgrid" id="trapGrid"></div>
+          <button class="btn" id="btnBegin" type="button">この支度で夜を迎える</button>
+          <p class="sm" id="selNote"></p>
         </div>
       </div>
 
@@ -188,8 +227,8 @@ body{
   <button class="btn go" id="btnGo" type="button" hidden>侵入者を迎える</button>
   <nav class="palette" id="palette" aria-label="罠の選択"></nav>
   <p class="help">
-    <span class="pc"><b>罠</b> 1〜4 かボタンで選び、マスをクリックして設置（同じ罠を押すと撤去）　<b>跳ね床の向き</b> Q / E（ボタンをもう一度押しても回る）　<b>館の仕掛け</b> シャンデリア・石像をクリック　<b>準備を終える</b> Enter　<b>一時停止</b> P　リリィの移動は CPU まかせ</span>
-    <span class="sp"><b>罠</b> 下の罠を選んでマスをタップ（同じ罠をタップで撤去）。跳ね床はもう一度押すと向きが変わる。シャンデリアと石像はタップで発動。リリィの移動は CPU まかせ</span>
+    <span class="pc"><b>罠</b> 1〜4 かボタンで選び、マスをクリックして設置（同じ罠を押すと撤去）　<b>スキル</b> Space　<b>矢印のある罠の向き</b> Q / E（ボタンをもう一度押しても回る）　<b>館の仕掛け</b> シャンデリア・石像をクリック　<b>準備を終える</b> Enter　<b>一時停止</b> P　逃げる子の移動は CPU まかせ</span>
+    <span class="sp"><b>罠</b> 下の罠を選んでマスをタップ（同じ罠をタップで撤去）。矢印のある罠はもう一度押すと向きが変わる。スキルは右端のボタン。シャンデリアと石像はタップで発動。逃げる子の移動は CPU まかせ</span>
   </p>
 </main>
 
@@ -218,19 +257,44 @@ DOORS.sort((a, b) => doorRank(a) - doorRank(b));
 const TORCHES = [[3,0],[11,0],[3,9],[11,9]];
 
 const TRAPS = {
-  bear:   { name:'トラバサミ', cost:20, cd:4, key:'1', desc:'挟んで2秒ほど足止め' },
-  spring: { name:'跳ね床',     cost:25, cd:3, key:'2', desc:'矢印の向きへ3マス飛ばす' },
-  rock:   { name:'落石',       cost:35, cd:5, key:'3', desc:'少し遅れて大ダメージ' },
-  fire:   { name:'火柱',       cost:40, cd:6, key:'4', desc:'十字の5マスを焼く' },
+  bear:   { name:'トラバサミ', cost:20, cd:4, desc:'挟んで2秒ほど足止め' },
+  spring: { name:'跳ね床',     cost:20, cd:2.5, desc:'矢印の向きへ3マス飛ばす', dir:true },
+  rock:   { name:'落石',       cost:35, cd:5, desc:'少し遅れて真上から大ダメージ' },
+  fire:   { name:'火柱',       cost:40, cd:6, desc:'十字の5マスを焼く' },
+  ice:    { name:'氷床',       cost:20, cd:4, desc:'凍らせて止め、しばらく足を遅くする' },
+  poison: { name:'毒の壺',     cost:25, cd:7, desc:'周り3x3に毒霧。じわじわ削る' },
+  blade:  { name:'振り子刃',   cost:35, cd:5, desc:'矢印の向きへ4マスを一直線に斬る', dir:true },
+  bell:   { name:'誘いの鈴',   cost:20, cd:10, desc:'鳴ると侵入者がしばらく鈴へ向かう' },
 };
-const TRAP_ORDER = ['bear','spring','rock','fire'];
+const TRAP_ORDER = ['bear','spring','rock','fire','ice','poison','blade','bell'];
+const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
+// 逃げる子。数値は自動ボットで全員の到達夜・得点が近くなるように調整した
+const CHARS = {
+  lily:  { name:'リリィ', title:'館の娘', hp:3, speed:3.4, regen:7, maxMana:110, power:1, smart:0,
+           profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的',
+           skill:{ name:'鍵束の合図', cd:20, desc:'置いてある罠と館の仕掛けを、すぐ使える状態に戻す' },
+           look:{ hair:'#f4a9c6', hairD:'#d77aa0', dress:'#9b2f4a', ribbon:'#e0405e', eye:'#4b2a63' } },
+  mina:  { name:'ミーナ', title:'見習い魔女', hp:3, speed:3.3, regen:9, maxMana:140, power:1, smart:0,
+           profile:'魔力が多く、溜まるのも速い。走るのは苦手',
+           skill:{ name:'魔力のしずく', cd:26, desc:'魔力が40回復し、8秒間は罠の魔力が半分、再装填が2倍速くなる' },
+           look:{ hair:'#8a74c4', hairD:'#5a4890', dress:'#43305f', ribbon:'#d9b44a', eye:'#2e6b5e' } },
+  noel:  { name:'ノエル', title:'館のメイド', hp:4, speed:3.0, regen:5.2, maxMana:100, power:1, smart:0,
+           profile:'丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい',
+           skill:{ name:'ほうき払い', cd:30, desc:'周り2マスの侵入者を転ばせて少し止める' },
+           look:{ hair:'#9a6a45', hairD:'#6e4a2e', dress:'#2f5a45', ribbon:'#f4efe6', eye:'#3a5a3a' } },
+  cecil: { name:'セシル', title:'錬金術師の見習い', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1.1, smart:0,
+           profile:'器用で、罠の威力が少し高い',
+           skill:{ name:'爆薬びん', cd:26, desc:'押したマスに爆薬を投げ、周り3x3を吹き飛ばす' },
+           look:{ hair:'#efcf7a', hairD:'#c9a24a', dress:'#7a4f2e', ribbon:'#3f8f8a', eye:'#2d5f8a' } },
+};
+const CHAR_ORDER = ['lily','mina','noel','cecil'];
 const FOES = {
   knight: { hp:40, speed:1.6, soul:10, score:100, push:3, stunMul:1 },
   thief:  { hp:24, speed:2.7, soul:8,  score:80,  push:3, stunMul:1 },
   heavy:  { hp:95, speed:1.1, soul:22, score:220, push:2, stunMul:.5 },
 };
 const UPS = [
-  { id:'smart',   name:'リリィの勉強', desc:'かしこさ +1（逃げ方が上手に）', base:35, max:5 },
+  { id:'smart',   name:'逃げ方の勉強', desc:'かしこさ +1（逃げ方が上手に）', base:35, max:5 },
   { id:'regen',   name:'魔力の泉',   desc:'魔力の回復 +20%',   base:30, max:6 },
   { id:'maxMana', name:'魔力の器',   desc:'魔力の上限 +20',    base:25, max:6 },
   { id:'power',   name:'罠の鋭さ',   desc:'罠の威力 +20%',     base:40, max:6 },
@@ -278,25 +342,29 @@ try { best = +localStorage.getItem('wanakan-best') || 0; } catch (e) {}
 // ---------- 状態 ----------
 let G, paused = false;
 const baseLimit = () => 5 + G.up.limit;
+const CH = () => CHARS[G.char] || CHARS.lily;
+const smartL = () => Math.min(5, G.up.smart + CH().smart);
+const trapCost = type => G.costHalfT > 0 ? Math.ceil(TRAPS[type].cost / 2) : TRAPS[type].cost;
 const stat = {
-  regen:   () => 6 * (1 + .2 * G.up.regen),
-  maxMana: () => 100 + 20 * G.up.maxMana,
-  power:   () => 1 + .2 * G.up.power,
+  regen:   () => CH().regen * (1 + .2 * G.up.regen),
+  maxMana: () => CH().maxMana + 20 * G.up.maxMana,
+  power:   () => CH().power * (1 + .2 * G.up.power),
   cd:      () => Math.pow(.88, G.up.cd),
   limit:   () => baseLimit() + G.phaseBonus,
-  speed:   () => 3.4 * (1 + .08 * G.up.speed),
-  maxHp:   () => 3 + G.up.hp,
+  speed:   () => CH().speed * (1 + .08 * G.up.speed),
+  maxHp:   () => CH().hp + G.up.hp,
 };
-function makeRun(state) {
+function makeRun(state, char = 'lily', loadout = DEFAULT_LOADOUT) {
   const up = {}; UPS.forEach(u => up[u.id] = 0);
   return {
-    state, wave: 0, score: 0, soul: 0, up, mana: 100, hp: 3, time: 0,
+    state, char, loadout: loadout.slice(), wave: 0, score: 0, soul: 0, up, mana: CHARS[char].maxMana, hp: CHARS[char].hp, time: 0,
+    skillCd: 0, aiming: false, costHalfT: 0, lure: null,
     hero: { tx:7, ty:6, nx:7, ny:6, x:7, y:6, prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0 },
     foes: [], traps: new Map(), devices: makeDevices(), fx: [], texts: [], parts: [],
     combo: 0, lastHit: -99, bestCombo: 0, kills: 0, shake: 0,
     spawnQueue: [], spawnT: 0, clearT: -1, banner: 0, bannerTitle: '', bannerSub: '', hpScale: 1,
     phase: 0, phaseQ: [[], [], []], phaseBonus: 0, nightLen: 60, nightT: 60,
-    selected: 'bear', springDir: 1, msg: '', msgT: 0, hover: null, field: null, foeField: null, removedCd: {},
+    selected: loadout[0], springDir: 1, msg: '', msgT: 0, hover: null, field: null, foeField: null, removedCd: {},
   };
 }
 G = makeRun('title');
@@ -455,7 +523,9 @@ addEventListener('keydown', e => {
   if (G.state !== 'play') return;
   if (k === 'KeyP') { setPause(!paused); e.preventDefault(); return; }
   if (paused) return;
-  if (k in DIGIT) { selectTrap(TRAP_ORDER[DIGIT[k]], true); return; }
+  if (k in DIGIT) { selectTrap(G.loadout[DIGIT[k]], true); return; }
+  if (k === 'Space') { e.preventDefault(); useSkill(); return; }
+  if (k === 'Escape' && G.aiming) { G.aiming = false; return; }
   if (k === 'KeyQ') { rotateSpring(-1); return; }
   if (k === 'KeyE') { rotateSpring(1); return; }
   if (k === 'Enter' && G.phase === 0) { e.preventDefault(); beginDefense(); }
@@ -467,6 +537,7 @@ function pointerTile(e) {
 cv.addEventListener('pointerdown', e => {
   if (G.state !== 'play' || paused) return;
   const p = pointerTile(e); G.hover = p;
+  if (G.aiming) { if (isFloor(p.x, p.y)) doSkill(p.x, p.y); else { say('そこには投げられない'); sfx.bad(); } return; }
   const dv = G.devices.find(d => d.x === p.x && d.y === p.y);
   if (dv) activateDevice(dv); else placeTrap(p.x, p.y, G.selected);
 });
@@ -480,21 +551,22 @@ function placeTrap(x, y, type) {
   if (!canPlace(x, y)) { say('そこには置けない'); sfx.bad(); return; }
   const key = x + ',' + y, old = G.traps.get(key);
   if (old && old.type === type) {
-    if (type === 'spring' && old.dir !== G.springDir) { old.dir = G.springDir; old.anim = .25; sfx.place(); say('跳ね床の向きを変えた'); return; }
-    G.traps.delete(key); G.removedCd[key] = { cd: old.cd, at: G.time }; G.mana = Math.min(stat.maxMana(), G.mana + Math.floor(def.cost / 2));
-    say(`${def.name}を撤去した（魔力 +${Math.floor(def.cost / 2)}）`); sfx.bad(); return;
+    if (def.dir && old.dir !== G.springDir) { old.dir = G.springDir; old.anim = .25; sfx.place(); say(`${def.name}の向きを変えた`); return; }
+    const back = Math.floor(old.paid / 2);
+    G.traps.delete(key); G.removedCd[key] = { cd: old.cd, at: G.time }; G.mana = Math.min(stat.maxMana(), G.mana + back);
+    say(`${def.name}を撤去した（魔力 +${back}）`); sfx.bad(); return;
   }
   if (G.foes.some(f => !f.dead && Math.round(f.x) === x && Math.round(f.y) === y)) { say('侵入者の足もとには置けない'); sfx.bad(); return; }
   if (!old && G.traps.size >= stat.limit()) { say(`罠は${stat.limit()}個まで。同じ罠を押すと撤去できる`); sfx.bad(); return; }
-  const refund = old ? Math.floor(TRAPS[old.type].cost / 2) : 0;
-  if (G.mana + refund < def.cost) { say('魔力が足りない'); sfx.bad(); return; }
-  G.mana = Math.min(stat.maxMana(), G.mana + refund - def.cost);
+  const refund = old ? Math.floor(old.paid / 2) : 0, cost = trapCost(type);
+  if (G.mana + refund < cost) { say('魔力が足りない'); sfx.bad(); return; }
+  G.mana = Math.min(stat.maxMana(), G.mana + refund - cost);
   const rm = G.removedCd[key], rmCd = rm ? rm.cd - (G.time - rm.at) : 0;
   const cd = Math.max(.6, old ? old.cd : rmCd); // 置き直しても（撤去してすぐ置いても）前の罠の再装填は引き継ぐ
   delete G.removedCd[key];
   const bonusCount = [...G.traps.values()].filter(t => t.bonus).length;
   const bonus = old ? old.bonus : G.traps.size >= baseLimit() && bonusCount < G.phaseBonus; // フェイズで増えた枠に置いた罠
-  G.traps.set(key, { type, x, y, dir: G.springDir, cd, cdMax: cd, snap: 0, anim: .25, at: G.time, bonus });
+  G.traps.set(key, { type, x, y, dir: G.springDir, cd, cdMax: cd, snap: 0, anim: .25, at: G.time, bonus, paid: cost });
   sfx.place();
 }
 
@@ -550,7 +622,7 @@ function spawn(type) {
   const [x, y] = open[(Math.random() * open.length) | 0];
   const def = FOES[type], hp = Math.round(def.hp * G.hpScale);
   G.foes.push({ type, hp, maxhp: hp, tx:x, ty:y, nx:x, ny:y, x, y, z:0, prog:0, moving:false,
-    speed: def.speed * (1 + .03 * (G.wave - 1)), stun:0, fly:null, face:x === 0 ? 1 : -1, flash:0, dead:false, deadT:0, seed: Math.random() * 9 });
+    speed: def.speed * (1 + .03 * (G.wave - 1)), stun:0, slow:0, poison:0, ptick:1, fly:null, face:x === 0 ? 1 : -1, flash:0, dead:false, deadT:0, seed: Math.random() * 9 });
 }
 
 // ---------- 罠の効果 ----------
@@ -585,6 +657,13 @@ function killFoe(f) {
   addText(f.x, f.y - 1, `魂 +${s}`, '#c9b8ff', 16);
   burst(f.x, f.y, '#b9a5ff', 18, 160); sfx.kill();
 }
+function poisonTick(f) { // 毒は1秒ごと（連続には数えない）
+  const dmg = Math.round(7 * stat.power());
+  f.hp -= dmg; f.flash = .1; G.score += dmg * 5;
+  addText(f.x, f.y - .5, String(dmg), '#9fe08a', 14);
+  if (f.hp <= 0) killFoe(f);
+}
+const inBox = (f, x, y, r) => !f.dead && !f.fly && Math.max(Math.abs(f.x - x), Math.abs(f.y - y)) <= r;
 function terrainAt(x, y, f) { // 地形のダメージ（連続には数えない）
   if (f.dead || tileAt(x, y) !== '^') return;
   hitFoe(f, 6); f.stun = Math.max(f.stun, .25);
@@ -635,12 +714,71 @@ function triggerAt(x, y, f, chained) {
     G.fx.push({ type: 'fire', tiles, t: 0, dur: .7 });
     const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
     if (hits.length) trapSuccess();
-    hits.forEach(g => hitFoe(g, 16));
+    hits.forEach(g => hitFoe(g, 21));
+  } else if (tr.type === 'ice') {
+    tone('sine', 1800, 2600, .18, .07); tone('triangle', 2400, 1200, .25, .05, .05);
+    trapSuccess(); hitFoe(f, 9); burst(x, y, '#bfe6f2', 14, 110);
+    if (!f.dead) { f.stun = Math.max(f.stun, 1.2 * FOES[f.type].stunMul); f.slow = Math.max(f.slow, 4); }
+  } else if (tr.type === 'poison') {
+    noise(.6, 400, .2, .6);
+    G.fx.push({ type: 'poison', x, y, t: 0, dur: 5 });
+    trapSuccess();
+    for (const g of G.foes) if (inBox(g, x, y, 1.3)) g.poison = Math.max(g.poison, 5);
+  } else if (tr.type === 'blade') {
+    noise(.25, 3000, .2, 3); tone('sawtooth', 600, 200, .2, .05);
+    const [dx, dy] = DIRS[tr.dir], tiles = [[x, y]];
+    for (let i = 1; i < 4 && isFloor(x + dx * i, y + dy * i); i++) tiles.push([x + dx * i, y + dy * i]);
+    G.fx.push({ type: 'blade', tiles, t: 0, dur: .35 });
+    const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
+    if (hits.length) trapSuccess();
+    hits.forEach(g => hitFoe(g, 15));
+  } else if (tr.type === 'bell') {
+    tone('sine', 1320, 1320, .6, .1); tone('sine', 1760, 1760, .5, .06, .12);
+    trapSuccess();
+    G.lure = { x, y, t: 3.5 };
+    for (const g of G.foes) if (!g.dead && !g.fly && Math.abs(g.x - x) + Math.abs(g.y - y) <= 4) g.stun = Math.max(g.stun, .3 * FOES[g.type].stunMul); // 音に気を取られる
+    addText(x, y - 1, '鈴の音', '#f1d98e', 16);
   }
 }
 
+// ---------- 固有スキル ----------
+function useSkill() {
+  if (G.state !== 'play' || paused) return;
+  const sk = CH().skill;
+  if (G.aiming) { G.aiming = false; say(`${sk.name}をやめた`); return; }
+  if (G.skillCd > 0) { say(`${sk.name}はあと${Math.ceil(G.skillCd)}秒で使える`); sfx.bad(); return; }
+  if (G.char === 'cecil') { G.aiming = true; say('爆薬を投げるマスを押す（もう一度スキルを押すとやめる）'); return; }
+  doSkill();
+}
+function doSkill(tx, ty) {
+  const sk = CH().skill, h = G.hero;
+  G.skillCd = sk.cd; G.skillUses = (G.skillUses || 0) + 1; audio();
+  if (G.char === 'lily') {
+    for (const tr of G.traps.values()) { tr.cd = 0; tr.anim = .35; }
+    for (const dv of G.devices) dv.cd = 0;
+    tone('sine', 880, 880, .3, .08); tone('sine', 1175, 1175, .4, .07, .1);
+    heroBubble('みんな、お願い！', 1.4);
+  } else if (G.char === 'mina') {
+    G.mana = Math.min(stat.maxMana(), G.mana + 40); G.costHalfT = 8;
+    tone('triangle', 520, 1560, .5, .08);
+    heroBubble('魔力よ、満ちて！', 1.4);
+  } else if (G.char === 'noel') {
+    const hits = G.foes.filter(f => inBox(f, h.x, h.y, 2.2));
+    if (hits.length) trapSuccess();
+    for (const f of hits) { hitFoe(f, 8); if (!f.dead) f.stun = Math.max(f.stun, 1.3 * FOES[f.type].stunMul); }
+    G.fx.push({ type: 'sweep', x: h.x, y: h.y, t: 0, dur: .45 }); noise(.3, 1500, .2, .8);
+    heroBubble('お掃除です！', 1.2);
+  } else if (G.char === 'cecil') {
+    G.aiming = false;
+    G.fx.push({ type: 'bomb', x: tx, y: ty, sx: h.x, sy: h.y, t: 0, dur: .8 });
+    tone('triangle', 400, 700, .2, .06);
+    heroBubble('えいっ！', 1);
+  }
+  addText(h.x, h.y - 1.4, sk.name, '#f1d98e', 18);
+}
+
 // ---------- 更新 ----------
-// ---------- リリィの思考（CPU） ----------
+// ---------- 逃げる子の思考（CPU） ----------
 // かしこさ Lv が上がるほど: 間違いと混乱が減り、袋小路を避け、逃げ道の広い方を選び、罠の向こうへ誘い、扉の前を避ける
 const PANIC_TALK = ['あわわ…', 'こっちかな？', 'えっと、えっと…', 'どっち！？'];
 function heroBubble(text, t = .9) { G.hero.bubble = text; G.hero.bubbleT = t; }
@@ -687,7 +825,7 @@ function lureScore(cx, cy) { // 近い侵入者2人がここへ来る道の罠
   return v;
 }
 function idleGoal() { // 扉から来る道に罠が並ぶ「罠の奥」の待ち場所を探す
-  const L = G.up.smart, doors = DOORS.slice(0, Math.min(DOORS.length, G.wave));
+  const L = smartL(), doors = DOORS.slice(0, Math.min(DOORS.length, G.wave));
   let best = null, bs = -1e9;
   for (let y = 1; y < ROWS - 1; y++) for (let x = 1; x < COLS - 1; x++) {
     if (!isFloor(x, y)) continue;
@@ -702,7 +840,7 @@ function idleGoal() { // 扉から来る道に罠が並ぶ「罠の奥」の待�
 }
 const pick = a => a[(Math.random() * a.length) | 0];
 function chooseHeroMove() {
-  const h = G.hero, L = G.up.smart;
+  const h = G.hero, L = smartL();
   const cands = [[-1, h.tx, h.ty], ...DIRS.map(([dx, dy], d) => [d, h.tx + dx, h.ty + dy]).filter(([, x, y]) => isFloor(x, y))];
   const moves = cands.slice(1), here = fdist(h.tx, h.ty);
   if (h.confused > 0) return moves.length ? pick(moves)[0] : -1; // 混乱中はでたらめに走る
@@ -773,6 +911,11 @@ function updateHero(dt) {
 function updateFoe(f, dt) {
   f.flash = Math.max(0, f.flash - dt);
   if (f.dead) { f.deadT += dt; return; }
+  if (f.slow > 0) f.slow -= dt;
+  if (f.poison > 0) {
+    f.poison -= dt; f.ptick -= dt;
+    if (f.ptick <= 0) { f.ptick = 1; poisonTick(f); if (f.dead) return; }
+  }
   if (f.fly) {
     const fl = f.fly; fl.t += dt; const p = Math.min(1, fl.t / fl.dur);
     f.x = lerp(fl.fx, fl.tx, p); f.y = lerp(fl.fy, fl.ty, p); f.z = Math.sin(p * Math.PI) * 22;
@@ -792,7 +935,7 @@ function updateFoe(f, dt) {
   }
   if (f.stun > 0) { f.stun -= dt; return; }
   if (f.moving) {
-    f.prog += dt * f.speed;
+    f.prog += dt * f.speed * (f.slow > 0 ? .5 : 1);
     if (f.prog < 1) { f.x = lerp(f.tx, f.nx, f.prog); f.y = lerp(f.ty, f.ny, f.prog); return; }
     f.tx = f.nx; f.ty = f.ny; f.x = f.tx; f.y = f.ty; f.moving = false; f.prog = 0;
     terrainAt(f.tx, f.ty, f);
@@ -814,10 +957,12 @@ function updateFoe(f, dt) {
 function update(dt) {
   G.time += dt;
   G.mana = Math.min(stat.maxMana(), G.mana + stat.regen() * dt);
+  G.skillCd = Math.max(0, G.skillCd - dt); G.costHalfT = Math.max(0, G.costHalfT - dt);
+  if (G.lure) { G.lure.t -= dt; if (G.lure.t <= 0) G.lure = null; }
   G.foeField = bfsMulti(G.foes.filter(f => !f.dead).map(f => [Math.round(f.x), Math.round(f.y)]), foeWalk);
   updateHero(dt);
   const h = G.hero;
-  G.field = bfs(Math.round(h.x), Math.round(h.y), foeWalk);
+  G.field = G.lure ? bfs(G.lure.x, G.lure.y, foeWalk) : bfs(Math.round(h.x), Math.round(h.y), foeWalk); // 鈴が鳴っている間は鈴へ向かう
 
   if (G.phase > 0 && G.clearT < 0 && G.spawnQueue.length) {
     G.spawnT -= dt;
@@ -827,7 +972,8 @@ function update(dt) {
   G.foes = G.foes.filter(f => !f.dead || f.deadT < .5);
 
   for (const dv of G.devices) dv.cd = Math.max(0, dv.cd - dt);
-  for (const tr of G.traps.values()) { tr.cd = Math.max(0, tr.cd - dt); tr.snap = Math.max(0, tr.snap - dt); tr.anim = Math.max(0, tr.anim - dt); }
+  for (const tr of G.traps.values()) { tr.cd = Math.max(0, tr.cd - dt * (G.costHalfT > 0 ? 2 : 1)); // 魔力のしずく中は再装填2倍速
+    tr.snap = Math.max(0, tr.snap - dt); tr.anim = Math.max(0, tr.anim - dt); }
   for (const fx of G.fx) {
     fx.t += dt;
     if (fx.type === 'chand' && !fx.done && fx.t >= fx.dur) {
@@ -837,6 +983,13 @@ function update(dt) {
       if (hits.length) trapSuccess(); else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
       for (const f of hits) { hitFoe(f, 35); if (!f.dead) f.stun = Math.max(f.stun, 1 * FOES[f.type].stunMul); }
     }
+    if (fx.type === 'poison' && fx.t < fx.dur) { for (const f of G.foes) if (inBox(f, fx.x, fx.y, 1.3)) f.poison = Math.max(f.poison, 2); }
+    if (fx.type === 'bomb' && !fx.done && fx.t >= fx.dur) {
+      fx.done = true; G.shake = Math.max(G.shake, 8); burst(fx.x, fx.y, '#ffb35a', 26, 190); sfx.rock();
+      const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.2);
+      if (hits.length) trapSuccess(); else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
+      for (const f of hits) hitFoe(f, 24);
+    }
     if (fx.type === 'rock' && !fx.done && fx.t >= fx.dur) {
       fx.done = true; sfx.rock(); G.shake = Math.max(G.shake, 6); burst(fx.x, fx.y, '#8c8478', 16, 140);
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.hypot(f.x - fx.x, f.y - fx.y) < .75);
@@ -844,7 +997,7 @@ function update(dt) {
       for (const f of hits) { hitFoe(f, 30); if (!f.dead) f.stun = Math.max(f.stun, .8 * FOES[f.type].stunMul); }
     }
   }
-  G.fx = G.fx.filter(fx => fx.t < fx.dur + .4);
+  G.fx = G.fx.filter(fx => fx.t < fx.dur + (fx.type === 'poison' ? 0 : .4));
   for (const t of G.texts) t.t += dt;
   G.texts = G.texts.filter(t => t.t < t.dur);
   for (const p of G.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; }
@@ -860,7 +1013,7 @@ function update(dt) {
       if (Math.hypot(f.x - h.x, f.y - h.y) < .6) {
         G.hp--; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt();
         f.stun = Math.max(f.stun, 1.2); // 捕まえかけて一瞬止まる
-        if (Math.random() < Math.max(.08, .35 - .06 * G.up.smart)) { h.confused = 1.2; heroBubble('？', 1.2); }
+        if (Math.random() < Math.max(.08, .35 - .06 * smartL())) { h.confused = 1.2; heroBubble('？', 1.2); }
         addText(h.x, h.y - 1, 'きゃっ！', '#ffc0d3', 20);
         if (G.hp <= 0) { gameOver(); return; }
         break;
@@ -907,6 +1060,38 @@ function drawTrapIcon(c, type, cx, cy, s, dir, t, closed) {
     const fl = Math.sin((t || 0) * 10) * 1.5;
     c.fillStyle = '#ff8a3c'; c.beginPath(); c.moveTo(0, -11 - fl); c.quadraticCurveTo(8, -1, 5, 6); c.quadraticCurveTo(0, 10, -5, 6); c.quadraticCurveTo(-8, -1, 0, -11 - fl); c.fill();
     c.fillStyle = '#ffe08a'; c.beginPath(); c.moveTo(0, -4 - fl); c.quadraticCurveTo(4, 2, 2, 5); c.quadraticCurveTo(0, 7, -2, 5); c.quadraticCurveTo(-4, 2, 0, -4 - fl); c.fill();
+  } else if (type === 'ice') {
+    c.fillStyle = '#26394a'; c.beginPath();
+    for (let i = 0; i < 6; i++) { const a = i / 6 * 6.283 + .52; c.lineTo(Math.cos(a) * 15, Math.sin(a) * 15); }
+    c.closePath(); c.fill();
+    c.strokeStyle = '#a8dcef'; c.lineWidth = 2; c.stroke();
+    c.strokeStyle = '#e4f6fc'; c.lineWidth = 1.8; c.beginPath();
+    for (let i = 0; i < 3; i++) {
+      const a = i / 3 * Math.PI + Math.PI / 2, ca = Math.cos(a), sa = Math.sin(a);
+      c.moveTo(-ca * 10, -sa * 10); c.lineTo(ca * 10, sa * 10);
+      for (const s2 of [-1, 1]) { c.moveTo(ca * 6 * s2, sa * 6 * s2); c.lineTo(ca * 6 * s2 + Math.cos(a + .8) * 3, sa * 6 * s2 + Math.sin(a + .8) * 3); }
+    }
+    c.stroke();
+  } else if (type === 'poison') {
+    c.fillStyle = '#5a3f2a'; c.beginPath(); c.ellipse(0, 4, 12, 10, 0, 0, 7); c.fill();
+    c.fillStyle = '#3d2a1c'; c.fillRect(-7, -9, 14, 5);
+    c.fillStyle = '#7a5a3a'; c.beginPath(); c.ellipse(-4, 1, 3, 4, -.4, 0, 7); c.fill();
+    const bb = Math.sin((t || 0) * 4) * 1.2;
+    c.fillStyle = '#8fd16a';
+    for (const [bx, by, br] of [[-3, -12, 3], [3, -15, 2.4], [0, -19, 1.8]]) { c.beginPath(); c.arc(bx, by + bb, br, 0, 7); c.fill(); }
+  } else if (type === 'blade') {
+    c.fillStyle = '#3a332e'; c.beginPath(); c.arc(0, 0, 14, 0, 7); c.fill();
+    c.rotate(dir * Math.PI / 2);
+    c.fillStyle = '#d8d0c4'; c.beginPath(); c.arc(0, 6, 15, Math.PI * 1.15, Math.PI * 1.85); c.arc(0, 12, 12, Math.PI * 1.78, Math.PI * 1.22, true); c.closePath(); c.fill();
+    c.strokeStyle = '#7d766c'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 6); c.lineTo(0, -8); c.stroke();
+    c.fillStyle = '#c9a24a'; c.beginPath(); c.arc(0, 6, 3, 0, 7); c.fill();
+    c.fillStyle = '#f1d98e'; c.beginPath(); c.moveTo(0, -21); c.lineTo(7, -13); c.lineTo(-7, -13); c.closePath(); c.fill();
+  } else if (type === 'bell') {
+    c.fillStyle = '#c9a24a'; c.beginPath(); c.moveTo(-11, 7); c.quadraticCurveTo(-11, -13, 0, -13); c.quadraticCurveTo(11, -13, 11, 7); c.closePath(); c.fill();
+    c.fillStyle = '#f1d98e'; c.beginPath(); c.ellipse(-4, -5, 2.5, 5, -.3, 0, 7); c.fill();
+    c.fillStyle = '#7d5f22'; c.fillRect(-13, 6, 26, 3.5);
+    c.fillStyle = '#f1d98e'; c.beginPath(); c.arc(0, 12, 2.6, 0, 7); c.fill();
+    c.fillStyle = '#7d5f22'; c.fillRect(-1.5, -17, 3, 4);
   }
   c.restore();
 }
@@ -966,12 +1151,18 @@ function drawPreview() {
     ctx.strokeStyle = 'rgba(157,136,255,.8)'; ctx.lineWidth = 2; ctx.strokeRect(hv.x * T + 2, hv.y * T + 2, T - 4, T - 4);
     return;
   }
+  if (G.aiming) { // 爆薬びんの狙い
+    ctx.fillStyle = isFloor(hv.x, hv.y) ? 'rgba(255,150,70,.22)' : 'rgba(208,80,63,.25)';
+    for (let y = hv.y - 1; y <= hv.y + 1; y++) for (let x = hv.x - 1; x <= hv.x + 1; x++) if (isFloor(x, y)) ctx.fillRect(x * T + 3, y * T + 3, T - 6, T - 6);
+    ctx.strokeStyle = 'rgba(255,170,90,.9)'; ctx.lineWidth = 2; ctx.strokeRect(hv.x * T + 2, hv.y * T + 2, T - 4, T - 4);
+    return;
+  }
   const ok = canPlace(hv.x, hv.y);
   if (!G.selected) {
     if (!ok) return;
     ctx.strokeStyle = 'rgba(241,217,142,.35)'; ctx.lineWidth = 2; ctx.strokeRect(hv.x * T + 3, hv.y * T + 3, T - 6, T - 6); return;
   }
-  const can = ok && G.mana >= TRAPS[G.selected].cost;
+  const can = ok && G.mana >= trapCost(G.selected);
   ctx.fillStyle = can ? 'rgba(241,217,142,.18)' : 'rgba(208,80,63,.25)';
   ctx.fillRect(hv.x * T, hv.y * T, T, T);
   if (!ok) return;
@@ -979,6 +1170,13 @@ function drawPreview() {
     const [dx, dy] = DIRS[G.springDir]; let x = hv.x, y = hv.y;
     ctx.fillStyle = 'rgba(241,217,142,.12)';
     for (let i = 0; i < 3 && isFloor(x + dx, y + dy); i++) { x += dx; y += dy; ctx.fillRect(x * T + 6, y * T + 6, T - 12, T - 12); }
+  } else if (G.selected === 'blade') {
+    const [dx, dy] = DIRS[G.springDir];
+    ctx.fillStyle = 'rgba(216,208,196,.16)';
+    for (let i = 1; i < 4 && isFloor(hv.x + dx * i, hv.y + dy * i); i++) ctx.fillRect((hv.x + dx * i) * T + 4, (hv.y + dy * i) * T + 4, T - 8, T - 8);
+  } else if (G.selected === 'poison') {
+    ctx.fillStyle = 'rgba(143,209,106,.14)';
+    for (let y = hv.y - 1; y <= hv.y + 1; y++) for (let x = hv.x - 1; x <= hv.x + 1; x++) if (isFloor(x, y) && (x !== hv.x || y !== hv.y)) ctx.fillRect(x * T + 4, y * T + 4, T - 8, T - 8);
   } else if (G.selected === 'fire') {
     ctx.fillStyle = 'rgba(255,120,60,.14)';
     for (const [dx, dy] of DIRS) if (isFloor(hv.x + dx, hv.y + dy)) ctx.fillRect((hv.x + dx) * T + 4, (hv.y + dy) * T + 4, T - 8, T - 8);
@@ -997,13 +1195,13 @@ function drawHero() {
   const mv = h.moving;
   const step = mv ? Math.sin(t * 14) : 0;
   const bob = mv ? -Math.abs(Math.sin(t * 14)) * 2.5 : Math.sin(t * 2.5) * .8;
-  const HAIR = '#f4a9c6', HAIR_D = '#d77aa0', SKIN = '#ffe6d6';
+  const L = CH().look, HAIR = L.hair, HAIR_D = L.hairD, SKIN = '#ffe6d6';
   // 脚
   ctx.fillStyle = '#3b2b40';
   ctx.fillRect(-5, 9 + step * 1.5, 3.5, 7); ctx.fillRect(1.5, 9 - step * 1.5, 3.5, 7);
   ctx.fillStyle = '#6b2236'; ell(-3.3, 16 + step * 1.5, 3, 1.8); ell(3.3, 16 - step * 1.5, 3, 1.8);
   // ドレス
-  ctx.fillStyle = '#9b2f4a';
+  ctx.fillStyle = L.dress;
   ctx.beginPath(); ctx.moveTo(-6.5, -3 + bob); ctx.lineTo(6.5, -3 + bob); ctx.lineTo(11, 11); ctx.quadraticCurveTo(0, 14, -11, 11); ctx.closePath(); ctx.fill();
   ctx.fillStyle = '#fff3ea';
   for (let i = -10; i <= 10; i += 4) { ctx.beginPath(); ctx.arc(i, 11.5, 2.2, 0, Math.PI); ctx.fill(); }
@@ -1033,7 +1231,7 @@ function drawHero() {
     const eyes = side ? [[1, 1], [8, .75]] : [[-4.6, 1], [4.6, 1]];
     for (const [ex, w] of eyes) {
       if (blink || h.hurt > 0 || h.confused > 0) { ctx.strokeStyle = '#4b2a63'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(ex - 2.5 * w, hy + 3.5); ctx.lineTo(ex + 2.5 * w, hy + 3.5); ctx.stroke(); continue; }
-      ctx.fillStyle = '#4b2a63'; ctx.beginPath(); ctx.ellipse(ex, hy + 3.5, 2.4 * w, 3.4, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = L.eye; ctx.beginPath(); ctx.ellipse(ex, hy + 3.5, 2.4 * w, 3.4, 0, 0, 7); ctx.fill();
       ctx.fillStyle = '#9b6bd6'; ctx.beginPath(); ctx.ellipse(ex, hy + 4.8, 1.6 * w, 1.6, 0, 0, 7); ctx.fill();
       ctx.fillStyle = '#fff'; ell(ex - .8 * w, hy + 2.2, 1.1, 1.1);
     }
@@ -1046,7 +1244,7 @@ function drawHero() {
     ctx.fillStyle = HAIR_D; ctx.fillRect(-1, hy - 8, 2, 16);
   }
   // リボン
-  ctx.fillStyle = '#e0405e';
+  ctx.fillStyle = L.ribbon;
   ctx.beginPath(); ctx.moveTo(6, hy - 10); ctx.lineTo(0, hy - 15); ctx.lineTo(1, hy - 6); ctx.closePath(); ctx.fill();
   ctx.beginPath(); ctx.moveTo(6, hy - 10); ctx.lineTo(13, hy - 14); ctx.lineTo(11, hy - 5); ctx.closePath(); ctx.fill();
   ctx.fillStyle = '#ff7a92'; ell(6, hy - 10, 2.2, 2.2);
@@ -1103,6 +1301,8 @@ function drawFoe(f) {
     ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, y - 1, w + 2, 5);
     ctx.fillStyle = '#d0503f'; ctx.fillRect(x, y, w * Math.max(0, f.hp / f.maxhp), 3);
   }
+  if (!f.dead && f.slow > 0) { ctx.fillStyle = 'rgba(168,220,239,.8)'; ell(px - 12, py - 20 * sc, 2.5, 2.5); ell(px + 12, py - 16 * sc, 2, 2); }
+  if (!f.dead && f.poison > 0) { ctx.fillStyle = 'rgba(143,209,106,.85)'; ell(px + Math.sin(t * 3) * 6, py - 34 * sc - (t * 12 % 8), 2.2, 2.2); }
   if (!f.dead && f.stun > 0 && !f.fly) {
     ctx.fillStyle = '#ffe58a';
     for (let i = 0; i < 3; i++) { const a = t * 5 + i * 2.09; ell(px + Math.cos(a) * 10, py - 26 * sc + Math.sin(a) * 3, 2, 2); }
@@ -1149,6 +1349,33 @@ function drawFx() {
         ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
         ctx.fillStyle = '#f4ecdf'; ell(ex, ey, 4, 4);
       }
+    } else if (fx.type === 'poison') {
+      const a = Math.min(1, fx.t / .3, (fx.dur - fx.t) / .6);
+      for (let i = 0; i < 7; i++) {
+        const ang = i / 7 * 6.283 + fx.t * .6, r = 20 + Math.sin(fx.t * 2 + i) * 6;
+        ctx.fillStyle = `rgba(120,190,90,${.18 * a})`;
+        ell(fx.x * T + T / 2 + Math.cos(ang) * r, fx.y * T + T / 2 + Math.sin(ang) * r * .7, 26, 18);
+      }
+    } else if (fx.type === 'blade') {
+      const p = Math.min(1, fx.t / fx.dur);
+      ctx.globalAlpha = 1 - p;
+      ctx.fillStyle = '#f4ecdf';
+      for (const [x, y] of fx.tiles) ctx.fillRect(x * T + 4, y * T + T / 2 - 3, T - 8, 6);
+      ctx.globalAlpha = 1;
+    } else if (fx.type === 'sweep') {
+      const p = Math.min(1, fx.t / fx.dur);
+      ctx.strokeStyle = `rgba(244,239,230,${1 - p})`; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(fx.x * T + T / 2, fx.y * T + T / 2, 20 + p * 90, 0, 7); ctx.stroke();
+    } else if (fx.type === 'bomb') {
+      const p = Math.min(1, fx.t / fx.dur);
+      if (!fx.done) {
+        const bx = lerp(fx.sx, fx.x, p) * T + T / 2, by = lerp(fx.sy, fx.y, p) * T + T / 2 - Math.sin(p * Math.PI) * 60;
+        ctx.fillStyle = 'rgba(0,0,0,.3)'; ell(fx.x * T + T / 2, fx.y * T + T / 2 + 8, 6 + p * 10, 3 + p * 4);
+        ctx.fillStyle = '#7fc9c4'; ell(bx, by, 6, 7); ctx.fillStyle = '#5a3f2a'; ctx.fillRect(bx - 2, by - 11, 4, 5);
+      } else {
+        const q = (fx.t - fx.dur) / .4;
+        ctx.fillStyle = `rgba(255,170,80,${.5 * (1 - q)})`; ell(fx.x * T + T / 2, fx.y * T + T / 2, 60 * (.5 + q), 50 * (.5 + q));
+      }
     } else if (fx.type === 'fire') {
       const p = fx.t / fx.dur; if (p > 1) continue;
       for (const [x, y] of fx.tiles) {
@@ -1158,6 +1385,13 @@ function drawFx() {
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.moveTo(cx - 16, by); ctx.quadraticCurveTo(cx - 10, by - hgt * .6, cx + Math.sin(fx.t * 30 + x) * 4, by - hgt); ctx.quadraticCurveTo(cx + 10, by - hgt * .6, cx + 16, by); ctx.fill();
       }
+    }
+  }
+  if (G.lure) { // 鈴の波紋
+    for (let i = 0; i < 3; i++) {
+      const r = ((G.time * 1.5 + i / 3) % 1);
+      ctx.strokeStyle = `rgba(241,217,142,${.6 * (1 - r)})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(G.lure.x * T + T / 2, G.lure.y * T + T / 2, 10 + r * 70, 0, 7); ctx.stroke();
     }
   }
   for (const p of G.parts) { ctx.globalAlpha = 1 - p.t / p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size); }
@@ -1234,7 +1468,7 @@ const el = { hearts: $('#hearts'), manaFill: $('#manaFill'), manaText: $('#manaT
 let hudCache = '';
 function updateHud() {
   const maxHp = stat.maxHp(), mm = stat.maxMana();
-  const key = [G.hp, maxHp, Math.floor(G.mana), mm, G.wave, G.score, G.soul, G.traps.size, stat.limit(), G.selected, G.springDir, G.up.smart, G.phase, Math.ceil(G.nightT), Math.ceil(G.prepT || 0), G.state].join('|');
+  const key = [G.hp, maxHp, Math.floor(G.mana), mm, G.wave, G.score, G.soul, G.traps.size, stat.limit(), G.selected, G.springDir, smartL(), G.char, Math.ceil(G.skillCd), G.aiming, G.costHalfT > 0, G.phase, Math.ceil(G.nightT), Math.ceil(G.prepT || 0), G.state].join('|');
   if (key === hudCache) return; hudCache = key;
   el.hearts.innerHTML = Array.from({ length: maxHp }, (_, i) => `<span class="${i < G.hp ? '' : 'off'}">♥</span>`).join('');
   el.hearts.setAttribute('aria-label', `体力 ${G.hp}/${maxHp}`);
@@ -1244,7 +1478,7 @@ function updateHud() {
   el.score.textContent = G.score.toLocaleString('ja-JP');
   el.soul.textContent = G.soul.toLocaleString('ja-JP');
   el.traps.textContent = `${G.traps.size}/${stat.limit()}`;
-  el.smart.textContent = `Lv${G.up.smart + 1}`;
+  el.smart.textContent = `Lv${smartL() + 1}`;
   el.phase.textContent = G.state === 'shop' ? '夜明け' : G.phase ? `フェイズ${G.phase}/3` : '準備';
   if (G.phase === 0 && G.state === 'play') $('#btnGo').textContent = `侵入者を迎える（あと${Math.max(0, Math.ceil(G.prepT))}秒で自動）`;
   el.time.textContent = G.state === 'shop' ? '–' : G.phase ? `${Math.ceil(G.nightT)}秒` : '–';
@@ -1252,20 +1486,32 @@ function updateHud() {
     const tp = b.dataset.type;
     b.classList.toggle('sel', G.selected === tp);
     b.setAttribute('aria-pressed', b.classList.contains('sel'));
-    b.classList.toggle('poor', G.mana < TRAPS[tp].cost);
-    if (tp === 'spring') b.querySelector('.dir').textContent = ARROW[G.springDir];
+    b.classList.toggle('poor', G.mana < trapCost(tp));
+    b.classList.toggle('half', G.costHalfT > 0);
+    b.querySelector('.c').textContent = `魔力 ${trapCost(tp)}`;
+    if (TRAPS[tp].dir) b.querySelector('.dir').textContent = ARROW[G.springDir];
+  }
+  if (skillSlot) {
+    const sk = CH().skill;
+    skillSlot.querySelector('.n').textContent = sk.name;
+    skillSlot.querySelector('.c').textContent = G.aiming ? '投げるマスを押す' : G.skillCd > 0 ? `あと${Math.ceil(G.skillCd)}秒` : '使える';
+    skillSlot.querySelector('.ds').textContent = sk.desc;
+    skillSlot.title = `${sk.name}: ${sk.desc}`;
+    skillSlot.classList.toggle('poor', G.skillCd > 0);
+    skillSlot.classList.toggle('sel', G.aiming);
   }
 }
 
 // ---------- 罠パレット ----------
 const palette = $('#palette'), slots = [];
-function makeSlot(type) {
+let skillSlot = null;
+function makeSlot(type, i) {
   const b = document.createElement('button'); b.type = 'button'; b.className = 'slot'; b.dataset.type = type;
   const ic = document.createElement('canvas'); ic.width = 76; ic.height = 76;
   const c = ic.getContext('2d'); c.scale(2, 2);
   const d = TRAPS[type];
-  drawTrapIcon(c, type, 19, 19, .95, type === 'spring' ? 1 : 0, 0, false);
-  b.innerHTML = `<span class="k">${d.key}</span>${type === 'spring' ? '<span class="dir">→</span>' : ''}`;
+  drawTrapIcon(c, type, 19, 19, .95, d.dir ? G.springDir : 0, 0, false);
+  b.innerHTML = `<span class="k">${i + 1}</span>${d.dir ? '<span class="dir">→</span>' : ''}`;
   b.append(ic);
   b.insertAdjacentHTML('beforeend', `<span class="n">${d.name}</span><span class="c">魔力 ${d.cost}</span><span class="ds">${d.desc}</span>`);
   b.title = `${d.name}: ${d.desc}`;
@@ -1277,36 +1523,105 @@ function makeSlot(type) {
   });
   palette.append(b); slots.push(b);
 }
-TRAP_ORDER.forEach(makeSlot);
+function drawCharIcon(c, look, cx, cy, s) { // 選択画面とスキルボタンの小さな顔
+  c.save(); c.translate(cx, cy); c.scale(s, s);
+  c.fillStyle = look.hairD; c.beginPath(); c.ellipse(-11, 6, 4.5, 9, .3, 0, 7); c.ellipse(11, 6, 4.5, 9, -.3, 0, 7); c.fill();
+  c.fillStyle = look.hair; c.beginPath(); c.arc(0, 0, 12, 0, 7); c.fill();
+  c.fillStyle = '#ffe6d6'; c.beginPath(); c.ellipse(0, 3, 9, 8, 0, 0, 7); c.fill();
+  c.fillStyle = look.hair; c.beginPath(); c.moveTo(-11, 1); c.quadraticCurveTo(0, -16, 11, 1); c.lineTo(5, -2); c.lineTo(0, 1); c.lineTo(-5, -2); c.closePath(); c.fill();
+  c.fillStyle = look.eye; c.beginPath(); c.ellipse(-4, 4, 1.8, 2.6, 0, 0, 7); c.ellipse(4, 4, 1.8, 2.6, 0, 0, 7); c.fill();
+  c.fillStyle = look.ribbon; c.beginPath(); c.moveTo(5, -10); c.lineTo(0, -15); c.lineTo(1, -6); c.closePath(); c.moveTo(5, -10); c.lineTo(12, -14); c.lineTo(10, -5); c.closePath(); c.fill();
+  c.restore();
+}
+function buildPalette() {
+  palette.innerHTML = ''; slots.length = 0;
+  G.loadout.forEach((t, i) => makeSlot(t, i));
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'slot skill'; b.id = 'btnSkill';
+  const ic = document.createElement('canvas'); ic.width = 76; ic.height = 76;
+  const c = ic.getContext('2d'); c.scale(2, 2); drawCharIcon(c, CH().look, 19, 21, 1.15);
+  b.innerHTML = '<span class="k">Space</span>'; b.append(ic);
+  b.insertAdjacentHTML('beforeend', '<span class="n"></span><span class="c"></span><span class="ds"></span>');
+  b.addEventListener('click', () => { audio(); useSkill(); b.blur(); });
+  palette.append(b); skillSlot = b; hudCache = '';
+}
 function selectTrap(type, fromKey) {
-  if (type === 'spring' && G.selected === 'spring' && !fromKey) { rotateSpring(1); return; }
+  if (!type) return;
+  if (TRAPS[type].dir && G.selected === type && !fromKey) { rotateSpring(1); return; }
   G.selected = type;
 }
 function rotateSpring(d) {
   G.springDir = (G.springDir + d + 4) % 4;
-  const s = slots.find(b => b.dataset.type === 'spring');
-  s._icon.c.clearRect(0, 0, 38, 38); drawTrapIcon(s._icon.c, 'spring', 19, 19, .95, G.springDir, 0, false);
+  for (const s of slots) if (TRAPS[s.dataset.type].dir) { s._icon.c.clearRect(0, 0, 38, 38); drawTrapIcon(s._icon.c, s.dataset.type, 19, 19, .95, G.springDir, 0, false); }
 }
+buildPalette();
 
 // ---------- 画面切り替え ----------
 const stage = $('#stage');
-const OVS = ['ovTitle', 'ovShop', 'ovOver', 'ovPause'];
+const OVS = ['ovTitle', 'ovSelect', 'ovShop', 'ovOver', 'ovPause'];
 function showOv(id) {
   OVS.forEach(o => $('#' + o).hidden = o !== id);
   stage.classList.toggle('has-ov', !!id);
+  stage.classList.toggle('tall', id === 'ovSelect'); // 支度の画面は盤面を隠して全部見せる
+  palette.hidden = id === 'ovSelect';
 }
 function bestText() { return best > 0 ? `これまでの最高得点 ${best.toLocaleString('ja-JP')}` : ''; }
-function startRun() {
+// 前回の支度を覚えておく（この端末だけ）
+let sel = { char: 'lily', traps: DEFAULT_LOADOUT.slice() };
+try {
+  const sv = JSON.parse(localStorage.getItem('wanakan-loadout') || 'null');
+  if (sv && CHARS[sv.char] && Array.isArray(sv.traps) && sv.traps.length === 4 && sv.traps.every(t => TRAPS[t])) sel = sv;
+} catch (e) {}
+function statLine(ch) { return `体力 ${'♥'.repeat(ch.hp)}　足 ${Math.round(ch.speed / 3.4 * 100)}%　魔力 ${ch.maxMana}（毎秒 ${Math.round(ch.regen)} 回復）${ch.power > 1 ? `　罠の威力 +${Math.round((ch.power - 1) * 100)}%` : ''}${ch.smart ? `　かしこさ +${ch.smart}` : ''}`; }
+function renderSelect() {
+  const cg = $('#charGrid'); cg.innerHTML = '';
+  for (const id of CHAR_ORDER) {
+    const ch = CHARS[id], b = document.createElement('button');
+    b.type = 'button'; b.className = 'pick' + (sel.char === id ? ' on' : ''); b.id = 'pick-' + id;
+    b.setAttribute('aria-pressed', sel.char === id);
+    const ic = document.createElement('canvas'); ic.width = 68; ic.height = 68; const c = ic.getContext('2d'); c.scale(2, 2); drawCharIcon(c, ch.look, 17, 19, 1.05);
+    const row = document.createElement('div'); row.className = 'row'; row.append(ic);
+    row.insertAdjacentHTML('beforeend', `<div><div class="n">${ch.name}</div><div class="t">${ch.title}</div></div>`);
+    b.append(row);
+    b.insertAdjacentHTML('beforeend', `<span class="d">${ch.profile}</span><span class="st">${statLine(ch)}</span><span class="sk">スキル「${ch.skill.name}」${ch.skill.desc}（${ch.skill.cd}秒ごと）</span>`);
+    b.addEventListener('click', () => { sel.char = id; renderSelect(); });
+    cg.append(b);
+  }
+  const tg = $('#trapGrid'); tg.innerHTML = '';
+  for (const id of TRAP_ORDER) {
+    const d = TRAPS[id], on = sel.traps.includes(id), b = document.createElement('button');
+    b.type = 'button'; b.className = 'pick' + (on ? ' on' : ''); b.id = 'pickt-' + id;
+    b.setAttribute('aria-pressed', on);
+    const ic = document.createElement('canvas'); ic.width = 68; ic.height = 68; const c = ic.getContext('2d'); c.scale(2, 2); drawTrapIcon(c, id, 17, 17, .85, 1, 0, false);
+    const row = document.createElement('div'); row.className = 'row'; row.append(ic);
+    row.insertAdjacentHTML('beforeend', `<div><div class="n">${d.name}</div><div class="t">魔力 ${d.cost}・再装填 ${d.cd}秒</div></div>`);
+    b.append(row);
+    b.insertAdjacentHTML('beforeend', `<span class="d">${d.desc}</span>`);
+    b.addEventListener('click', () => {
+      if (on) sel.traps = sel.traps.filter(t => t !== id);
+      else if (sel.traps.length >= 4) { $('#selNote').textContent = '罠は4つまで。外したい罠をもう一度押してから選ぶ'; return; }
+      else sel.traps.push(id);
+      $('#selNote').textContent = ''; renderSelect();
+    });
+    tg.append(b);
+  }
+  $('#pickCount').textContent = `${sel.traps.length}/4`;
+  $('#btnBegin').disabled = sel.traps.length !== 4;
+  $('#btnBegin').textContent = `この支度で夜を迎える（罠 ${sel.traps.length}/4）`;
+}
+function openSelect() { audio(); renderSelect(); showOv('ovSelect'); }
+function startRun(char = sel.char, loadout = sel.traps) {
   audio();
-  G = makeRun('play'); paused = false; hudCache = '';
-  showOv(null); startWave(1);
+  const lo = TRAP_ORDER.filter(t => loadout.includes(t)); // 罠ボタンは図鑑の順に並べる
+  try { localStorage.setItem('wanakan-loadout', JSON.stringify({ char, traps: lo })); } catch (e) {}
+  G = makeRun('play', char, lo); paused = false; hudCache = '';
+  buildPalette(); showOv(null); startWave(1);
 }
 function openShop() {
   G.state = 'shop';
   G.hp = Math.min(stat.maxHp(), G.hp + 1);
   G.mana = stat.maxMana();
   G.foes = []; G.fx = []; G.texts = []; G.parts = []; $('#btnGo').hidden = true;
-  G.banner = 0; G.combo = 0; G.msgT = 0; G.removedCd = {};
+  G.banner = 0; G.combo = 0; G.msgT = 0; G.removedCd = {}; G.aiming = false; G.lure = null; G.costHalfT = 0;
   G.phaseBonus = 0;
   const extra = [...G.traps.entries()].sort((a, b) => (b[1].bonus - a[1].bonus) || (b[1].at - a[1].at)).slice(0, Math.max(0, G.traps.size - stat.limit()));
   extra.forEach(([k]) => G.traps.delete(k));
@@ -1341,7 +1656,7 @@ function gameOver(won) {
   G.score += hpBonus;
   const newBest = G.score > best;
   if (newBest) { best = G.score; try { localStorage.setItem('wanakan-best', String(best)); } catch (e) {} }
-  $('#rTitle').textContent = won ? '館を守り抜いた！' : 'リリィは捕まってしまった…';
+  $('#rTitle').textContent = won ? '館を守り抜いた！' : `${CH().name}は捕まってしまった…`;
   $('#rWave').textContent = won ? '全10夜' : `第${G.wave}夜`;
   const sec = Math.floor(G.time);
   $('#rTime').textContent = `${Math.floor(sec / 60)}分${sec % 60}秒`;
@@ -1359,9 +1674,10 @@ function setPause(p) {
   showOv(p ? 'ovPause' : null);
   $('#btnPause').textContent = p ? '再開' : '一時停止';
 }
-$('#btnStart').addEventListener('click', startRun);
-$('#btnRetry').addEventListener('click', startRun);
-$('#btnRetry').textContent = 'もう一度館を守る';
+$('#btnStart').addEventListener('click', openSelect);
+$('#btnRetry').addEventListener('click', openSelect);
+$('#btnRetry').textContent = '支度をして、もう一度';
+$('#btnBegin').addEventListener('click', () => { if (sel.traps.length === 4) startRun(); });
 $('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave(G.wave + 1); hudCache = ''; });
 $('#btnResume').addEventListener('click', () => setPause(false));
 $('#btnGo').addEventListener('click', beginDefense);
@@ -1382,6 +1698,6 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; } };
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, useSkill, doSkill, setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
 })();
 </script>

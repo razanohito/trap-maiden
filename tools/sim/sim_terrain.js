@@ -11,7 +11,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
     body = body.replace("if (location.hostname === '127.0.0.1') window.__wanakan", "window.__sim = { update, startWave, beginDefense, activateDevice, setP: v => paused = v, get G(){return G}, set G(v){G=v}, makeRun }; window.__wanakan");
     route.fulfill({ response: res, body, headers: { ...res.headers(), 'content-type': 'text/html; charset=utf-8' } });
   });
-  await p.goto((process.env.GAME_URL || 'http://127.0.0.1:8765/src/game.html'));
+  await p.goto((process.env.GAME_URL || 'http://127.0.0.1:8766/src/game.html'));
   await p.click('#btnStart');
   const R = await p.evaluate(() => {
     const S = window.__sim; S.setP(true);
