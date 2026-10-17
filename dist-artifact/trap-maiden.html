@@ -119,7 +119,7 @@ body{
     <div class="hearts" id="hearts" aria-label="体力"></div>
     <div class="mana"><span class="lbl">魔力</span><div class="bar" id="manaBar"><i id="manaFill"></i></div><b id="manaText">100/100</b></div>
     <div class="stats">
-      <span>第<b id="sWave">1</b>夜</span>
+      <span>第<b id="sWave">1</b>夜<small>／全10夜</small></span>
       <span><b id="sPhase">準備</b></span>
       <span>夜明けまで <b id="sTime">–</b></span>
       <span>得点 <b id="sScore">0</b></span>
@@ -143,6 +143,7 @@ body{
             <li>魔力は時間で溜まる。罠を置くと減る</li>
             <li>夜は「準備」のあとフェイズ1〜3と進む。フェイズが進むたびに置ける罠が1つ増え、魔力も補充される</li>
             <li>夜明けまで守り抜くか、侵入者を全滅させればその夜はクリア。全滅させると魂のボーナス</li>
+            <li>全10夜（約15分）。10夜目の夜明けを迎えたら、残りの体力をボーナスに足して得点が決まる。途中で捕まったら、その時点の得点で終わり</li>
             <li>館にはもともと仕掛けがある。トゲ床は踏んだ侵入者を傷つけ、奈落へ跳ね床で落とせば一撃。シャンデリアと槍の石像は押すと発動（魔力不要、使うと少し待つ）</li>
             <li>同じ罠をもう一度押すと撤去（魔力が半分戻る）。跳ね床は向きを変えて押すと向きだけ変わる</li>
             <li>罠を3秒以内に続けて当てると<b>連続</b>。続くほど得点と魂が増える</li>
@@ -165,12 +166,13 @@ body{
 
       <div class="overlay" id="ovOver" hidden>
         <div class="panel">
-          <h2>リリィは捕まってしまった…</h2>
+          <h2 id="rTitle">リリィは捕まってしまった…</h2>
           <div class="result">
             <div><span>たどり着いた夜</span><b id="rWave">1</b></div>
             <div><span>得点</span><b id="rScore">0</b></div>
             <div><span>最大連続</span><b id="rCombo">0</b></div>
             <div><span>撃退した数</span><b id="rKills">0</b></div>
+            <div><span>プレイ時間</span><b id="rTime">0分</b></div>
           </div>
           <p class="sm" id="rBest"></p>
           <button class="btn" id="btnRetry" type="button">もう一度館を守る</button>
@@ -253,6 +255,7 @@ function makeDevices() {
 const deviceReach = (dv, x, y) => dv.type === 'chandelier' ? Math.max(Math.abs(dv.x - x), Math.abs(dv.y - y)) <= 1 : Math.abs(dv.x - x) + Math.abs(dv.y - y) === 1;
 const upCost = (u, lv) => Math.round(u.base * Math.pow(1.55, lv));
 const COMBO_WINDOW = 3;
+const LAST_NIGHT = 10; // 全10夜で約15分
 
 const $ = s => document.querySelector(s);
 const cv = $('#cv'), ctx = cv.getContext('2d');
@@ -506,12 +509,13 @@ function startWave(n) {
     q.push(n >= 4 && r < .2 ? 'heavy' : n >= 2 && r < .5 ? 'thief' : 'knight');
   }
   if (n % 5 === 0) q.push('heavy', 'heavy');
+  if (n === LAST_NIGHT) q.push('heavy', 'thief', 'thief');
   const a = Math.round(q.length * .3), b = Math.round(q.length * .6);
   G.phaseQ = [q.slice(0, a), q.slice(a, b), q.slice(b)];
   G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1;
-  G.nightLen = G.nightT = Math.min(75, 42 + 3 * n); G.prepT = 40;
+  G.nightLen = G.nightT = 50 + 3 * (n - 1); G.prepT = 25;
   G.state = 'play';
-  banner(`第${n}夜`, '準備フェイズ：罠を置いたら「侵入者を迎える」');
+  banner(n === LAST_NIGHT ? '最後の夜' : `第${n}夜`, n === LAST_NIGHT ? '10夜目の夜明けまで守り抜けばクリア' : '準備フェイズ：罠を置いたら「侵入者を迎える」');
   $('#btnGo').hidden = false;
 }
 function beginDefense() {
@@ -863,7 +867,7 @@ function update(dt) {
       }
     }
   }
-  if (G.clearT >= 0) { G.clearT -= dt; if (G.clearT <= 0) openShop(); return; }
+  if (G.clearT >= 0) { G.clearT -= dt; if (G.clearT <= 0) { if (G.wave >= LAST_NIGHT) gameOver(true); else openShop(); } return; }
   if (G.phase === 0) { G.prepT -= dt; if (G.prepT <= 0) beginDefense(); }
   if (G.phase > 0) {
     G.nightT = Math.max(0, G.nightT - dt);
@@ -1331,15 +1335,22 @@ function renderShop() {
     grid.append(b);
   }
 }
-function gameOver() {
+function gameOver(won) {
   G.state = 'over'; $('#btnGo').hidden = true;
-  if (G.score > best) { best = G.score; try { localStorage.setItem('wanakan-best', String(best)); } catch (e) {} }
-  $('#rWave').textContent = `第${G.wave}夜`;
+  const hpBonus = won ? G.hp * 2000 : 0;
+  G.score += hpBonus;
+  const newBest = G.score > best;
+  if (newBest) { best = G.score; try { localStorage.setItem('wanakan-best', String(best)); } catch (e) {} }
+  $('#rTitle').textContent = won ? '館を守り抜いた！' : 'リリィは捕まってしまった…';
+  $('#rWave').textContent = won ? '全10夜' : `第${G.wave}夜`;
+  const sec = Math.floor(G.time);
+  $('#rTime').textContent = `${Math.floor(sec / 60)}分${sec % 60}秒`;
   $('#rScore').textContent = G.score.toLocaleString('ja-JP');
   $('#rCombo').textContent = G.bestCombo;
   $('#rKills').textContent = G.kills;
-  $('#rBest').textContent = bestText();
-  setTimeout(() => showOv('ovOver'), 700);
+  $('#rBest').textContent = (won ? `体力ボーナス +${hpBonus.toLocaleString('ja-JP')}点。` : '') + (newBest ? 'ハイスコア更新！ ' : '') + bestText();
+  if (won) sfx.wave();
+  setTimeout(() => showOv('ovOver'), won ? 300 : 700);
 }
 function setPause(p) {
   if (G.state !== 'play') return;
@@ -1350,6 +1361,7 @@ function setPause(p) {
 }
 $('#btnStart').addEventListener('click', startRun);
 $('#btnRetry').addEventListener('click', startRun);
+$('#btnRetry').textContent = 'もう一度館を守る';
 $('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave(G.wave + 1); hudCache = ''; });
 $('#btnResume').addEventListener('click', () => setPause(false));
 $('#btnGo').addEventListener('click', beginDefense);
