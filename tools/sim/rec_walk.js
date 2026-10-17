@@ -14,7 +14,7 @@ const { execFileSync } = require('child_process');
   const dir = path.join(__dirname, 'out', 'rec'); require('fs').mkdirSync(dir, { recursive: true });
   const log = []; let off = 0;
   for (let i = 0; i < 60; i++) {
-    const s = await p.evaluate(() => { const G = window.__wanakan.G, h = G.hero, r = document.getElementById('cv').getBoundingClientRect(); return { x: r.left + (h.x + .5) * r.width / 15, y: r.top + (h.y + .5) * r.height / 10, s: r.width / 15, moving: h.moving, facing: h.facing, walk: h.walk || 0, onCenter: !h.moving ? (h.x === h.tx && h.y === h.ty) : null }; });
+    const s = await p.evaluate(() => { const G = window.__wanakan.G, h = G.hero, r = document.getElementById('cv').getBoundingClientRect(); return { x: r.left + h.x * r.width / 14, y: r.top + h.y * r.height / 9, s: r.width / 14, moving: h.moving, facing: h.facing, walk: h.walk || 0, onCenter: !h.moving ? (h.x === h.tx && h.y === h.ty) : null }; });
     log.push(`${s.moving ? 'walk' : 'stop'} f${s.facing} frame${Math.floor(s.walk / .34) % 4}${s.onCenter === false ? ' OFF-CENTER' : ''}`);
     if (s.onCenter === false) off++;
     await p.screenshot({ path: path.join(dir, `f${String(i).padStart(3, '0')}.png`), clip: { x: s.x - s.s * 2, y: s.y - s.s * 2, width: s.s * 4, height: s.s * 3.2 } });

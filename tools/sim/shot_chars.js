@@ -16,7 +16,7 @@ const path = require('path');
     for (const f of [2, 1]) {
       await p.evaluate(f => { const G = window.__wanakan.G; G.hero.facing = f; G.hero.idle = 9; }, f);
       await p.waitForTimeout(80);
-      const b = await p.evaluate(() => { const G = window.__wanakan.G, r = document.getElementById('cv').getBoundingClientRect(); return { x: r.left + (G.hero.x + .5) * r.width / 15, y: r.top + (G.hero.y + .5) * r.height / 10, s: r.width / 15 }; });
+      const b = await p.evaluate(() => { const G = window.__wanakan.G, r = document.getElementById('cv').getBoundingClientRect(); return { x: r.left + G.hero.x * r.width / 14, y: r.top + G.hero.y * r.height / 9, s: r.width / 14 }; });
       await p.screenshot({ path: path.join(__dirname, 'out', `chars_${c}_${f}.png`), clip: { x: b.x - b.s * 1.2, y: b.y - b.s * 1.8, width: b.s * 2.4, height: b.s * 2.6 } });
     }
   }

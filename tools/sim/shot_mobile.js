@@ -4,7 +4,7 @@ const path = require('path');
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const errors = [];
-  for (const [name, vp] of [['portrait', { width: 390, height: 844 }], ['landscape', { width: 844, height: 390 }]]) {
+  for (const [name, vp] of [['portrait', { width: 393, height: 852 }], ['landscape', { width: 852, height: 393 }], ['landscape_safari', { width: 852, height: 340 }]]) {
     const ctx = await browser.newContext({ viewport: vp, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
     const p = await ctx.newPage();
     p.on('pageerror', e => errors.push(String(e)));
@@ -16,12 +16,12 @@ const path = require('path');
     await p.waitForTimeout(5000);
     // 盤面の中央付近をタップして罠を置く
     const r = await p.evaluate(() => { const b = document.getElementById('cv').getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; });
-    await p.touchscreen.tap(r.x + r.w * (5.5 / 15), r.y + r.h * (3.5 / 10));
+    await p.touchscreen.tap(r.x + r.w * (5 / 14), r.y + r.h * (3 / 9));
     await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(__dirname, 'out', `mobile_play_${name}.png`) });
     const m = await p.evaluate(() => {
       const de = document.documentElement, cv = document.getElementById('cv').getBoundingClientRect(), pal = document.getElementById('palette').getBoundingClientRect();
-      return { scrollH: de.scrollHeight, innerH: innerHeight, scrollW: de.scrollWidth, canvas: [Math.round(cv.width), Math.round(cv.height), Math.round(cv.bottom)], paletteTop: Math.round(pal.top), paletteBottom: Math.round(pal.bottom), traps: window.__wanakan.G.traps.size, playing: document.body.classList.contains('playing') };
+      return { tile: Math.round(cv.width / 14), scrollH: de.scrollHeight, innerH: innerHeight, scrollW: de.scrollWidth, canvas: [Math.round(cv.width), Math.round(cv.height), Math.round(cv.bottom)], paletteTop: Math.round(pal.top), paletteBottom: Math.round(pal.bottom), traps: window.__wanakan.G.traps.size, playing: document.body.classList.contains('playing') };
     });
     console.log(name, JSON.stringify(m));
     await ctx.close();

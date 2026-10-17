@@ -55,7 +55,7 @@ body{
 .frame::before,.frame::after{content:"";position:absolute;width:14px;height:14px;background:var(--ink);border:2px solid var(--gold-hi);transform:rotate(45deg);top:-6px;left:calc(50% - 9px)}
 .frame::after{top:auto;bottom:-6px}
 .stage{position:relative;border:2px solid #000;background:#000;overflow:hidden}
-#cv{display:block;width:100%;height:auto;aspect-ratio:3/2;touch-action:none;cursor:pointer}
+#cv{display:block;width:100%;height:auto;aspect-ratio:14/9;touch-action:none;cursor:pointer}
 .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(14,10,16,.78);backdrop-filter:blur(2px);overflow-y:auto}
 .panel{position:relative;width:min(560px,100%);max-height:100%;overflow-y:auto;color:var(--parch-ink);padding:18px 22px;
   background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.35),transparent 60%),linear-gradient(180deg,var(--parch),var(--parch-dk));
@@ -168,31 +168,37 @@ body{
   body.playing #ovHelp,body.playing #ovPause{position:fixed;inset:0;z-index:20;background:rgba(14,10,16,.94);overflow-y:auto;align-items:flex-start;padding:12px max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
   body.playing #ovHelp .panel,body.playing #ovPause .panel{max-height:none}
 }
-/* スマホ横: 盤面を左に大きく、状態と罠ボタンを右の列に */
+/* スマホ横（iPhone 16 の横持ち 852x393 を基準）: 盤面を画面の高さいっぱいに、状態と罠ボタンは右の細い列に。
+   ノッチ側の余白には盤面の外周の壁がかかってもよいので、左右の余白は安全領域より少し詰める */
 @media (max-height:520px) and (orientation:landscape){
-  body.playing{position:fixed;inset:0;padding-block:4px 0}
-  body.playing .wrap{max-width:none;height:100%;display:grid;grid-template-columns:auto minmax(190px,1fr);grid-template-rows:auto auto auto 1fr;gap:6px;align-items:start}
+  body.playing{position:fixed;inset:0;padding-block:max(3px,env(safe-area-inset-top,0px)) max(3px,env(safe-area-inset-bottom,0px));
+    padding-left:max(4px,calc(env(safe-area-inset-left,0px) - 44px));padding-right:max(6px,calc(env(safe-area-inset-right,0px) - 24px))}
+  body.playing .wrap{max-width:none;height:100%;display:grid;grid-template-columns:auto minmax(150px,1fr);grid-template-rows:auto auto auto 1fr;gap:4px 6px;align-items:start}
   body.playing .head{grid-column:2;grid-row:1}
   body.playing .head h1{display:none}
-  body.playing .tools{flex-wrap:wrap;gap:4px}
-  body.playing .tool{padding:3px 6px;font-size:11px}
-  body.playing .frame{grid-column:1;grid-row:1 / 5;width:min(calc(100vw - 230px),calc((100dvh - 34px) * 1.5 + 22px));padding:6px}
-  body.playing .hud{grid-column:2;grid-row:2;padding:4px 8px;gap:2px 8px}
-  body.playing .hearts{font-size:14px}
-  body.playing .mana{flex-basis:100%}
-  body.playing .stats{font-size:10px;gap:0 8px}
-  body.playing .stats b{font-size:12px}
-  body.playing #btnGo{grid-column:2;grid-row:3;font-size:13px;padding:6px 8px;white-space:normal}
-  body.playing .palette{grid-column:2;grid-row:4;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
-  body.playing .slot .c{font-size:10px}
+  body.playing .tools{flex-wrap:wrap;gap:3px}
+  body.playing .tool{padding:2px 5px;font-size:10px}
+  body.playing .frame{grid-column:1;grid-row:1 / 5;width:min(calc(100vw - 172px),calc((100dvh - 26px) * 14 / 9 + 12px));padding:4px}
+  body.playing .frame::before,body.playing .frame::after{display:none}
+  body.playing .hud{grid-column:2;grid-row:2;padding:3px 6px;gap:1px 6px}
+  body.playing .hearts{font-size:13px}
+  body.playing .mana{flex-basis:100%;gap:4px}
+  body.playing .mana .lbl{display:none}
+  body.playing .bar{height:8px}
+  body.playing .mana b{min-width:0;font-size:10px}
+  body.playing .stats{font-size:9px;gap:0 6px}
+  body.playing .stats b{font-size:11px}
+  body.playing #btnGo{grid-column:2;grid-row:3;font-size:12px;padding:5px 6px;white-space:normal}
+  body.playing .palette{grid-column:2;grid-row:4;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
+  body.playing .slot{padding:2px 2px 3px}
   body.playing .slot canvas{width:22px;height:22px}
-  body.playing .slot{padding:3px 2px 4px}
-  body.playing .slot canvas{width:26px;height:26px}
-  body.playing .slot .n{font-size:11px}
+  body.playing .slot .n{font-size:10px}
+  body.playing .slot .c{font-size:9px}
   body.playing .slot .k,body.playing .slot .ds{display:none}
-  body.playing .help{display:none}
+  body.playing .help,body.playing .rotate{display:none}
   body.playing #ovHelp,body.playing #ovPause{position:fixed;inset:0;z-index:20;background:rgba(14,10,16,.94);overflow-y:auto;align-items:flex-start;padding:10px}
   body.playing #ovHelp .panel,body.playing #ovPause .panel{max-height:none}
+}
 }
 </style>
 
@@ -319,6 +325,7 @@ body{
 <script>
 (() => {
 const COLS = 15, ROWS = 10, T = 48, W = COLS * T, H = ROWS * T;
+const VX = T / 2, VY = T / 2, VW = W - T, VH = H - T; // 画面に見せる範囲（外周の壁は半マスだけ見せて、盤面を大きく）
 // 部屋は5夜ごとに変わる（第1〜5夜は大広間、第6〜10夜は東の書庫）
 // 記号: # 壁・柱（書庫では本棚） D 扉 . 床 ^ トゲ床 O 奈落 c シャンデリアの真下 S 槍の石像
 const MAPS = [
@@ -439,7 +446,7 @@ const cv = $('#cv'), ctx = cv.getContext('2d');
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let dpr = 1;
 let TS = 1; // キャンバス内の文字の倍率（狭い画面で読めるように）
-function resize() { dpr = Math.min(window.devicePixelRatio || 1, 2); cv.width = W * dpr; cv.height = H * dpr; TS = Math.min(1.8, Math.max(1, 520 / (cv.clientWidth || W))); }
+function resize() { dpr = Math.min(window.devicePixelRatio || 1, 2); cv.width = VW * dpr; cv.height = VH * dpr; TS = Math.min(1.8, Math.max(1, 500 / (cv.clientWidth || VW))); }
 resize(); addEventListener('resize', resize);
 
 const tileAt = (x, y) => (x < 0 || y < 0 || x >= COLS || y >= ROWS) ? '#' : MAP[y][x];
@@ -665,7 +672,7 @@ addEventListener('keydown', e => {
 });
 function pointerTile(e) {
   const r = cv.getBoundingClientRect();
-  return { x: Math.floor((e.clientX - r.left) / r.width * COLS), y: Math.floor((e.clientY - r.top) / r.height * ROWS) };
+  return { x: Math.floor(((e.clientX - r.left) / r.width * VW + VX) / T), y: Math.floor(((e.clientY - r.top) / r.height * VH + VY) / T) };
 }
 cv.addEventListener('pointerdown', e => {
   if (G.state !== 'play' || paused) return;
@@ -1699,12 +1706,12 @@ function drawTexts() {
   ctx.globalAlpha = 1;
 }
 function drawHudCanvas() {
-  const v = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, W * .65);
+  const v = ctx.createRadialGradient(VW / 2, VH / 2, VH * .35, VW / 2, VH / 2, VW * .65);
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)');
-  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = v; ctx.fillRect(0, 0, VW, VH);
   if (G.combo >= 2) {
     const left = Math.max(0, 1 - (G.time - G.lastHit) / COMBO_WINDOW), pop = 1 + Math.max(0, .25 - (G.time - G.lastHit)) * 1.6;
-    const cx = W - 70 * TS, bw = 80 * TS;
+    const cx = VW - 70 * TS, bw = 80 * TS;
     ctx.save(); ctx.translate(cx, 34 + 36 * TS); ctx.scale(pop, pop);
     outlined(`${G.combo}`, 0, -6 * TS, 44, '#f1d98e');
     outlined('連続', 0, 24 * TS, 16, '#fff4e0');
@@ -1716,14 +1723,14 @@ function drawHudCanvas() {
   if (G.banner > 0) {
     const a = Math.min(1, G.banner / .5, (2.4 - G.banner) / .3);
     ctx.globalAlpha = a;
-    ctx.fillStyle = 'rgba(10,6,12,.55)'; ctx.fillRect(0, H / 2 - 44, W, 88);
-    ctx.fillStyle = '#c9a24a'; ctx.fillRect(0, H / 2 - 44, W, 2); ctx.fillRect(0, H / 2 + 42, W, 2);
-    outlined(G.bannerTitle, W / 2, H / 2 - 8, 40, '#f1d98e');
-    outlined(G.bannerSub, W / 2, H / 2 + 26, 15, '#fff4e0');
+    ctx.fillStyle = 'rgba(10,6,12,.55)'; ctx.fillRect(0, VH / 2 - 44, VW, 88);
+    ctx.fillStyle = '#c9a24a'; ctx.fillRect(0, VH / 2 - 44, VW, 2); ctx.fillRect(0, VH / 2 + 42, VW, 2);
+    outlined(G.bannerTitle, VW / 2, VH / 2 - 8, 40, '#f1d98e');
+    outlined(G.bannerSub, VW / 2, VH / 2 + 26, 15, '#fff4e0');
     ctx.globalAlpha = 1;
   }
   if (G.state === 'play' && G.phase > 0) { // 夜明けまでの進み（区切りはフェイズの境目）
-    const x0 = 60, x1 = W - 60, y = 12, p = 1 - G.nightT / G.nightLen;
+    const x0 = 60, x1 = VW - 60, y = 12, p = 1 - G.nightT / G.nightLen;
     ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(x0, y, x1 - x0, 6);
     ctx.fillStyle = '#c9a24a'; ctx.fillRect(x0, y, (x1 - x0) * p, 6);
     ctx.fillStyle = '#f1d98e'; for (const k of [1, 2]) ctx.fillRect(x0 + (x1 - x0) * k / 3 - 1, y - 3, 2, 12);
@@ -1731,12 +1738,12 @@ function drawHudCanvas() {
   }
   if (G.msgT > 0) {
     ctx.globalAlpha = Math.min(1, G.msgT / .3);
-    outlined(G.msg, W / 2, H - 26, 16, '#ffd0c0');
+    outlined(G.msg, VW / 2, VH - 26, 16, '#ffd0c0');
     ctx.globalAlpha = 1;
   }
 }
 function draw() {
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.setTransform(dpr, 0, 0, dpr, -VX * dpr, -VY * dpr); // 盤面は外周の半マスを切って描く
   if (G.shake > 0 && !reduceMotion) ctx.translate((Math.random() - .5) * G.shake, (Math.random() - .5) * G.shake);
   ctx.drawImage(bg, 0, 0, W, H);
   drawTorches();

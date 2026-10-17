@@ -10,7 +10,7 @@ const path = require('path');
   await p.evaluate(() => window.__wanakan.api.startRun('lily', ['bear', 'spring', 'rock', 'blade']));
   await p.waitForTimeout(300);
   const cdp = await ctx.newCDPSession(p);
-  const tile = async (x, y) => p.evaluate(([x, y]) => { const b = document.getElementById('cv').getBoundingClientRect(); return [b.left + (x + .5) * b.width / 15, b.top + (y + .5) * b.height / 10]; }, [x, y]);
+  const tile = async (x, y) => p.evaluate(([x, y]) => { const b = document.getElementById('cv').getBoundingClientRect(); return [b.left + x * b.width / 14, b.top + y * b.height / 9]; }, [x, y]);
   const swipe = async (x, y, dx, dy, shot) => {
     const [sx, sy] = await tile(x, y);
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: sx, y: sy }] });
