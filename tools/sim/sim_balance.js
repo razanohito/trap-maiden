@@ -8,6 +8,8 @@ const LOADOUTS = {
   氷と送り返し: ['ice', 'warp', 'fire', 'spring'],
   一撃: ['bear', 'rock', 'blade', 'warp'],
   誘い込み: ['bell', 'rock', 'fire', 'ice'],
+  直置き: ['caltrop', 'bear', 'rock', 'fire'],
+  吸い寄せ: ['vortex', 'fire', 'rock', 'spring'],
 };
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
