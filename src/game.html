@@ -114,6 +114,7 @@ body{
 .pick:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
 .pick .row{display:flex;align-items:center;gap:8px}
 .pick canvas{width:34px;height:34px;flex:none}
+.pick img.mini{height:72px;width:auto;flex:none;margin:-4px 0 -2px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
 .pick .n{font:800 15px var(--f-display);color:var(--gold-hi);white-space:nowrap}
 .pick .t{font-size:11px;color:var(--muted)}
 .pick .d{font-size:12px;line-height:1.5}
@@ -324,22 +325,27 @@ const CHARS = {
            profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的', flaw:'怖がり。侵入者が近いと混乱しやすい',
            skill:{ name:'鍵束の合図', cd:18, desc:'置いてある罠と館の仕掛けを、すぐ使える状態に戻す' },
            look:{ hair:'#f4a9c6', hairD:'#d77aa0', dress:'#9b2f4a', ribbon:'#e0405e', eye:'#4b2a63' } },
-  mina:  { name:'ミーナ', title:'見習い魔女', hp:3, speed:3.3, regen:9, maxMana:140, power:1, smart:0,
+  mina:  { name:'ミーナ', title:'見習い魔女', art:'mina', hp:3, speed:3.3, regen:9, maxMana:140, power:1, smart:0,
            profile:'魔力が多く、溜まるのも速い。走るのは苦手', flaw:'寝坊すけ。暇だとうたた寝して、侵入者が近づくまで起きない',
            skill:{ name:'魔力のしずく', cd:26, desc:'魔力が40回復し、8秒間は罠の魔力が半分、再装填が2倍速くなる' },
            look:{ hair:'#8a74c4', hairD:'#5a4890', dress:'#43305f', ribbon:'#d9b44a', eye:'#2e6b5e' } },
-  noel:  { name:'ノエル', title:'館のメイド', hp:4, speed:3.0, regen:5.2, maxMana:100, power:1, smart:0,
+  noel:  { name:'ノエル', title:'館のメイド', art:'noel', hp:4, speed:3.0, regen:5.2, maxMana:100, power:1, smart:0,
            profile:'丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい', flaw:'ドジ。走っているとたまにつまずく',
            skill:{ name:'ほうき払い', cd:30, desc:'周り2マスの侵入者を転ばせて少し止める' },
            look:{ hair:'#9a6a45', hairD:'#6e4a2e', dress:'#2f5a45', ribbon:'#f4efe6', eye:'#3a5a3a' } },
-  cecil: { name:'セシル', title:'錬金術師の見習い', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1.05, smart:0,
+  cecil: { name:'セシル', title:'錬金術師の見習い', art:'cecil', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1.05, smart:0,
            profile:'器用で、罠の威力が少し高い', flaw:'好奇心が強すぎる。暇だと扉や仕掛けを覗きに行ってしまう',
            skill:{ name:'爆薬びん', cd:26, desc:'押したマスに爆薬を投げ、周り3x3を吹き飛ばす' },
            look:{ hair:'#efcf7a', hairD:'#c9a24a', dress:'#7a4f2e', ribbon:'#3f8f8a', eye:'#2d5f8a' } },
 };
 const CHAR_ORDER = ['lily','mina','noel','cecil'];
 // ChatGPT に描いてもらった絵。ビルドで data URI に埋め込む。絵の無い子は今までどおりキャンバスで描く
-const ART = { lily_down: '../art/lily_down.webp', lily_side: '../art/lily_side.webp', lily_up: '../art/lily_up.webp', portrait_lily: '../art/portrait_lily.webp' };
+const ART = {
+  lily_down: '../art/lily_down.webp', lily_side: '../art/lily_side.webp', lily_up: '../art/lily_up.webp', portrait_lily: '../art/portrait_lily.webp',
+  mina_down: '../art/mina_down.webp', mina_side: '../art/mina_side.webp', mina_up: '../art/mina_up.webp', portrait_mina: '../art/portrait_mina.webp',
+  noel_down: '../art/noel_down.webp', noel_side: '../art/noel_side.webp', noel_up: '../art/noel_up.webp', portrait_noel: '../art/portrait_noel.webp',
+  cecil_down: '../art/cecil_down.webp', cecil_side: '../art/cecil_side.webp', cecil_up: '../art/cecil_up.webp', portrait_cecil: '../art/portrait_cecil.webp',
+};
 const IMG = {};
 for (const [k, src] of Object.entries(ART)) { const im = new Image(); im.decoding = 'async'; im.src = src; IMG[k] = im; }
 const imgReady = k => !!(IMG[k] && IMG[k].complete && IMG[k].naturalWidth > 0);
@@ -1667,7 +1673,9 @@ function renderSelect() {
     const ch = CHARS[id], b = document.createElement('button');
     b.type = 'button'; b.className = 'pick' + (sel.char === id ? ' on' : ''); b.id = 'pick-' + id;
     b.setAttribute('aria-pressed', sel.char === id);
-    const ic = document.createElement('canvas'); ic.width = 68; ic.height = 68; const c = ic.getContext('2d'); c.scale(2, 2); drawCharIcon(c, ch.look, 17, 19, 1.05);
+    let ic;
+    if (ch.art && ART[`portrait_${ch.art}`]) { ic = document.createElement('img'); ic.className = 'mini'; ic.alt = ''; ic.src = ART[`portrait_${ch.art}`]; }
+    else { ic = document.createElement('canvas'); ic.width = 68; ic.height = 68; const c = ic.getContext('2d'); c.scale(2, 2); drawCharIcon(c, ch.look, 17, 19, 1.05); }
     const row = document.createElement('div'); row.className = 'row'; row.append(ic);
     row.insertAdjacentHTML('beforeend', `<div><div class="n">${ch.name}</div><div class="t">${ch.title}</div></div>`);
     b.append(row);
@@ -1792,7 +1800,7 @@ function setKv(el, key) { // 立ち絵があれば出す
   el.onload = () => { el.hidden = false; }; el.onerror = () => { el.hidden = true; };
   el.src = ART[key]; if (el.complete && el.naturalWidth) el.hidden = false;
 }
-setKv($('#kvTitle'), 'portrait_lily');
+setKv($('#kvTitle'), `portrait_${(CHARS[sel.char] && CHARS[sel.char].art) || 'lily'}`);
 showOv('ovTitle');
 
 // ---------- ループ ----------

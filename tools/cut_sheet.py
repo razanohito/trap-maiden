@@ -1,9 +1,10 @@
-"""設定画（art-src/lily_sheet.webp）から正面・横・後ろの3方向を切り出し、羊皮紙の背景を抜いて art/ に保存する。
+"""設定画（art-src/<名前>_sheet.webp）から正面・横・後ろの3方向を切り出し、羊皮紙の背景を抜いて art/ に保存する。
 
 - 背景は「明るく、なめらかで、羊皮紙の色」の画素を、切り出した枠の外周から塗りつぶして決める。
   フリルやエプロンは羊皮紙より少し暗く、インクの線で囲まれているので残る。
-- 出力: art/lily_down.webp（正面）、art/lily_side.webp（右向き）、art/lily_up.webp（後ろ）、
-        art/portrait_lily.webp（正面の大きい版。タイトルと結果の画面用）
+- 出力: art/<名前>_down.webp（正面）、art/<名前>_side.webp（右向き）、art/<名前>_up.webp（後ろ）、
+        art/portrait_<名前>.webp（正面の大きい版。タイトルと結果の画面用）
+- 使い方: python tools/cut_sheet.py（全員）／ python tools/cut_sheet.py mina（1人だけ）
 """
 from collections import deque
 from pathlib import Path
@@ -12,11 +13,29 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "art-src" / "lily_sheet.webp"
-OUT = ROOT / "art"
+import sys
 
-# 3体の左右の範囲（設定画の列を調べて決めた。左右に少し余白を足す）
-FIGS = {"lily_down": (40, 530), "lily_side": (560, 975), "lily_up": (1005, 1470)}
+SRCDIR = ROOT / "art-src"
+OUT = ROOT / "art"
+VIEWS = ("down", "side", "up")  # 設定画の左から 正面・右向き・後ろ
+
+
+def find_figures(a: np.ndarray) -> list[tuple[int, int]]:
+    """背景と違う画素が多い列のまとまりを3つ探して、左右に余白を足す"""
+    h, w, _ = a.shape
+    bg = np.median(np.concatenate([a[5:40, 5:40].reshape(-1, 3), a[5:40, w - 40:w - 5].reshape(-1, 3)]), axis=0)
+    col = (np.abs(a - bg).sum(2) > 60).sum(0)
+    runs, start = [], None
+    for x in range(w):
+        if col[x] > 15 and start is None:
+            start = x
+        if col[x] <= 15 and start is not None:
+            runs.append((start, x)); start = None
+    if start is not None:
+        runs.append((start, w))
+    runs = sorted(sorted(runs, key=lambda r: r[1] - r[0], reverse=True)[:3])
+    assert len(runs) == 3, f"人物が3体見つからない: {runs}"
+    return [(max(0, x0 - 25), min(w, x1 + 25)) for x0, x1 in runs]
 
 
 def is_bg(px: np.ndarray) -> np.ndarray:
@@ -90,9 +109,16 @@ def cut(img: np.ndarray) -> np.ndarray:
 
 def main() -> None:
     OUT.mkdir(exist_ok=True)
-    sheet = Image.open(SRC).convert("RGB")
+    names = sys.argv[1:] or sorted(p.name[:-len("_sheet.webp")] for p in SRCDIR.glob("*_sheet.webp"))
+    for who in names:
+        cut_one(who)
+
+
+def cut_one(who: str) -> None:
+    sheet = Image.open(SRCDIR / f"{who}_sheet.webp").convert("RGB")
     a = np.asarray(sheet).astype(int)
-    for name, (x0, x1) in FIGS.items():
+    for view, (x0, x1) in zip(VIEWS, find_figures(a)):
+        name = f"{who}_{view}"
         crop = a[:, x0:x1]
         bg = cut(crop)
         alpha = Image.fromarray(((~bg) * 255).astype("uint8"))
@@ -105,9 +131,9 @@ def main() -> None:
         # 盤面用: 高さ 160px（キャンバスでは 2 倍の解像度で約 56px 表示）
         small = rgba.resize((round(rgba.width * 160 / rgba.height), 160), Image.LANCZOS)
         small.save(OUT / f"{name}.webp", quality=90, method=6)
-        if name == "lily_down":
+        if view == "down":
             big = rgba.resize((round(rgba.width * 560 / rgba.height), 560), Image.LANCZOS)
-            big.save(OUT / "portrait_lily.webp", quality=88, method=6)
+            big.save(OUT / f"portrait_{who}.webp", quality=88, method=6)
         print(name, rgba.size)
 
 
