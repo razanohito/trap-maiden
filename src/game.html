@@ -56,6 +56,7 @@ body{
 .panel{position:relative;width:min(560px,100%);max-height:100%;overflow-y:auto;color:var(--parch-ink);padding:18px 22px;
   background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.35),transparent 60%),linear-gradient(180deg,var(--parch),var(--parch-dk));
   border:2px solid var(--gold-dk);outline:1px solid var(--gold);outline-offset:-7px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.panel .kv{float:right;height:230px;margin:-4px -6px 6px 12px;filter:drop-shadow(0 6px 10px rgba(58,40,25,.35))}
 .panel h2{font-family:var(--f-display);font-weight:800;font-size:24px;margin:0 0 6px;letter-spacing:.06em;text-wrap:balance;color:#5a1e2c}
 .panel p{margin:6px 0;line-height:1.75}
 .panel ul{margin:8px 0;padding-left:1.2em;line-height:1.8}
@@ -120,6 +121,7 @@ body{
 .help b{color:var(--parch);font-weight:700}
 @media (max-width:640px){
   .stage.has-ov #cv{display:none}
+  .panel .kv{height:160px}
   .stage.has-ov .overlay{position:static;background:none;backdrop-filter:none;padding:10px}
   .slot .n{font-size:11px}
   .slot .k,.slot .ds{display:none}
@@ -161,6 +163,7 @@ body{
 
       <div class="overlay" id="ovTitle">
         <div class="panel">
+          <img class="kv" id="kvTitle" alt="" hidden>
           <h2>罠館のリリィ</h2>
           <p>夜になると、古い館に侵入者がやって来る。館に暮らす少女たちは剣を持てず、逃げ回ることしかできない。あなたは館の罠を操って、彼女たちを守ろう。</p>          <button class="btn" id="btnStart" type="button">扉に鍵をかける（開始）</button>
           <ul>
@@ -205,6 +208,7 @@ body{
 
       <div class="overlay" id="ovOver" hidden>
         <div class="panel">
+          <img class="kv" id="kvOver" alt="" hidden>
           <h2 id="rTitle">リリィは捕まってしまった…</h2>
           <div class="result">
             <div><span>たどり着いた夜</span><b id="rWave">1</b></div>
@@ -270,7 +274,7 @@ const TRAP_ORDER = ['bear','spring','rock','fire','ice','poison','blade','bell']
 const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
 // 逃げる子。数値は自動ボットで全員の到達夜・得点が近くなるように調整した
 const CHARS = {
-  lily:  { name:'リリィ', title:'館の娘', hp:3, speed:3.4, regen:7, maxMana:110, power:1, smart:0,
+  lily:  { name:'リリィ', title:'館の娘', art:'lily', hp:3, speed:3.4, regen:7, maxMana:110, power:1, smart:0,
            profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的',
            skill:{ name:'鍵束の合図', cd:20, desc:'置いてある罠と館の仕掛けを、すぐ使える状態に戻す' },
            look:{ hair:'#f4a9c6', hairD:'#d77aa0', dress:'#9b2f4a', ribbon:'#e0405e', eye:'#4b2a63' } },
@@ -288,6 +292,11 @@ const CHARS = {
            look:{ hair:'#efcf7a', hairD:'#c9a24a', dress:'#7a4f2e', ribbon:'#3f8f8a', eye:'#2d5f8a' } },
 };
 const CHAR_ORDER = ['lily','mina','noel','cecil'];
+// ChatGPT に描いてもらった絵。ビルドで data URI に埋め込む。絵の無い子は今までどおりキャンバスで描く
+const ART = { lily_down: '../art/lily_down.webp', lily_side: '../art/lily_side.webp', lily_up: '../art/lily_up.webp', portrait_lily: '../art/portrait_lily.webp' };
+const IMG = {};
+for (const [k, src] of Object.entries(ART)) { const im = new Image(); im.decoding = 'async'; im.src = src; IMG[k] = im; }
+const imgReady = k => !!(IMG[k] && IMG[k].complete && IMG[k].naturalWidth > 0);
 const FOES = {
   knight: { hp:40, speed:1.6, soul:10, score:100, push:3, stunMul:1 },
   thief:  { hp:24, speed:2.7, soul:8,  score:80,  push:3, stunMul:1 },
@@ -1190,6 +1199,17 @@ function drawHero() {
   if (h.inv > 0 && Math.floor(t * 18) % 2 === 0) ctx.globalAlpha = .35;
   ctx.save(); ctx.translate(px, py);
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(0, 17, 12, 4);
+  const spriteKey = CH().art ? `${CH().art}_${h.facing === 0 ? 'up' : h.facing === 2 ? 'down' : 'side'}` : null;
+  const useArt = spriteKey && imgReady(spriteKey);
+  if (useArt) { // 描いてもらった絵（揺れ・傾き・混乱のふらつきはここで付ける）
+    const sp = IMG[spriteKey], mv = h.moving;
+    const bob = mv ? -Math.abs(Math.sin(t * 14)) * 3 : Math.sin(t * 2.5) * .8;
+    const tilt = (mv ? Math.sin(t * 14) * .06 : 0) + (h.confused > 0 ? Math.sin(t * 18) * .15 : 0);
+    const sh = 64, sw = sh * sp.naturalWidth / sp.naturalHeight;
+    if (h.facing === 3) ctx.scale(-1, 1);
+    ctx.translate(0, 18 + bob); ctx.rotate(tilt);
+    ctx.drawImage(sp, -sw / 2, -sh, sw, sh);
+  } else {
   const f = h.facing, up = f === 0, side = f === 1 || f === 3;
   if (f === 3) ctx.scale(-1, 1);
   const mv = h.moving;
@@ -1248,9 +1268,10 @@ function drawHero() {
   ctx.beginPath(); ctx.moveTo(6, hy - 10); ctx.lineTo(0, hy - 15); ctx.lineTo(1, hy - 6); ctx.closePath(); ctx.fill();
   ctx.beginPath(); ctx.moveTo(6, hy - 10); ctx.lineTo(13, hy - 14); ctx.lineTo(11, hy - 5); ctx.closePath(); ctx.fill();
   ctx.fillStyle = '#ff7a92'; ell(6, hy - 10, 2.2, 2.2);
+  }
   ctx.restore(); ctx.globalAlpha = 1;
   if (h.bubbleT > 0 && h.bubble) { // 吹き出し
-    const by = py - 42 - 6 * (TS - 1);
+    const by = py - (useArt ? 62 : 42) - 6 * (TS - 1);
     ctx.font = `700 ${Math.round(14 * TS)}px "Zen Maru Gothic", sans-serif`;
     const w = Math.max(24, ctx.measureText(h.bubble).width + 14);
     ctx.fillStyle = '#eadbbd'; ctx.strokeStyle = '#7d5f22'; ctx.lineWidth = 1.5;
@@ -1656,6 +1677,7 @@ function gameOver(won) {
   G.score += hpBonus;
   const newBest = G.score > best;
   if (newBest) { best = G.score; try { localStorage.setItem('wanakan-best', String(best)); } catch (e) {} }
+  setKv($('#kvOver'), CH().art ? `portrait_${CH().art}` : null);
   $('#rTitle').textContent = won ? '館を守り抜いた！' : `${CH().name}は捕まってしまった…`;
   $('#rWave').textContent = won ? '全10夜' : `第${G.wave}夜`;
   const sec = Math.floor(G.time);
@@ -1685,6 +1707,13 @@ $('#btnPause').addEventListener('click', () => setPause(!paused));
 $('#btnSound').addEventListener('click', () => { soundOn = !soundOn; $('#btnSound').textContent = soundOn ? '音: 入' : '音: 切'; });
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play' && !paused) setPause(true); });
 $('#bestLine').textContent = bestText();
+function setKv(el, key) { // 立ち絵があれば出す
+  el.hidden = true;
+  if (!key || !ART[key]) return;
+  el.onload = () => { el.hidden = false; }; el.onerror = () => { el.hidden = true; };
+  el.src = ART[key]; if (el.complete && el.naturalWidth) el.hidden = false;
+}
+setKv($('#kvTitle'), 'portrait_lily');
 showOv('ovTitle');
 
 // ---------- ループ ----------

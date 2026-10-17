@@ -1,3 +1,4 @@
 tools/sim/out/
 node_modules/
 __pycache__/
+art/*_full.png
