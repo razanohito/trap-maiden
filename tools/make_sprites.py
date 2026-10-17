@@ -1,9 +1,9 @@
 """逃げる子4人の歩行スプライト（ドット絵）を作る。
 
 - 1コマ 48x48px、透過 PNG。アンチエイリアスなし（1ピクセル単位で部品を置く）
-- art/sprites/<名前>_walk.png … 4列×4行。行は 下・左・右・上、列は歩く順
+- art/sprites_gen/<名前>_walk.png … 4列×4行。行は 下・左・右・上、列は歩く順
   （接地A → 通過 → 接地B → 通過）
-- art/sprites/<名前>_idle.png … 4列×1行。待機姿勢（下・左・右・上）
+- art/sprites_gen/<名前>_idle.png … 4列×1行。待機姿勢（下・左・右・上）
 - 背の高さはタイル（48px）の約6割、幅は約3〜4割。足もとは y=44 にそろえる
 - 体の上下は通過コマで 1px だけ。ツインテール（髪）と持ち物は 1 コマ遅れて揺れる
 - 色は ChatGPT に描いてもらった設定画から取った
@@ -15,7 +15,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "art" / "sprites"
+OUT = ROOT / "art" / "sprites_gen"  # 手で組み立てた版（ChatGPT の素材を入れたので予備として残す）
 PREVIEW = ROOT / "tools" / "sim" / "out"
 F = 48
 OUTLINE = (46, 28, 30, 255)

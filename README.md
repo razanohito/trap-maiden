@@ -24,7 +24,8 @@
 | `tools/build.py` | `src/game.html` から `index.html`（GitHub Pages 用）と `dist-artifact/trap-maiden.html`（claude.ai Artifact 用）を作る |
 | `docs/art-brief.html` | ChatGPT に頼むグラフィックと演出の提案 |
 | `art-src/` | ChatGPT に描いてもらった原画（4人の設定画 `<名前>_sheet.webp`、参考の絵は `reference/`） |
-| `tools/make_sprites.py` | 盤面で歩く4人のドット絵（48x48、4方向×4コマ＋待機）を `art/sprites/` に作る。確認用の拡大 GIF は `tools/sim/out/` |
+| `tools/import_sprites.py` | ChatGPT に作ってもらった 48px のスプライトシート（`art-src/sprites48/`）のずれを直して `art/sprites/` に入れる（4人と侵入者3種の歩行、4人の被弾。ピンチの絵は服が破れる表現なので使わない） |
+| `tools/make_sprites.py` | 手で組み立てたドット絵の予備（`art/sprites_gen/`） |
 | `tools/cut_sheet.py` | 設定画から3方向を切り出して背景を抜き、`art/*.webp`（盤面用と立ち絵）を作る。ビルドで HTML に埋め込む |
 | `tools/sim/` | ヘッドレスブラウザでの動作確認（罠を活かす AI の比較、地形と仕掛けの確認） |
 

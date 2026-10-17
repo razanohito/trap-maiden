@@ -390,6 +390,10 @@ const ART = {
   noel_down: '../art/noel_down.webp', noel_side: '../art/noel_side.webp', noel_up: '../art/noel_up.webp', portrait_noel: '../art/portrait_noel.webp',
   lily_walk: '../art/sprites/lily_walk.png', lily_idle: '../art/sprites/lily_idle.png', mina_walk: '../art/sprites/mina_walk.png', mina_idle: '../art/sprites/mina_idle.png',
   noel_walk: '../art/sprites/noel_walk.png', noel_idle: '../art/sprites/noel_idle.png', cecil_walk: '../art/sprites/cecil_walk.png', cecil_idle: '../art/sprites/cecil_idle.png',
+  lily_hit: '../art/sprites/lily_hit.png', mina_hit: '../art/sprites/mina_hit.png', noel_hit: '../art/sprites/noel_hit.png', cecil_hit: '../art/sprites/cecil_hit.png',
+  foe_knight_walk: '../art/sprites/foe_knight_walk.png', foe_knight_idle: '../art/sprites/foe_knight_idle.png',
+  foe_thief_walk: '../art/sprites/foe_thief_walk.png', foe_thief_idle: '../art/sprites/foe_thief_idle.png',
+  foe_heavy_walk: '../art/sprites/foe_heavy_walk.png', foe_heavy_idle: '../art/sprites/foe_heavy_idle.png',
   cecil_down: '../art/cecil_down.webp', cecil_side: '../art/cecil_side.webp', cecil_up: '../art/cecil_up.webp', portrait_cecil: '../art/portrait_cecil.webp',
 };
 const IMG = {};
@@ -1144,7 +1148,8 @@ function updateFoe(f, dt) {
   }
   if (f.stun > 0) { f.stun -= dt; return; }
   if (f.moving) {
-    f.prog += dt * f.speed * (f.slow > 0 ? .5 : 1);
+    const fstep = dt * f.speed * (f.slow > 0 ? .5 : 1);
+    f.prog += fstep; f.walk = (f.walk || 0) + fstep;
     if (f.prog < 1) { f.x = lerp(f.tx, f.nx, f.prog); f.y = lerp(f.ty, f.ny, f.prog); return; }
     f.tx = f.nx; f.ty = f.ny; f.x = f.tx; f.y = f.ty; f.moving = false; f.prog = 0;
     terrainAt(f.tx, f.ty, f);
@@ -1419,13 +1424,14 @@ function drawHero() {
   if (h.inv > 0 && Math.floor(t * 18) % 2 === 0) ctx.globalAlpha = .35;
   const pk = CH().art;
   if (pk && imgReady(`${pk}_walk`) && imgReady(`${pk}_idle`)) { // ドット絵の歩行（4方向×4コマ、止まると待機姿勢）
-    const footY = Math.round(h.y * T + T / 2 + 12), left = Math.round(px - 24), row = PIX_ROW[h.facing];
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 8, 2.5);
+    const footY = Math.round(h.y * T + T / 2 + 18), left = Math.round(px - 24), top = footY - 46, row = PIX_ROW[h.facing];
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 9, 3);
     const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
-    if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * 48, row * 48, 48, 48, left, footY - 44, 48, 48);
-    else ctx.drawImage(IMG[`${pk}_idle`], row * 48, 0, 48, 48, left, footY - 44, 48, 48);
+    if (h.hurt > 0 && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[`${pk}_hit`], row * 48, 0, 48, 48, left, top, 48, 48); // 被弾してのけぞる
+    else if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * 48, row * 48, 48, 48, left, top, 48, 48);
+    else ctx.drawImage(IMG[`${pk}_idle`], row * 48, 0, 48, 48, left, top, 48, 48);
     ctx.imageSmoothingEnabled = sm; ctx.globalAlpha = 1;
-    drawHeroBubble(px, footY - 46 - 6 * (TS - 1));
+    drawHeroBubble(px, top - 6 - 6 * (TS - 1));
     return;
   }
   ctx.save(); ctx.translate(px, py);
@@ -1518,6 +1524,33 @@ function drawHeroBubble(px, by) {
 function drawFoe(f) {
   const t = G.time, px = f.x * T + T / 2, gy = f.y * T + T / 2 + 2, py = gy - f.z;
   const sc = f.type === 'heavy' ? 1.18 : 1;
+  const key = `foe_${f.type}`;
+  if (imgReady(`${key}_walk`) && imgReady(`${key}_idle`)) { // ドット絵の歩行（4方向×4コマ）
+    const footY = Math.round(f.y * T + T / 2 + 18), size = Math.round(48 * sc), row = PIX_ROW[f.lastDir ?? 2];
+    const left = Math.round(px - size / 2), top = Math.round(footY - 46 * sc - f.z);
+    ctx.save();
+    if (f.dead) ctx.globalAlpha = Math.max(0, 1 - f.deadT / .5);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 11 * sc, 3.5 * sc);
+    const walking = f.moving && f.stun <= 0 && !f.fly;
+    const img = walking ? IMG[`${key}_walk`] : IMG[`${key}_idle`];
+    const sx = walking ? (Math.floor((f.walk || 0) / WALK_STEP) % 4) * 48 : row * 48, sy = walking ? row * 48 : 0;
+    ctx.imageSmoothingEnabled = false;
+    if (f.dead) { ctx.translate(px, footY); ctx.scale(1 + f.deadT, 1 - f.deadT * 1.2); ctx.translate(-px, -footY); }
+    ctx.drawImage(img, sx, sy, 48, 48, left, top, size, size);
+    if (f.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .6; ctx.drawImage(img, sx, sy, 48, 48, left, top, size, size); }
+    ctx.restore();
+    if (!f.dead && f.hp < f.maxhp) {
+      const w = 26, x = px - w / 2, y = top + 4;
+      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, y - 1, w + 2, 5);
+      ctx.fillStyle = '#d0503f'; ctx.fillRect(x, y, w * Math.max(0, f.hp / f.maxhp), 3);
+    }
+    if (!f.dead && f.slow > 0) { ctx.fillStyle = 'rgba(168,220,239,.8)'; ell(px - 12, top + 14, 2.5, 2.5); ell(px + 12, top + 18, 2, 2); }
+    if (!f.dead && f.stun > 0 && !f.fly) {
+      ctx.fillStyle = '#ffe58a';
+      for (let i = 0; i < 3; i++) { const a = t * 5 + i * 2.09; ell(px + Math.cos(a) * 10, top + 6 + Math.sin(a) * 3, 2, 2); }
+    }
+    return;
+  }
   ctx.save();
   if (f.dead) { const p = f.deadT / .5; ctx.globalAlpha = 1 - p; }
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, gy + 16, 12 * sc, 4 * sc);
