@@ -165,25 +165,32 @@ body{
   body.playing .palette{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--ink);border-top:1px solid var(--gold-dk);
     padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
   body.playing #btnGo{position:fixed;z-index:6;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  body.playing #ovHelp,body.playing #ovPause{position:fixed;inset:0;z-index:20;background:rgba(14,10,16,.94);overflow-y:auto;align-items:flex-start;padding:12px max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+  body.playing #ovHelp .panel,body.playing #ovPause .panel{max-height:none}
 }
 /* スマホ横: 盤面を左に大きく、状態と罠ボタンを右の列に */
 @media (max-height:520px) and (orientation:landscape){
   body.playing{position:fixed;inset:0;padding-block:4px 0}
-  body.playing .wrap{max-width:none;height:100%;display:grid;grid-template-columns:auto minmax(190px,1fr);grid-template-rows:auto auto 1fr;gap:6px;align-items:start}
-  body.playing .head{display:none}
-  body.playing .frame{grid-column:1;grid-row:1 / 4;width:min(calc(100vw - 230px),calc((100dvh - 34px) * 1.5 + 22px));padding:6px}
-  body.playing .hud{grid-column:2;grid-row:1;padding:4px 8px;gap:2px 8px}
+  body.playing .wrap{max-width:none;height:100%;display:grid;grid-template-columns:auto minmax(190px,1fr);grid-template-rows:auto auto auto 1fr;gap:6px;align-items:start}
+  body.playing .head{grid-column:2;grid-row:1}
+  body.playing .head h1{display:none}
+  body.playing .tools{flex-wrap:wrap;gap:4px}
+  body.playing .tool{padding:3px 6px;font-size:11px}
+  body.playing .frame{grid-column:1;grid-row:1 / 5;width:min(calc(100vw - 230px),calc((100dvh - 34px) * 1.5 + 22px));padding:6px}
+  body.playing .hud{grid-column:2;grid-row:2;padding:4px 8px;gap:2px 8px}
   body.playing .hearts{font-size:14px}
   body.playing .mana{flex-basis:100%}
   body.playing .stats{font-size:10px;gap:0 8px}
   body.playing .stats b{font-size:12px}
-  body.playing #btnGo{grid-column:2;grid-row:2;font-size:13px;padding:6px 8px;white-space:normal}
-  body.playing .palette{grid-column:2;grid-row:3;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+  body.playing #btnGo{grid-column:2;grid-row:3;font-size:13px;padding:6px 8px;white-space:normal}
+  body.playing .palette{grid-column:2;grid-row:4;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
   body.playing .slot{padding:3px 2px 4px}
   body.playing .slot canvas{width:26px;height:26px}
   body.playing .slot .n{font-size:11px}
   body.playing .slot .k,body.playing .slot .ds{display:none}
   body.playing .help{display:none}
+  body.playing #ovHelp,body.playing #ovPause{position:fixed;inset:0;z-index:20;background:rgba(14,10,16,.94);overflow-y:auto;align-items:flex-start;padding:10px}
+  body.playing #ovHelp .panel,body.playing #ovPause .panel{max-height:none}
 }
 </style>
 
@@ -346,7 +353,7 @@ const TORCHES = [[3,0],[11,0],[3,9],[11,9]];
 
 const TRAPS = {
   bear:   { name:'トラバサミ', cost:20, cd:4, desc:'挟んで2秒ほど足止め' },
-  spring: { name:'跳ね床',     cost:20, cd:2.5, desc:'矢印の向きへ3マス飛ばす', dir:true },
+  spring: { name:'跳ね床',     cost:20, cd:3, desc:'矢印の向きへ3マス飛ばす（重装兵は2マス）', dir:true },
   rock:   { name:'落石',       cost:35, cd:5, desc:'少し遅れて真上から大ダメージ' },
   fire:   { name:'火柱',       cost:40, cd:6, desc:'十字の5マスを焼く' },
   ice:    { name:'氷床',       cost:20, cd:4, desc:'踏んだ侵入者が、進んでいた向きへ壁まで滑る' },
@@ -637,6 +644,7 @@ function shuffled() { const a = [0, 1, 2, 3]; for (let i = 3; i > 0; i--) { cons
 const DIGIT = { Digit1:0, Digit2:1, Digit3:2, Digit4:3, Numpad1:0, Numpad2:1, Numpad3:2, Numpad4:3 };
 addEventListener('keydown', e => {
   const k = e.code;
+  if (!$('#ovHelp').hidden) { if (k === 'Escape' || k === 'KeyP') { e.preventDefault(); closeHelp(); } return; }
   if (G.state !== 'play') return;
   if (k === 'KeyP') { setPause(!paused); e.preventDefault(); return; }
   if (paused) return;
@@ -852,7 +860,7 @@ function triggerAt(x, y, f, chained) {
     if (f.dead) return;
     const d = f.lastDir ?? 1, [dx, dy] = DIRS[d];
     let cx = x, cy = y, steps = 0, slam = false, fall = false;
-    while (steps < 7) {
+    while (steps < COLS) {
       if (tileAt(cx + dx, cy + dy) === 'O') { cx += dx; cy += dy; steps++; fall = true; break; }
       if (!isFloor(cx + dx, cy + dy)) { slam = steps > 0; break; }
       cx += dx; cy += dy; steps++;
@@ -1191,7 +1199,7 @@ function update(dt) {
   if (G.wave === 1 && G.phase === 0) { // 第1夜の準備中だけの案内
     if (!G.tip1 && G.time > 2.6) { G.tip1 = true; say('罠ボタンを選んで、扉から来る道に置こう', 4); }
     if (!G.tip2 && G.time > 7.5) { G.tip2 = true; say('光っているシャンデリアと石像は、押すと動く（魔力いらず）', 4.5); }
-    if (!G.tip3 && G.time > 13) { G.tip3 = true; say('くわしくは右上の「遊び方」', 3.5); }
+    if (!G.tip3 && G.time > 13) { G.tip3 = true; say('くわしくは上の「遊び方」ボタン', 3.5); }
   }
   if (G.phase > 0) {
     G.nightT = Math.max(0, G.nightT - dt);
@@ -1800,13 +1808,13 @@ const HELP = [
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 2, 1, 1); miniTrap(g, 'blade', 4, 1, 2); miniLabel(g, 2, 0, '向き →'); miniLabel(g, 4, 0, '向き ↓'); miniLabel(g, 6, 1, '押して置く', '#fff4e0'); } },
   { t: '連続で得点アップ', d: '罠を3秒以内に続けて当てると「連続」。続くほど得点と魂が増え、3連続からは魔力も少し戻る。足止め（トラバサミ）してから落石や火柱を当てるのが基本。',
     draw() { const g = miniGrid(7, 3); miniFoe(g, 1, 1); miniTrap(g, 'bear', 3, 1); miniTrap(g, 'rock', 5, 1); miniArrow(g, [1, 1], [3, 1]); miniArrow(g, [3, 1], [5, 1]); miniLabel(g, 3, 0, '1'); miniLabel(g, 5, 0, '2連続！'); } },
-  { t: '跳ね床と奈落', d: '跳ね床は踏んだ侵入者を矢印の向きへ3マス飛ばす。飛んだ先に罠があれば「連鎖」ボーナス。奈落に落とせば一撃で倒せる。壁にぶつけても追加ダメージ。',
-    draw() { const g = miniGrid(7, 3); miniFoe(g, 1, 1); miniTrap(g, 'spring', 1, 2, 1); miniTile(g, 4, 2, 'pit'); miniArrow(g, [1, 2], [4, 2]); miniLabel(g, 4, 1, '奈落へ！'); miniTrap(g, 'spring', 5, 0, 1); miniLabel(g, 2, 0, '矢印の向きへ飛ぶ', '#fff4e0'); } },
+  { t: '跳ね床と奈落', d: '跳ね床は踏んだ侵入者を矢印の向きへ3マス（重装兵は2マス）飛ばす。飛んだ先に罠があれば「連鎖」ボーナス。奈落に落とせば一撃で倒せる。壁にぶつけても追加ダメージ。',
+    draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniTile(g, 4, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniLabel(g, 4, 0, '奈落へ！'); miniLabel(g, 2.5, 2, '矢印の向きへ飛ぶ', '#fff4e0'); } },
   { t: '動かす罠（氷床・送り返し）', d: '氷床を踏んだ侵入者は、進んでいた向きのまま壁まで滑る。滑った先の罠や奈落にもつながる。送り返しの陣は、踏んだ侵入者を入ってきた扉まで戻して時間をかせぐ。',
     draw() { const g = miniGrid(9, 3); miniFoe(g, 1, 0); miniTrap(g, 'ice', 2, 0); miniArrow(g, [2, 0], [7, 0], '#bfe6f2'); miniTile(g, 8, 0, 'wall'); miniLabel(g, 5, 0, 'すべる', '#e4f6fc');
       miniTile(g, 0, 2, 'door'); miniTrap(g, 'warp', 5, 2); miniFoe(g, 6, 2); miniArrow(g, [5, 2], [0, 2], '#c9b8ff', true); miniLabel(g, 3, 1, '扉へ戻す', '#c9b8ff'); } },
-  { t: '誘いの鈴', d: '侵入者が鈴を踏むと鳴り、少しのあいだ侵入者はみんな鈴へ向かう（逃げる子を追わない）。鈴のそばに火柱や落石を置いておくと、集まったところをまとめて狙える。',
-    draw() { const g = miniGrid(9, 3); miniTrap(g, 'bell', 4, 1); miniTrap(g, 'fire', 4, 0); miniTile(g, 3, 1, 'fire'); miniTile(g, 5, 1, 'fire'); miniFoe(g, 1, 1); miniFoe(g, 7, 2); miniFoe(g, 6, 0); miniArrow(g, [1, 1], [3, 1]); miniArrow(g, [7, 2], [5, 1]); miniGirl(g, 8, 0); miniLabel(g, 2, 2, '鈴へ集まる'); } },
+  { t: '誘いの鈴', d: '侵入者が鈴を踏むと鳴り、少しのあいだ侵入者はみんな鈴へ向かう（逃げる子を追わない）。鈴へ向かう道に罠を置いておくと、集まってくる侵入者を次々に引っかけられる（火柱や落石も、踏まれて発動する）。',
+    draw() { const g = miniGrid(9, 3); for (const [x, y] of [[5, 1], [7, 1], [6, 0], [6, 2]]) miniTile(g, x, y, 'fire'); miniTrap(g, 'bell', 4, 1); miniTrap(g, 'bear', 2, 1); miniTrap(g, 'fire', 6, 1); miniFoe(g, 0, 1); miniFoe(g, 8, 1); miniArrow(g, [0, 1], [2, 1]); miniArrow(g, [8, 1], [6, 1]); miniGirl(g, 8, 0); miniLabel(g, 4, 2, '鈴へ向かう道に罠'); } },
   { t: '館の仕掛け', d: 'シャンデリア（周り3x3）と槍の石像（上下左右）は、押すと発動する。魔力はいらないが、使うとしばらく待つ。トゲ床は踏んだ侵入者を傷つける。侵入者が近づいたら押そう。',
     draw() { const g = miniGrid(9, 3);
       for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) miniTile(g, x, y, 'glow');
@@ -1814,7 +1822,7 @@ const HELP = [
       for (const [x, y] of [[5, 0], [4, 1], [6, 1], [5, 2]]) miniTile(g, x, y, 'glow');
       const [sx, sy] = g.at(5, 1); hc.fillStyle = '#857e8c'; hc.fillRect(sx - 14, sy - 10, 28, 34); hc.fillStyle = '#9b94a2'; hc.beginPath(); hc.arc(sx, sy - 20, 13, 0, 7); hc.fill(); hc.fillStyle = '#ff463c'; hc.fillRect(sx - 7, sy - 22, 4, 3); hc.fillRect(sx + 3, sy - 22, 4, 3);
       miniTile(g, 8, 1, 'spike'); miniLabel(g, 1, 2, '押すと落ちる'); miniLabel(g, 5, 2, '押すと槍'); miniLabel(g, 8, 2, 'トゲ床', '#fff4e0'); } },
-  { t: '夜の流れとクリア', d: '夜は「準備」（時間が止まる。罠を置いたら「侵入者を迎える」）のあと、フェイズ1〜3と進む。フェイズが進むたびに置ける罠が1つ増え、魔力も補充される。夜明けまで守るか、全滅させればクリア。夜明けには集めた魂で強くなれる。第6夜からは別の部屋（東の書庫）に移り、罠は置き直しになる。',
+  { t: '夜の流れとクリア', d: '夜は「準備」（25秒。罠を置いたら「侵入者を迎える」で早く始められる）のあと、フェイズ1〜3と進む。フェイズが進むたびに置ける罠が1つ増え、魔力も補充される。夜明けまで守るか、全滅させればクリア。夜明けには集めた魂で強くなれる。第6夜からは別の部屋（東の書庫）に移り、罠は置き直しになる。',
     draw() { miniGrid(1, 1); hc.fillStyle = '#1c1720'; hc.fillRect(0, 0, 880, 440);
       const steps = ['準備', 'フェイズ1', 'フェイズ2', 'フェイズ3', '夜明け']; hc.font = '800 30px "Shippori Mincho B1", serif'; hc.textAlign = 'center'; hc.textBaseline = 'middle';
       steps.forEach((st, i) => { const x = 100 + i * 170; hc.fillStyle = i === 4 ? '#c9a24a' : '#3e3546'; hc.fillRect(x - 70, 180, 140, 70); hc.fillStyle = i === 4 ? '#2a1a0c' : '#f1d98e'; hc.fillText(st, x, 215); if (i < 4) { hc.fillStyle = '#f1d98e'; hc.fillText('→', x + 85, 215); } if (i >= 2 && i <= 3) { hc.fillStyle = '#ffc0d3'; hc.font = '700 22px "Zen Maru Gothic", sans-serif'; hc.fillText('罠 +1', x, 290); hc.font = '800 30px "Shippori Mincho B1", serif'; } }); } },
@@ -1832,6 +1840,7 @@ function renderHelp() {
   $('#helpNext').textContent = helpPage === HELP.length - 1 ? 'はじめに戻る' : '次へ';
 }
 function openHelp() {
+  if (!$('#ovHelp').hidden) return;
   audio();
   if (G.state === 'play' && !paused) { paused = true; $('#btnPause').textContent = '再開'; $('#btnGo').hidden = true; helpBack = 'resume'; }
   else helpBack = OVS.find(o => !$('#' + o).hidden) || null;
@@ -1851,6 +1860,7 @@ function bestText() { return best > 0 ? `これまでの最高得点 ${best.toLo
 let sel = { char: 'lily', traps: DEFAULT_LOADOUT.slice() };
 try {
   const sv = JSON.parse(localStorage.getItem('wanakan-loadout') || 'null');
+  if (sv && Array.isArray(sv.traps)) sv.traps = sv.traps.map(t => t === 'poison' ? 'warp' : t); // 毒の壺は送り返しの陣に変わった
   if (sv && CHARS[sv.char] && Array.isArray(sv.traps) && sv.traps.length === 4 && sv.traps.every(t => TRAPS[t])) sel = sv;
 } catch (e) {}
 function statLine(ch) { return `体力 ${'♥'.repeat(ch.hp)}　足 ${Math.round(ch.speed / 3.4 * 100)}%　魔力 ${ch.maxMana}（毎秒 ${Math.round(ch.regen)} 回復）${ch.power > 1 ? `　罠の威力 +${Math.round((ch.power - 1) * 100)}%` : ''}${ch.smart ? `　かしこさ +${ch.smart}` : ''}`; }
