@@ -47,6 +47,7 @@ node tools/sim/sim_lure.js
 node tools/sim/sim_fullrun.js     # 全10夜を通しで遊んだときの時間と終わり方
 node tools/sim/sim_balance.js 30  # 逃げる子4人×罠の組み合わせを自動ボットで比べる（1組30回）
 node tools/sim/shot_select.js     # 支度の画面とプレイ画面のスクリーンショット（tools/sim/out/）
+node tools/sim/shot_mobile.js     # スマホの縦・横でプレイ画面が1画面に収まるか
 ```
 
 127.0.0.1 で開いたときだけ、デバッグ用に `window.__wanakan.G` でゲーム状態を読めます。

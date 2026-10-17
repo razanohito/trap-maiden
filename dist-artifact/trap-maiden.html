@@ -15,6 +15,8 @@
   color-scheme:dark;
 }
 html,body{height:100%}
+html{touch-action:manipulation}
+body.playing{overflow:hidden;overscroll-behavior:none}
 [hidden]{display:none!important}
 body{
   background-color:var(--ink);
@@ -116,7 +118,10 @@ body{
 .pick .t{font-size:11px;color:var(--muted)}
 .pick .d{font-size:12px;line-height:1.5}
 .pick .sk{font-size:12px;color:var(--rose);line-height:1.5}
+.pick .fl{font-size:12px;color:#c9b8ff;line-height:1.5}
 .pick .st{font-size:11px;color:var(--parch);font-variant-numeric:tabular-nums}
+.rotate{display:none;align-items:center;justify-content:center;gap:10px;margin:8px 6px 0;padding:12px;border:1px dashed var(--gold-dk);color:var(--muted);font-size:13px;line-height:1.6;text-align:center}
+.rotate b{color:var(--gold-hi)}
 .help{margin:2px 0 0;color:var(--muted);font-size:12px;line-height:1.7}
 .help b{color:var(--parch);font-weight:700}
 @media (max-width:640px){
@@ -127,17 +132,57 @@ body{
   .slot .k,.slot .ds{display:none}
   .chargrid,.trapgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pick{padding:7px 8px}
-  .pick .d,.pick .sk,.pick .st{font-size:11px}
+  .pick .d,.pick .sk,.pick .st,.pick .fl{font-size:11px}
   .slot canvas{width:30px;height:30px}
   .help .pc{display:none}
 }
 @media (min-width:641px){.help .sp{display:none}}
+/* スマホ縦: 遊んでいる間は画面を固定し、罠とスキルのボタンを下に固定する */
+@media (max-width:640px){
+  body.playing{position:fixed;inset:0;padding-block:6px 0;padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px))}
+  body.playing .wrap{gap:6px}
+  body.playing .head,body.playing .hud{margin-inline:6px}
+  body.playing .frame{padding:4px}
+  body.playing .frame::before,body.playing .frame::after{display:none}
+  body.playing .rotate{display:flex}
+  body.playing .head h1{font-size:19px}
+  body.playing .head h1 small{display:none}
+  body.playing .tool{padding:4px 8px}
+  body.playing .hud{padding:4px 8px;gap:2px 10px}
+  body.playing .hearts{font-size:15px}
+  body.playing .stats{font-size:11px;gap:2px 8px}
+  body.playing .stats b{font-size:13px}
+  body.playing .help{display:none}
+  body.playing .palette{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--ink);border-top:1px solid var(--gold-dk);
+    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  body.playing #btnGo{position:fixed;z-index:6;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+}
+/* スマホ横: 盤面を左に大きく、状態と罠ボタンを右の列に */
+@media (max-height:520px) and (orientation:landscape){
+  body.playing{position:fixed;inset:0;padding-block:4px 0}
+  body.playing .wrap{max-width:none;height:100%;display:grid;grid-template-columns:auto minmax(190px,1fr);grid-template-rows:auto auto 1fr;gap:6px;align-items:start}
+  body.playing .head{display:none}
+  body.playing .frame{grid-column:1;grid-row:1 / 4;width:min(calc(100vw - 230px),calc((100dvh - 34px) * 1.5 + 22px));padding:6px}
+  body.playing .hud{grid-column:2;grid-row:1;padding:4px 8px;gap:2px 8px}
+  body.playing .hearts{font-size:14px}
+  body.playing .mana{flex-basis:100%}
+  body.playing .stats{font-size:10px;gap:0 8px}
+  body.playing .stats b{font-size:12px}
+  body.playing #btnGo{grid-column:2;grid-row:2;font-size:13px;padding:6px 8px;white-space:normal}
+  body.playing .palette{grid-column:2;grid-row:3;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+  body.playing .slot{padding:3px 2px 4px}
+  body.playing .slot canvas{width:26px;height:26px}
+  body.playing .slot .n{font-size:11px}
+  body.playing .slot .k,body.playing .slot .ds{display:none}
+  body.playing .help{display:none}
+}
 </style>
 
 <main class="wrap">
   <header class="head">
     <h1><small>TRAP MAIDEN</small>罠館のリリィ</h1>
     <div class="tools">
+      <button class="tool" id="btnFull" type="button" hidden>全画面</button>
       <button class="tool" id="btnSound" type="button">音: 入</button>
       <button class="tool" id="btnPause" type="button">一時停止</button>
     </div>
@@ -228,6 +273,7 @@ body{
     </div>
   </div>
 
+  <p class="rotate" aria-hidden="true"><span><b>スマホを横にすると</b>盤面が大きくなって置きやすい</span></p>
   <button class="btn go" id="btnGo" type="button" hidden>侵入者を迎える</button>
   <nav class="palette" id="palette" aria-label="罠の選択"></nav>
   <p class="help">
@@ -275,19 +321,19 @@ const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
 // 逃げる子。数値は自動ボットで全員の到達夜・得点が近くなるように調整した
 const CHARS = {
   lily:  { name:'リリィ', title:'館の娘', art:'lily', hp:3, speed:3.4, regen:7, maxMana:110, power:1, smart:0,
-           profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的',
-           skill:{ name:'鍵束の合図', cd:20, desc:'置いてある罠と館の仕掛けを、すぐ使える状態に戻す' },
+           profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的', flaw:'怖がり。侵入者が近いと混乱しやすい',
+           skill:{ name:'鍵束の合図', cd:18, desc:'置いてある罠と館の仕掛けを、すぐ使える状態に戻す' },
            look:{ hair:'#f4a9c6', hairD:'#d77aa0', dress:'#9b2f4a', ribbon:'#e0405e', eye:'#4b2a63' } },
   mina:  { name:'ミーナ', title:'見習い魔女', hp:3, speed:3.3, regen:9, maxMana:140, power:1, smart:0,
-           profile:'魔力が多く、溜まるのも速い。走るのは苦手',
+           profile:'魔力が多く、溜まるのも速い。走るのは苦手', flaw:'寝坊すけ。暇だとうたた寝して、侵入者が近づくまで起きない',
            skill:{ name:'魔力のしずく', cd:26, desc:'魔力が40回復し、8秒間は罠の魔力が半分、再装填が2倍速くなる' },
            look:{ hair:'#8a74c4', hairD:'#5a4890', dress:'#43305f', ribbon:'#d9b44a', eye:'#2e6b5e' } },
   noel:  { name:'ノエル', title:'館のメイド', hp:4, speed:3.0, regen:5.2, maxMana:100, power:1, smart:0,
-           profile:'丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい',
+           profile:'丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい', flaw:'ドジ。走っているとたまにつまずく',
            skill:{ name:'ほうき払い', cd:30, desc:'周り2マスの侵入者を転ばせて少し止める' },
            look:{ hair:'#9a6a45', hairD:'#6e4a2e', dress:'#2f5a45', ribbon:'#f4efe6', eye:'#3a5a3a' } },
-  cecil: { name:'セシル', title:'錬金術師の見習い', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1.1, smart:0,
-           profile:'器用で、罠の威力が少し高い',
+  cecil: { name:'セシル', title:'錬金術師の見習い', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1.05, smart:0,
+           profile:'器用で、罠の威力が少し高い', flaw:'好奇心が強すぎる。暇だと扉や仕掛けを覗きに行ってしまう',
            skill:{ name:'爆薬びん', cd:26, desc:'押したマスに爆薬を投げ、周り3x3を吹き飛ばす' },
            look:{ hair:'#efcf7a', hairD:'#c9a24a', dress:'#7a4f2e', ribbon:'#3f8f8a', eye:'#2d5f8a' } },
 };
@@ -368,7 +414,7 @@ function makeRun(state, char = 'lily', loadout = DEFAULT_LOADOUT) {
   return {
     state, char, loadout: loadout.slice(), wave: 0, score: 0, soul: 0, up, mana: CHARS[char].maxMana, hp: CHARS[char].hp, time: 0,
     skillCd: 0, aiming: false, costHalfT: 0, lure: null,
-    hero: { tx:7, ty:6, nx:7, ny:6, x:7, y:6, prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0 },
+    hero: { tx:7, ty:6, nx:7, ny:6, x:7, y:6, prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0, doze:0, trip:0, peek:null },
     foes: [], traps: new Map(), devices: makeDevices(), fx: [], texts: [], parts: [],
     combo: 0, lastHit: -99, bestCombo: 0, kills: 0, shake: 0,
     spawnQueue: [], spawnT: 0, clearT: -1, banner: 0, bannerTitle: '', bannerSub: '', hpScale: 1,
@@ -853,10 +899,26 @@ function chooseHeroMove() {
   const cands = [[-1, h.tx, h.ty], ...DIRS.map(([dx, dy], d) => [d, h.tx + dx, h.ty + dy]).filter(([, x, y]) => isFloor(x, y))];
   const moves = cands.slice(1), here = fdist(h.tx, h.ty);
   if (h.confused > 0) return moves.length ? pick(moves)[0] : -1; // 混乱中はでたらめに走る
+  if (h.doze > 0) { // ミーナのうたた寝: 侵入者が4マス以内に来るまで起きない
+    if (here > 4) return -1;
+    h.doze = 0; heroBubble('はっ！', .8);
+  }
   if (here > 6) { // 侵入者が遠いときはのんびり
     h.spotted = false;
     h.goalT -= .2;
     if (h.idle > 0) return -1;
+    if (G.char === 'mina' && Math.random() < .04) { h.doze = 12; heroBubble('すや…', 2); return -1; }
+    if (G.char === 'cecil' && !h.peek && Math.random() < .12) { // セシルの寄り道: 罠や仕掛けを覗きに行く
+      const doorSide = DOORS.slice(0, Math.min(DOORS.length, G.wave)).map(([x, y]) => [x === 0 ? 1 : x === COLS - 1 ? COLS - 2 : x, y === 0 ? 1 : y]);
+      const spots = [...doorSide, ...doorSide, ...G.devices.map(o => [o.x, o.y])]; // 扉の向こうが気になる
+      if (spots.length) { h.peek = pick(spots); heroBubble('なにこれ？', 1.2); }
+    }
+    if (h.peek) {
+      const pf = bfs(h.peek[0], h.peek[1], (x, y) => isFloor(x, y) || (x === h.peek[0] && y === h.peek[1])), cur = pf[h.tx + h.ty * COLS];
+      const st = cur > 1 && cands.find(([d, x, y]) => d >= 0 && pf[x + y * COLS] === cur - 1);
+      if (st) return st[0];
+      h.peek = null; h.idle = rnd(1, 2); heroBubble('ふむふむ', 1.2); return -1;
+    }
     if (Math.random() < .35) { h.idle = rnd(.5, 1.5); if (Math.random() < .3) heroBubble('♪', 1); return -1; }
     if (L >= 1 && G.traps.size) { // 賢いと罠の奥で待つ
       if (!h.goal || h.goalT <= 0) { h.goal = idleGoal(); h.goalT = 5; }
@@ -867,7 +929,9 @@ function chooseHeroMove() {
     }
     return pick(cands)[0];
   }
-  if (here <= 2 && Math.random() < Math.max(.03, .2 - .035 * L)) { h.confused = 1.3; heroBubble('？', 1.3); return moves.length ? pick(moves)[0] : -1; }
+  h.peek = null;
+  // リリィは怖がりで混乱しやすい
+  if (here <= 2 && Math.random() < Math.max(.03, .2 - .035 * L) * (G.char === 'lily' ? 1.35 : 1)) { h.confused = 1.3; heroBubble('？', 1.3); return moves.length ? pick(moves)[0] : -1; }
   if (here <= 3 && !h.spotted) { h.spotted = true; heroBubble('！', .7); }
   h.goal = null;
   if (Math.random() < Math.max(.04, .22 - .04 * L)) { // うっかり（侵入者のいるマスには踏み込まない）
@@ -903,8 +967,12 @@ function updateHero(dt) {
   h.confused = Math.max(0, h.confused - dt); h.idle = Math.max(0, h.idle - dt); h.bubbleT = Math.max(0, h.bubbleT - dt);
   if (h.moving) {
     h.prog += dt * stat.speed() * (h.confused > 0 ? .8 : 1);
-    if (h.prog >= 1) { h.tx = h.nx; h.ty = h.ny; h.prog -= 1; h.moving = false; }
+    if (h.prog >= 1) {
+      h.tx = h.nx; h.ty = h.ny; h.prog -= 1; h.moving = false;
+      if (G.char === 'noel' && fdist(h.tx, h.ty) <= 6 && Math.random() < .035) { h.trip = .7; h.prog = 0; heroBubble('わわっ', .9); } // ノエルのドジ
+    }
   }
+  if (h.trip > 0) { h.trip -= dt; h.x = h.tx; h.y = h.ty; return; }
   if (!h.moving) {
     h.think -= dt; let stepped = false;
     if (h.think <= 0) {
@@ -997,7 +1065,7 @@ function update(dt) {
       fx.done = true; G.shake = Math.max(G.shake, 8); burst(fx.x, fx.y, '#ffb35a', 26, 190); sfx.rock();
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.2);
       if (hits.length) trapSuccess(); else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
-      for (const f of hits) hitFoe(f, 24);
+      for (const f of hits) hitFoe(f, 22);
     }
     if (fx.type === 'rock' && !fx.done && fx.t >= fx.dur) {
       fx.done = true; sfx.rock(); G.shake = Math.max(G.shake, 6); burst(fx.x, fx.y, '#8c8478', 16, 140);
@@ -1022,7 +1090,7 @@ function update(dt) {
       if (Math.hypot(f.x - h.x, f.y - h.y) < .6) {
         G.hp--; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt();
         f.stun = Math.max(f.stun, 1.2); // 捕まえかけて一瞬止まる
-        if (Math.random() < Math.max(.08, .35 - .06 * smartL())) { h.confused = 1.2; heroBubble('？', 1.2); }
+        if (Math.random() < Math.max(.08, .35 - .06 * smartL()) * (G.char === 'lily' ? 1.25 : 1)) { h.confused = 1.2; heroBubble('？', 1.2); }
         addText(h.x, h.y - 1, 'きゃっ！', '#ffc0d3', 20);
         if (G.hp <= 0) { gameOver(); return; }
         break;
@@ -1603,7 +1671,7 @@ function renderSelect() {
     const row = document.createElement('div'); row.className = 'row'; row.append(ic);
     row.insertAdjacentHTML('beforeend', `<div><div class="n">${ch.name}</div><div class="t">${ch.title}</div></div>`);
     b.append(row);
-    b.insertAdjacentHTML('beforeend', `<span class="d">${ch.profile}</span><span class="st">${statLine(ch)}</span><span class="sk">スキル「${ch.skill.name}」${ch.skill.desc}（${ch.skill.cd}秒ごと）</span>`);
+    b.insertAdjacentHTML('beforeend', `<span class="d">${ch.profile}</span><span class="st">${statLine(ch)}</span><span class="fl">弱点: ${ch.flaw}</span><span class="sk">スキル「${ch.skill.name}」${ch.skill.desc}（${ch.skill.cd}秒ごと）</span>`);
     b.addEventListener('click', () => { sel.char = id; renderSelect(); });
     cg.append(b);
   }
@@ -1704,6 +1772,17 @@ $('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave
 $('#btnResume').addEventListener('click', () => setPause(false));
 $('#btnGo').addEventListener('click', beginDefense);
 $('#btnPause').addEventListener('click', () => setPause(!paused));
+// 全画面（Android などでは横向きに固定する。できない環境ではボタンを出さない）
+if (document.fullscreenEnabled) $('#btnFull').hidden = false;
+$('#btnFull').addEventListener('click', async () => {
+  try {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+      try { await screen.orientation.lock('landscape'); } catch (e) {}
+    } else await document.exitFullscreen();
+  } catch (e) { say('この画面では全画面にできない。スマホを横にすると盤面が大きくなる'); }
+});
+document.addEventListener('fullscreenchange', () => { $('#btnFull').textContent = document.fullscreenElement ? '全画面を終了' : '全画面'; });
 $('#btnSound').addEventListener('click', () => { soundOn = !soundOn; $('#btnSound').textContent = soundOn ? '音: 入' : '音: 切'; });
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play' && !paused) setPause(true); });
 $('#bestLine').textContent = bestText();
@@ -1718,8 +1797,10 @@ showOv('ovTitle');
 
 // ---------- ループ ----------
 let last = 0;
+let playingCls = false;
 function frame(ts) {
   const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts;
+  if ((G.state === 'play') !== playingCls) { playingCls = G.state === 'play'; document.body.classList.toggle('playing', playingCls); resize(); }
   if (G.state === 'play' && !paused) update(dt);
   else if (G.state === 'title') G.time += dt;
   else if (G.state === 'over') { G.time += dt; for (const p of G.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; } }
