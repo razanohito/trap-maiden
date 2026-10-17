@@ -1,0 +1,1375 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>罠館のリリィ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+/* レイアウト: 金の装飾枠に収めた館（キャンバス）を中央に、上に羊皮紙の状態帯、下に石板の罠パレット。夜の館として暗色一本で通す */
+:root{
+  --ink:#151017; --stone:#2a2430; --stone-hi:#3e3546; --parch:#eadbbd; --parch-dk:#cbb58b; --parch-ink:#3a2819;
+  --gold:#c9a24a; --gold-hi:#f1d98e; --gold-dk:#7d5f22; --rose:#ef8fae; --mana:#9d88ff; --blood:#d0503f; --muted:#a99cb0;
+  --f-display:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+  --f-body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{
+  background-color:var(--ink);
+  background-image:radial-gradient(ellipse at 50% -10%,rgba(201,162,74,.14),transparent 55%),radial-gradient(ellipse at 50% 120%,rgba(120,40,70,.18),transparent 60%);
+  color:var(--parch); font-family:var(--f-body); font-size:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:14px 28px;
+}
+.wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.head h1{font-family:var(--f-display);font-weight:800;font-size:clamp(24px,5vw,34px);margin:0;letter-spacing:.08em;color:var(--gold-hi);text-shadow:0 2px 0 #000,0 0 18px rgba(201,162,74,.35);text-wrap:balance}
+.head h1 small{display:block;font-size:12px;letter-spacing:.3em;color:var(--gold);font-weight:700;margin-bottom:2px}
+.tools{display:flex;gap:6px}
+.tool{font:700 12px var(--f-body);color:var(--parch);background:var(--stone);border:1px solid var(--gold-dk);border-radius:3px;padding:6px 10px;cursor:pointer}
+.tool:hover{border-color:var(--gold)}
+.tool:focus-visible,.slot:focus-visible,.btn:focus-visible,.up:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:8px 14px;color:var(--parch-ink);
+  background:linear-gradient(180deg,var(--parch),var(--parch-dk));border:1px solid var(--gold-dk);box-shadow:inset 0 0 0 3px rgba(255,255,255,.18),0 3px 0 #000;border-radius:2px}
+.hearts{display:flex;gap:2px;font-size:20px;line-height:1}
+.hearts span{color:#c2445e;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+.hearts span.off{color:rgba(58,40,25,.22);text-shadow:none}
+.mana{display:flex;align-items:center;gap:8px;flex:1 1 180px;min-width:0}
+.mana .lbl{font:700 12px var(--f-display);letter-spacing:.1em}
+.bar{flex:1;height:12px;background:rgba(58,40,25,.25);border:1px solid rgba(58,40,25,.5);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6c55e0,var(--mana),#d6ccff);box-shadow:0 0 8px var(--mana)}
+.mana b{font-variant-numeric:tabular-nums;font-size:12px;min-width:56px;text-align:right}
+.stats{display:flex;gap:14px;flex-wrap:wrap;font-size:12px}
+.stats b{font-family:var(--f-display);font-size:16px;font-variant-numeric:tabular-nums}
+
+.frame{position:relative;padding:9px;border-radius:3px;
+  background:linear-gradient(135deg,var(--gold-hi),var(--gold) 30%,var(--gold-dk) 55%,var(--gold) 75%,var(--gold-hi));
+  box-shadow:0 0 0 2px #000,0 10px 30px rgba(0,0,0,.6)}
+.frame::before,.frame::after{content:"";position:absolute;width:14px;height:14px;background:var(--ink);border:2px solid var(--gold-hi);transform:rotate(45deg);top:-6px;left:calc(50% - 9px)}
+.frame::after{top:auto;bottom:-6px}
+.stage{position:relative;border:2px solid #000;background:#000;overflow:hidden}
+#cv{display:block;width:100%;height:auto;aspect-ratio:3/2;touch-action:none;cursor:pointer}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(14,10,16,.78);backdrop-filter:blur(2px);overflow-y:auto}
+.panel{position:relative;width:min(560px,100%);max-height:100%;overflow-y:auto;color:var(--parch-ink);padding:18px 22px;
+  background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.35),transparent 60%),linear-gradient(180deg,var(--parch),var(--parch-dk));
+  border:2px solid var(--gold-dk);outline:1px solid var(--gold);outline-offset:-7px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.panel h2{font-family:var(--f-display);font-weight:800;font-size:24px;margin:0 0 6px;letter-spacing:.06em;text-wrap:balance;color:#5a1e2c}
+.panel p{margin:6px 0;line-height:1.75}
+.panel ul{margin:8px 0;padding-left:1.2em;line-height:1.8}
+.panel .sm{font-size:12px;color:rgba(58,40,25,.75)}
+.btn{font:800 16px var(--f-display);letter-spacing:.08em;color:#2a1a0c;cursor:pointer;padding:10px 22px;margin-top:10px;
+  background:linear-gradient(180deg,var(--gold-hi),var(--gold));border:1px solid var(--gold-dk);border-radius:2px;box-shadow:0 3px 0 var(--gold-dk)}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--gold-dk)}
+.result{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0}
+.result div{background:rgba(58,40,25,.08);border:1px solid rgba(58,40,25,.25);padding:6px 10px}
+.result span{display:block;font-size:11px;letter-spacing:.08em}
+.result b{font:800 20px var(--f-display);font-variant-numeric:tabular-nums}
+.shop-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.soulpill{font:800 16px var(--f-display);color:#4a2a6e}
+.shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px}
+.up{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;cursor:pointer;padding:8px 10px;color:var(--parch);
+  background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;font-family:var(--f-body)}
+.up:hover:not(:disabled){border-color:var(--gold-hi);background:var(--stone-hi)}
+.up:disabled{opacity:.5;cursor:not-allowed}
+.up .n{font:800 14px var(--f-display);color:var(--gold-hi)}
+.up .d{font-size:12px}
+.up .c{font-size:12px;color:var(--rose);font-variant-numeric:tabular-nums}
+.up .lv{font-size:11px;color:var(--muted)}
+
+.palette{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px 7px;cursor:pointer;color:var(--parch);font-family:var(--f-body);
+  background:linear-gradient(180deg,var(--stone-hi),var(--stone));border:1px solid #000;box-shadow:inset 0 0 0 1px rgba(201,162,74,.35);border-radius:2px;min-width:0}
+.slot canvas{width:38px;height:38px}
+.slot .n{font:800 13px var(--f-display);white-space:nowrap}
+.slot .ds{font-size:10px;color:var(--muted);text-align:center;line-height:1.3}
+.slot .c{font-size:11px;color:var(--mana);font-variant-numeric:tabular-nums}
+.slot .k{position:absolute;top:3px;left:5px;font-size:10px;color:var(--muted)}
+.slot .dir{position:absolute;top:2px;right:5px;font-size:14px;color:var(--gold-hi)}
+.slot.sel{box-shadow:inset 0 0 0 2px var(--gold-hi),0 0 14px rgba(241,217,142,.45);background:linear-gradient(180deg,#54465c,#3a3040)}
+.slot.poor .c{color:var(--blood)}
+.slot.poor canvas{opacity:.45}
+.go{margin:0;width:100%;white-space:nowrap;box-shadow:0 3px 0 var(--gold-dk),0 0 18px rgba(241,217,142,.4)}
+.help{margin:2px 0 0;color:var(--muted);font-size:12px;line-height:1.7}
+.help b{color:var(--parch);font-weight:700}
+@media (max-width:640px){
+  .stage.has-ov #cv{display:none}
+  .stage.has-ov .overlay{position:static;background:none;backdrop-filter:none;padding:10px}
+  .slot .n{font-size:11px}
+  .slot .k,.slot .ds{display:none}
+  .slot canvas{width:30px;height:30px}
+  .help .pc{display:none}
+}
+@media (min-width:641px){.help .sp{display:none}}
+</style>
+
+<main class="wrap">
+  <header class="head">
+    <h1><small>TRAP MAIDEN</small>罠館のリリィ</h1>
+    <div class="tools">
+      <button class="tool" id="btnSound" type="button">音: 入</button>
+      <button class="tool" id="btnPause" type="button">一時停止</button>
+    </div>
+  </header>
+
+  <section class="hud" aria-label="リリィの状態">
+    <div class="hearts" id="hearts" aria-label="体力"></div>
+    <div class="mana"><span class="lbl">魔力</span><div class="bar" id="manaBar"><i id="manaFill"></i></div><b id="manaText">100/100</b></div>
+    <div class="stats">
+      <span>第<b id="sWave">1</b>夜</span>
+      <span><b id="sPhase">準備</b></span>
+      <span>夜明けまで <b id="sTime">–</b></span>
+      <span>得点 <b id="sScore">0</b></span>
+      <span>魂 <b id="sSoul">0</b></span>
+      <span>罠 <b id="sTraps">0/5</b></span>
+      <span>かしこさ <b id="sSmart">Lv1</b></span>
+    </div>
+  </section>
+
+  <div class="frame">
+    <div class="stage" id="stage">
+      <canvas id="cv" aria-label="館の見取り図"></canvas>
+
+      <div class="overlay" id="ovTitle">
+        <div class="panel">
+          <h2>罠館のリリィ</h2>
+          <p>夜になると、古い館に侵入者がやって来る。館の娘リリィは剣を持てず、逃げ回ることしかできない。あなたは館の罠を操って、リリィを守ろう。</p>          <button class="btn" id="btnStart" type="button">扉に鍵をかける（開始）</button>
+          <ul>
+            <li>リリィは自分で逃げる。あなたは罠を置くだけ</li>
+            <li>かしこさが上がるほど上手に逃げ、罠の奥で待ち、侵入者を罠の上へ誘うようになる。慌てると混乱して走り回ることも</li>
+            <li>魔力は時間で溜まる。罠を置くと減る</li>
+            <li>夜は「準備」のあとフェイズ1〜3と進む。フェイズが進むたびに置ける罠が1つ増え、魔力も補充される</li>
+            <li>夜明けまで守り抜くか、侵入者を全滅させればその夜はクリア。全滅させると魂のボーナス</li>
+            <li>館にはもともと仕掛けがある。トゲ床は踏んだ侵入者を傷つけ、奈落へ跳ね床で落とせば一撃。シャンデリアと槍の石像は押すと発動（魔力不要、使うと少し待つ）</li>
+            <li>同じ罠をもう一度押すと撤去（魔力が半分戻る）。跳ね床は向きを変えて押すと向きだけ変わる</li>
+            <li>罠を3秒以内に続けて当てると<b>連続</b>。続くほど得点と魂が増える</li>
+            <li>跳ね床で飛ばした先に罠があれば<b>連鎖</b>ボーナス</li>
+            <li>夜を越えるたび、集めた魂で館とリリィを強くできる</li>
+          </ul>
+          <p class="sm">罠: トラバサミ＝挟んで足止め／跳ね床＝矢印の向きへ吹き飛ばす／落石＝少し遅れて真上から／火柱＝十字に燃える。足止めしてから落石や火柱を当てるのが基本。</p>
+          <p class="sm" id="bestLine"></p>
+        </div>
+      </div>
+
+      <div class="overlay" id="ovShop" hidden>
+        <div class="panel">
+          <div class="shop-top"><h2 id="shopTitle">第1夜を越えた</h2><span class="soulpill">魂 <span id="shopSoul">0</span></span></div>
+          <p class="sm" id="shopNote"></p>
+          <div class="shopgrid" id="shopGrid"></div>
+          <button class="btn" id="btnNext" type="button">次の夜へ</button>
+        </div>
+      </div>
+
+      <div class="overlay" id="ovOver" hidden>
+        <div class="panel">
+          <h2>リリィは捕まってしまった…</h2>
+          <div class="result">
+            <div><span>たどり着いた夜</span><b id="rWave">1</b></div>
+            <div><span>得点</span><b id="rScore">0</b></div>
+            <div><span>最大連続</span><b id="rCombo">0</b></div>
+            <div><span>撃退した数</span><b id="rKills">0</b></div>
+          </div>
+          <p class="sm" id="rBest"></p>
+          <button class="btn" id="btnRetry" type="button">もう一度館を守る</button>
+        </div>
+      </div>
+
+      <div class="overlay" id="ovPause" hidden>
+        <div class="panel"><h2>一時停止中</h2><p>侵入者も足を止めている。</p><button class="btn" id="btnResume" type="button">再開する</button></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn go" id="btnGo" type="button" hidden>侵入者を迎える</button>
+  <nav class="palette" id="palette" aria-label="罠の選択"></nav>
+  <p class="help">
+    <span class="pc"><b>罠</b> 1〜4 かボタンで選び、マスをクリックして設置（同じ罠を押すと撤去）　<b>跳ね床の向き</b> Q / E（ボタンをもう一度押しても回る）　<b>館の仕掛け</b> シャンデリア・石像をクリック　<b>準備を終える</b> Enter　<b>一時停止</b> P　リリィの移動は CPU まかせ</span>
+    <span class="sp"><b>罠</b> 下の罠を選んでマスをタップ（同じ罠をタップで撤去）。跳ね床はもう一度押すと向きが変わる。シャンデリアと石像はタップで発動。リリィの移動は CPU まかせ</span>
+  </p>
+</main>
+
+<script>
+(() => {
+const COLS = 15, ROWS = 10, T = 48, W = COLS * T, H = ROWS * T;
+const MAP = [
+  '#######D#######',
+  '#.............#',
+  '#..S.O.....S..#',
+  '#.............#',
+  'D.^...#.#.c...#',
+  '#...c.#.#...^.D',
+  '#.............#',
+  '#..#.....O.#..#',
+  '#.............#',
+  '###############',
+];
+const DIRS = [[0,-1],[1,0],[0,1],[-1,0]];
+const ARROW = ['↑','→','↓','←'];
+const DOORS = [];
+MAP.forEach((row, y) => [...row].forEach((c, x) => { if (c === 'D') DOORS.push([x, y]); }));
+// 夜ごとに開く扉の順番（左 → 右 → 上）
+const doorRank = ([x, y]) => x === 0 ? 0 : y === 0 ? 2 : 1;
+DOORS.sort((a, b) => doorRank(a) - doorRank(b));
+const TORCHES = [[3,0],[11,0],[3,9],[11,9]];
+
+const TRAPS = {
+  bear:   { name:'トラバサミ', cost:20, cd:4, key:'1', desc:'挟んで2秒ほど足止め' },
+  spring: { name:'跳ね床',     cost:25, cd:3, key:'2', desc:'矢印の向きへ3マス飛ばす' },
+  rock:   { name:'落石',       cost:35, cd:5, key:'3', desc:'少し遅れて大ダメージ' },
+  fire:   { name:'火柱',       cost:40, cd:6, key:'4', desc:'十字の5マスを焼く' },
+};
+const TRAP_ORDER = ['bear','spring','rock','fire'];
+const FOES = {
+  knight: { hp:40, speed:1.6, soul:10, score:100, push:3, stunMul:1 },
+  thief:  { hp:24, speed:2.7, soul:8,  score:80,  push:3, stunMul:1 },
+  heavy:  { hp:95, speed:1.1, soul:22, score:220, push:2, stunMul:.5 },
+};
+const UPS = [
+  { id:'smart',   name:'リリィの勉強', desc:'かしこさ +1（逃げ方が上手に）', base:35, max:5 },
+  { id:'regen',   name:'魔力の泉',   desc:'魔力の回復 +20%',   base:30, max:6 },
+  { id:'maxMana', name:'魔力の器',   desc:'魔力の上限 +20',    base:25, max:6 },
+  { id:'power',   name:'罠の鋭さ',   desc:'罠の威力 +20%',     base:40, max:6 },
+  { id:'cd',      name:'からくり油', desc:'罠の再装填 12%速く', base:35, max:5 },
+  { id:'limit',   name:'罠箱の拡張', desc:'置ける罠 +1',       base:45, max:5 },
+  { id:'speed',   name:'軽い靴',     desc:'足の速さ +8%',      base:25, max:5 },
+  { id:'hp',      name:'お守り',     desc:'最大体力 +1',       base:60, max:3 },
+];
+const DEVICES = {
+  chandelier: { name:'シャンデリア', cd:18 },
+  statue:     { name:'槍の石像',     cd:10 },
+};
+function makeDevices() {
+  const list = [];
+  MAP.forEach((row, y) => [...row].forEach((c, x) => {
+    if (c === 'c') list.push({ type:'chandelier', x, y, cd:0, cdMax:DEVICES.chandelier.cd });
+    if (c === 'S') list.push({ type:'statue', x, y, cd:0, cdMax:DEVICES.statue.cd });
+  }));
+  return list;
+}
+// 仕掛けが届くマスか（シャンデリアは周り3x3、石像は上下左右）
+const deviceReach = (dv, x, y) => dv.type === 'chandelier' ? Math.max(Math.abs(dv.x - x), Math.abs(dv.y - y)) <= 1 : Math.abs(dv.x - x) + Math.abs(dv.y - y) === 1;
+const upCost = (u, lv) => Math.round(u.base * Math.pow(1.55, lv));
+const COMBO_WINDOW = 3;
+
+const $ = s => document.querySelector(s);
+const cv = $('#cv'), ctx = cv.getContext('2d');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let dpr = 1;
+let TS = 1; // キャンバス内の文字の倍率（狭い画面で読めるように）
+function resize() { dpr = Math.min(window.devicePixelRatio || 1, 2); cv.width = W * dpr; cv.height = H * dpr; TS = Math.min(1.8, Math.max(1, 520 / (cv.clientWidth || W))); }
+resize(); addEventListener('resize', resize);
+
+const tileAt = (x, y) => (x < 0 || y < 0 || x >= COLS || y >= ROWS) ? '#' : MAP[y][x];
+const isFloor = (x, y) => { const c = tileAt(x, y); return c === '.' || c === '^' || c === 'c'; };
+const canPlace = (x, y) => tileAt(x, y) === '.';
+const foeWalk = (x, y) => tileAt(x, y) === 'D' || isFloor(x, y);
+const lerp = (a, b, p) => a + (b - a) * p;
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+let best = 0;
+try { best = +localStorage.getItem('wanakan-best') || 0; } catch (e) {}
+
+// ---------- 状態 ----------
+let G, paused = false;
+const baseLimit = () => 5 + G.up.limit;
+const stat = {
+  regen:   () => 6 * (1 + .2 * G.up.regen),
+  maxMana: () => 100 + 20 * G.up.maxMana,
+  power:   () => 1 + .2 * G.up.power,
+  cd:      () => Math.pow(.88, G.up.cd),
+  limit:   () => baseLimit() + G.phaseBonus,
+  speed:   () => 3.4 * (1 + .08 * G.up.speed),
+  maxHp:   () => 3 + G.up.hp,
+};
+function makeRun(state) {
+  const up = {}; UPS.forEach(u => up[u.id] = 0);
+  return {
+    state, wave: 0, score: 0, soul: 0, up, mana: 100, hp: 3, time: 0,
+    hero: { tx:7, ty:6, nx:7, ny:6, x:7, y:6, prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0 },
+    foes: [], traps: new Map(), devices: makeDevices(), fx: [], texts: [], parts: [],
+    combo: 0, lastHit: -99, bestCombo: 0, kills: 0, shake: 0,
+    spawnQueue: [], spawnT: 0, clearT: -1, banner: 0, bannerTitle: '', bannerSub: '', hpScale: 1,
+    phase: 0, phaseQ: [[], [], []], phaseBonus: 0, nightLen: 60, nightT: 60,
+    selected: 'bear', springDir: 1, msg: '', msgT: 0, hover: null, field: null, foeField: null, removedCd: {},
+  };
+}
+G = makeRun('title');
+
+// ---------- 音 ----------
+let AC = null, soundOn = true, noiseBuf = null;
+function audio() {
+  if (!AC) {
+    try {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      noiseBuf = AC.createBuffer(1, AC.sampleRate * .5, AC.sampleRate);
+      const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    } catch (e) { AC = null; }
+  }
+  if (AC && AC.state === 'suspended') AC.resume().catch(() => {});
+  return AC;
+}
+function tone(type, f0, f1, dur, vol = .15, delay = 0) {
+  const a = audio(); if (!a || !soundOn) return;
+  const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02);
+}
+function noise(dur, freq, vol = .2, q = 1) {
+  const a = audio(); if (!a || !soundOn || !noiseBuf) return;
+  const t = a.currentTime, s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  s.buffer = noiseBuf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  s.connect(f).connect(g).connect(a.destination); s.start(t); s.stop(t + dur);
+}
+const sfx = {
+  place: () => tone('triangle', 520, 780, .08, .08),
+  bad:   () => tone('square', 180, 140, .12, .05),
+  bear:  () => { tone('square', 300, 90, .12, .1); noise(.08, 3000, .15, 2); },
+  spring:() => tone('sine', 180, 720, .22, .16),
+  rock:  () => { noise(.35, 200, .35, .7); tone('sine', 110, 40, .3, .2); },
+  fire:  () => noise(.5, 900, .25, .5),
+  hurt:  () => { tone('triangle', 1200, 700, .12, .12); tone('triangle', 900, 500, .14, .1, .08); },
+  kill:  () => { tone('triangle', 660, 660, .1, .08); tone('triangle', 990, 990, .14, .08, .07); },
+  combo: n => tone('sine', 440 * Math.pow(1.06, Math.min(n, 16)), 440 * Math.pow(1.06, Math.min(n, 16)) * 1.5, .12, .07),
+  wave:  () => { tone('sine', 392, 392, .5, .1); tone('sine', 523, 523, .6, .08, .15); },
+};
+
+// ---------- 背景（一度だけ描く） ----------
+const bg = document.createElement('canvas');
+function buildBg() {
+  bg.width = W * 2; bg.height = H * 2;
+  const b = bg.getContext('2d'); b.scale(2, 2);
+  let seed = 11; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    const c = MAP[y][x], px = x * T, py = y * T;
+    if (c === '.' || c === '^' || c === 'c' || c === 'O' || c === 'S') {
+      b.fillStyle = `hsl(285,10%,${19 + r() * 6}%)`; b.fillRect(px, py, T, T);
+      b.fillStyle = 'rgba(255,240,220,.06)'; b.fillRect(px, py, T, 2); b.fillRect(px, py, 2, T);
+      b.fillStyle = 'rgba(0,0,0,.4)'; b.fillRect(px, py + T - 2, T, 2); b.fillRect(px + T - 2, py, 2, T);
+      if (r() < .35) { b.strokeStyle = 'rgba(0,0,0,.35)'; b.lineWidth = 1; b.beginPath(); let cx = px + 8 + r() * 30, cy = py + 8 + r() * 30; b.moveTo(cx, cy); for (let i = 0; i < 3; i++) { cx += r() * 12 - 6; cy += r() * 12 - 6; b.lineTo(cx, cy); } b.stroke(); }
+      if (x === 7) { // 赤い絨毯
+        b.fillStyle = '#5c1c2a'; b.fillRect(px + 5, py, T - 10, T);
+        b.fillStyle = '#b08a3e'; b.fillRect(px + 8, py, 2, T); b.fillRect(px + T - 10, py, 2, T);
+        b.fillStyle = 'rgba(176,138,62,.55)'; b.beginPath(); b.moveTo(px + T / 2, py + 12); b.lineTo(px + T / 2 + 8, py + T / 2); b.lineTo(px + T / 2, py + T - 12); b.lineTo(px + T / 2 - 8, py + T / 2); b.closePath(); b.fill();
+      }
+      if (c === '^') { // トゲ床
+        b.fillStyle = '#26202b'; b.fillRect(px + 4, py + 4, T - 8, T - 8);
+        b.strokeStyle = 'rgba(201,162,74,.35)'; b.strokeRect(px + 4.5, py + 4.5, T - 9, T - 9);
+        for (let i = 0; i < 3; i++) for (let k = 0; k < 3; k++) {
+          const sx = px + 10 + k * 14, sy = py + 12 + i * 13;
+          b.fillStyle = '#a7a09a'; b.beginPath(); b.moveTo(sx - 4, sy + 5); b.lineTo(sx, sy - 5); b.lineTo(sx + 4, sy + 5); b.closePath(); b.fill();
+          b.fillStyle = '#5f5852'; b.beginPath(); b.moveTo(sx, sy - 5); b.lineTo(sx + 4, sy + 5); b.lineTo(sx + 1, sy + 5); b.closePath(); b.fill();
+        }
+      } else if (c === 'c') { // シャンデリアの真下（床の紋章）
+        b.strokeStyle = 'rgba(201,162,74,.45)'; b.lineWidth = 1.5; b.beginPath(); b.arc(px + T / 2, py + T / 2, 16, 0, 7); b.stroke();
+        b.beginPath(); b.arc(px + T / 2, py + T / 2, 9, 0, 7); b.stroke(); b.lineWidth = 1;
+      } else if (c === 'O') { // 奈落
+        const g = b.createRadialGradient(px + T / 2, py + T / 2, 2, px + T / 2, py + T / 2, 24);
+        g.addColorStop(0, '#000'); g.addColorStop(.7, '#07040a'); g.addColorStop(1, '#2a2030');
+        b.fillStyle = g; b.beginPath();
+        for (let i = 0; i < 12; i++) { const a = i / 12 * 6.283, rr = 19 + (i % 2 ? 3 : -1) + r() * 2; b.lineTo(px + T / 2 + Math.cos(a) * rr, py + T / 2 + Math.sin(a) * rr); }
+        b.closePath(); b.fill();
+        b.strokeStyle = 'rgba(157,136,255,.25)'; b.stroke();
+      } else if (c === 'S') { // 槍の石像
+        b.fillStyle = 'rgba(0,0,0,.45)'; b.beginPath(); b.ellipse(px + T / 2 + 3, py + T - 8, 18, 6, 0, 0, 7); b.fill();
+        b.fillStyle = '#3b3442'; b.fillRect(px + 8, py + T - 16, T - 16, 12);
+        b.fillStyle = '#c9a24a'; b.fillRect(px + 8, py + T - 16, T - 16, 2);
+        b.fillStyle = '#857e8c'; b.beginPath(); b.moveTo(px + 15, py + T - 16); b.lineTo(px + 17, py + 18); b.lineTo(px + 31, py + 18); b.lineTo(px + 33, py + T - 16); b.closePath(); b.fill();
+        b.fillStyle = '#9b94a2'; b.beginPath(); b.arc(px + T / 2, py + 13, 8, 0, 7); b.fill();
+        b.fillStyle = '#2a2430'; b.fillRect(px + T / 2 - 5, py + 12, 10, 2.5);
+        b.strokeStyle = '#b8b0a4'; b.lineWidth = 2; b.beginPath(); b.moveTo(px + 37, py + T - 14); b.lineTo(px + 37, py + 3); b.stroke(); b.lineWidth = 1;
+        b.fillStyle = '#d8d0c4'; b.beginPath(); b.moveTo(px + 34, py + 7); b.lineTo(px + 37, py); b.lineTo(px + 40, py + 7); b.closePath(); b.fill();
+      }
+    } else if (c === '#') {
+      const inner = x > 0 && y > 0 && x < COLS - 1 && y < ROWS - 1;
+      if (inner) { // 館の中の柱
+        b.fillStyle = `hsl(285,10%,${20 + r() * 4}%)`; b.fillRect(px, py, T, T);
+        b.fillStyle = 'rgba(0,0,0,.45)'; b.beginPath(); b.ellipse(px + T / 2 + 3, py + T / 2 + 5, 19, 15, 0, 0, 7); b.fill();
+        b.fillStyle = '#4a4054'; b.beginPath(); b.arc(px + T / 2, py + T / 2, 18, 0, 7); b.fill();
+        b.strokeStyle = '#c9a24a'; b.lineWidth = 3; b.beginPath(); b.arc(px + T / 2, py + T / 2, 15, 0, 7); b.stroke();
+        b.fillStyle = '#5c5068'; b.beginPath(); b.arc(px + T / 2 - 3, py + T / 2 - 3, 10, 0, 7); b.fill();
+      } else {
+        b.fillStyle = '#1f1925'; b.fillRect(px, py, T, T);
+        b.strokeStyle = 'rgba(0,0,0,.6)'; b.lineWidth = 1;
+        for (let i = 0; i < 4; i++) { b.beginPath(); b.moveTo(px, py + i * 12 + .5); b.lineTo(px + T, py + i * 12 + .5); b.stroke(); const off = (i % 2) * 12 + ((x * 7) % 24); for (let k = off; k < T; k += 24) { b.beginPath(); b.moveTo(px + k + .5, py + i * 12); b.lineTo(px + k + .5, py + i * 12 + 12); b.stroke(); } }
+        b.fillStyle = 'rgba(255,230,200,.04)'; b.fillRect(px, py, T, T);
+        if (foeWalk(x, y + 1) && y === 0) { b.fillStyle = '#352c3d'; b.fillRect(px, py + T - 14, T, 14); b.fillStyle = 'rgba(201,162,74,.5)'; b.fillRect(px, py + T - 14, T, 2); }
+      }
+    } else if (c === 'D') { // 扉
+      b.fillStyle = '#1f1925'; b.fillRect(px, py, T, T);
+      b.fillStyle = '#4a2f1f'; b.beginPath();
+      b.moveTo(px + 6, py + T - 2); b.lineTo(px + 6, py + 18); b.quadraticCurveTo(px + T / 2, py - 2, px + T - 6, py + 18); b.lineTo(px + T - 6, py + T - 2); b.closePath(); b.fill();
+      b.strokeStyle = 'rgba(0,0,0,.5)'; for (let k = 14; k < T - 6; k += 8) { b.beginPath(); b.moveTo(px + k + .5, py + 10); b.lineTo(px + k + .5, py + T - 2); b.stroke(); }
+      b.strokeStyle = '#c9a24a'; b.lineWidth = 2; b.beginPath(); b.moveTo(px + 6, py + T - 2); b.lineTo(px + 6, py + 18); b.quadraticCurveTo(px + T / 2, py - 2, px + T - 6, py + 18); b.lineTo(px + T - 6, py + T - 2); b.stroke(); b.lineWidth = 1;
+      b.strokeStyle = '#8a8070'; b.beginPath(); b.arc(px + T - 15, py + 30, 3.5, 0, 7); b.stroke();
+    }
+  }
+  for (const [x, y] of TORCHES) { // 燭台の台
+    const px = x * T + T / 2, py = y === 0 ? T - 18 : y * T + 16;
+    b.fillStyle = '#6b5a3a'; b.fillRect(px - 2, py - 2, 4, 12); b.fillStyle = '#c9a24a'; b.fillRect(px - 6, py - 4, 12, 4);
+  }
+}
+buildBg();
+
+// ---------- 経路 ----------
+function bfs(sx, sy, pass) {
+  const dist = new Int16Array(COLS * ROWS).fill(-1);
+  const q = [sx + sy * COLS]; dist[q[0]] = 0;
+  for (let i = 0; i < q.length; i++) {
+    const c = q[i], cx = c % COLS, cy = (c / COLS) | 0;
+    for (const [dx, dy] of DIRS) {
+      const x = cx + dx, y = cy + dy; if (!pass(x, y)) continue;
+      const k = x + y * COLS; if (dist[k] >= 0) continue;
+      dist[k] = dist[c] + 1; q.push(k);
+    }
+  }
+  return dist;
+}
+function bfsMulti(sources, pass) {
+  const dist = new Int16Array(COLS * ROWS).fill(-1), q = [];
+  for (const [x, y] of sources) { const k = x + y * COLS; if (dist[k] < 0) { dist[k] = 0; q.push(k); } }
+  for (let i = 0; i < q.length; i++) {
+    const c = q[i], cx = c % COLS, cy = (c / COLS) | 0;
+    for (const [dx, dy] of DIRS) {
+      const x = cx + dx, y = cy + dy; if (!pass(x, y)) continue;
+      const k = x + y * COLS; if (dist[k] >= 0) continue;
+      dist[k] = dist[c] + 1; q.push(k);
+    }
+  }
+  return dist;
+}
+const dirTo = (ax, ay, bx, by) => DIRS.findIndex(([dx, dy]) => ax + dx === bx && ay + dy === by);
+function shuffled() { const a = [0, 1, 2, 3]; for (let i = 3; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+// ---------- 入力（プレイヤーは罠を置くだけ） ----------
+const DIGIT = { Digit1:0, Digit2:1, Digit3:2, Digit4:3, Numpad1:0, Numpad2:1, Numpad3:2, Numpad4:3 };
+addEventListener('keydown', e => {
+  const k = e.code;
+  if (G.state !== 'play') return;
+  if (k === 'KeyP') { setPause(!paused); e.preventDefault(); return; }
+  if (paused) return;
+  if (k in DIGIT) { selectTrap(TRAP_ORDER[DIGIT[k]], true); return; }
+  if (k === 'KeyQ') { rotateSpring(-1); return; }
+  if (k === 'KeyE') { rotateSpring(1); return; }
+  if (k === 'Enter' && G.phase === 0) { e.preventDefault(); beginDefense(); }
+});
+function pointerTile(e) {
+  const r = cv.getBoundingClientRect();
+  return { x: Math.floor((e.clientX - r.left) / r.width * COLS), y: Math.floor((e.clientY - r.top) / r.height * ROWS) };
+}
+cv.addEventListener('pointerdown', e => {
+  if (G.state !== 'play' || paused) return;
+  const p = pointerTile(e); G.hover = p;
+  const dv = G.devices.find(d => d.x === p.x && d.y === p.y);
+  if (dv) activateDevice(dv); else placeTrap(p.x, p.y, G.selected);
+});
+cv.addEventListener('pointermove', e => { G.hover = pointerTile(e); });
+cv.addEventListener('pointerleave', () => { G.hover = null; });
+cv.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') G.hover = null; });
+
+function say(text) { G.msg = text; G.msgT = 1.8; }
+function placeTrap(x, y, type) {
+  const def = TRAPS[type];
+  if (!canPlace(x, y)) { say('そこには置けない'); sfx.bad(); return; }
+  const key = x + ',' + y, old = G.traps.get(key);
+  if (old && old.type === type) {
+    if (type === 'spring' && old.dir !== G.springDir) { old.dir = G.springDir; old.anim = .25; sfx.place(); say('跳ね床の向きを変えた'); return; }
+    G.traps.delete(key); G.removedCd[key] = { cd: old.cd, at: G.time }; G.mana = Math.min(stat.maxMana(), G.mana + Math.floor(def.cost / 2));
+    say(`${def.name}を撤去した（魔力 +${Math.floor(def.cost / 2)}）`); sfx.bad(); return;
+  }
+  if (G.foes.some(f => !f.dead && Math.round(f.x) === x && Math.round(f.y) === y)) { say('侵入者の足もとには置けない'); sfx.bad(); return; }
+  if (!old && G.traps.size >= stat.limit()) { say(`罠は${stat.limit()}個まで。同じ罠を押すと撤去できる`); sfx.bad(); return; }
+  const refund = old ? Math.floor(TRAPS[old.type].cost / 2) : 0;
+  if (G.mana + refund < def.cost) { say('魔力が足りない'); sfx.bad(); return; }
+  G.mana = Math.min(stat.maxMana(), G.mana + refund - def.cost);
+  const rm = G.removedCd[key], rmCd = rm ? rm.cd - (G.time - rm.at) : 0;
+  const cd = Math.max(.6, old ? old.cd : rmCd); // 置き直しても（撤去してすぐ置いても）前の罠の再装填は引き継ぐ
+  delete G.removedCd[key];
+  const bonusCount = [...G.traps.values()].filter(t => t.bonus).length;
+  const bonus = old ? old.bonus : G.traps.size >= baseLimit() && bonusCount < G.phaseBonus; // フェイズで増えた枠に置いた罠
+  G.traps.set(key, { type, x, y, dir: G.springDir, cd, cdMax: cd, snap: 0, anim: .25, at: G.time, bonus });
+  sfx.place();
+}
+
+// ---------- 夜（ウェーブ） ----------
+function banner(title, sub) { G.bannerTitle = title; G.bannerSub = sub; G.banner = 2.4; }
+// 夜 = 準備フェイズ → フェイズ1〜3。夜明け（時間切れ）か全滅でクリア
+function startWave(n) {
+  G.wave = n; G.hpScale = 1 + .13 * (n - 1);
+  const count = 4 + Math.floor(n * 1.2), q = [];
+  for (let i = 0; i < count; i++) {
+    const r = Math.random();
+    q.push(n >= 4 && r < .2 ? 'heavy' : n >= 2 && r < .5 ? 'thief' : 'knight');
+  }
+  if (n % 5 === 0) q.push('heavy', 'heavy');
+  const a = Math.round(q.length * .3), b = Math.round(q.length * .6);
+  G.phaseQ = [q.slice(0, a), q.slice(a, b), q.slice(b)];
+  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1;
+  G.nightLen = G.nightT = Math.min(75, 42 + 3 * n); G.prepT = 40;
+  G.state = 'play';
+  banner(`第${n}夜`, '準備フェイズ：罠を置いたら「侵入者を迎える」');
+  $('#btnGo').hidden = false;
+}
+function beginDefense() {
+  if (G.state !== 'play' || G.phase !== 0 || paused) return;
+  audio(); $('#btnGo').hidden = true; advancePhase();
+}
+function advancePhase() {
+  G.phase++;
+  G.spawnQueue = G.spawnQueue.concat(G.phaseQ[G.phase - 1]);
+  G.spawnT = Math.min(G.spawnT > 0 ? G.spawnT : 1.2, 1.2);
+  const doorNote = G.wave === 1 ? '左の扉から侵入者が来る' : G.wave === 2 ? '右の扉も破られた' : G.wave === 3 ? '上の扉からも来る' : `侵入者 ${G.phaseQ.flat().length}人`;
+  if (G.phase === 1) { banner('フェイズ1', doorNote); sfx.wave(); return; }
+  G.phaseBonus = G.phase - 1;
+  G.mana = Math.min(stat.maxMana(), G.mana + 25);
+  banner(`フェイズ${G.phase}`, '置ける罠 +1・魔力 +25'); sfx.wave();
+}
+function clearNight(wiped) {
+  G.clearT = 1.8;
+  if (wiped) {
+    const bonus = 10 * G.wave, tb = Math.ceil(G.nightT) * 50;
+    G.soul += bonus; G.score += 1000 * G.wave + tb;
+    banner('全滅させた！', `魂 +${bonus}・残り時間ボーナス ${tb.toLocaleString('ja-JP')}点`);
+  } else {
+    for (const f of G.foes) if (!f.dead) { f.dead = true; f.deadT = 0; burst(f.x, f.y, '#a99cb0', 8, 80); }
+    G.score += 500 * G.wave;
+    banner('夜明け', '侵入者は朝日に逃げていった');
+  }
+  G.spawnQueue = []; sfx.kill();
+}
+function spawn(type) {
+  const open = DOORS.slice(0, Math.min(DOORS.length, G.wave));
+  const [x, y] = open[(Math.random() * open.length) | 0];
+  const def = FOES[type], hp = Math.round(def.hp * G.hpScale);
+  G.foes.push({ type, hp, maxhp: hp, tx:x, ty:y, nx:x, ny:y, x, y, z:0, prog:0, moving:false,
+    speed: def.speed * (1 + .03 * (G.wave - 1)), stun:0, fly:null, face:x === 0 ? 1 : -1, flash:0, dead:false, deadT:0, seed: Math.random() * 9 });
+}
+
+// ---------- 罠の効果 ----------
+function comboMult() { return Math.min(5, 1 + .25 * (G.combo - 1)); }
+function addText(x, y, text, color, size = 18) { G.texts.push({ x, y, text, color, size, t: 0, dur: 1 }); }
+function burst(x, y, color, n, sp = 120) {
+  for (let i = 0; i < n; i++) { const a = rnd(0, 6.28), v = rnd(sp * .3, sp); G.parts.push({ x: x * T + T / 2, y: y * T + T / 2, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, life: rnd(.4, .8), t: 0, color, size: rnd(2, 4) }); }
+}
+// 罠が1回当たるごとに連続を1つ進める（何体に当たっても1回）
+function trapSuccess() {
+  G.combo = (G.time - G.lastHit <= COMBO_WINDOW) ? G.combo + 1 : 1;
+  G.lastHit = G.time; G.bestCombo = Math.max(G.bestCombo, G.combo);
+  if (G.combo >= 3) G.mana = Math.min(stat.maxMana(), G.mana + 4);
+  if (G.combo >= 2) { G.shake = Math.min(9, 2 + G.combo); sfx.combo(G.combo); }
+}
+function hitFoe(f, base) {
+  if (f.dead) return;
+  const dmg = Math.round(base * stat.power());
+  f.hp -= dmg; f.flash = .15;
+  const mult = comboMult();
+  G.score += Math.round(dmg * 10 * mult);
+  addText(f.x, f.y - .5, String(dmg), '#fff4e0');
+  burst(f.x, f.y, '#ffd9a0', 6, 90);
+  if (f.hp <= 0) killFoe(f);
+}
+function killFoe(f) {
+  if (f.dead) return;
+  const mult = comboMult();
+  f.dead = true; f.deadT = 0; f.hp = 0; G.kills++;
+  const def = FOES[f.type], s = Math.round(def.soul * mult);
+  G.soul += s; G.score += Math.round(def.score * mult);
+  addText(f.x, f.y - 1, `魂 +${s}`, '#c9b8ff', 16);
+  burst(f.x, f.y, '#b9a5ff', 18, 160); sfx.kill();
+}
+function terrainAt(x, y, f) { // 地形のダメージ（連続には数えない）
+  if (f.dead || tileAt(x, y) !== '^') return;
+  hitFoe(f, 6); f.stun = Math.max(f.stun, .25);
+  addText(x, y - .9, 'トゲ', '#d8d0c4', 14);
+}
+function activateDevice(dv) {
+  const def = DEVICES[dv.type];
+  if (dv.cd > 0) { say(`${def.name}はあと${Math.ceil(dv.cd)}秒で使える`); sfx.bad(); return; }
+  dv.cd = dv.cdMax;
+  if (dv.type === 'chandelier') {
+    G.fx.push({ type: 'chand', x: dv.x, y: dv.y, t: 0, dur: .45 });
+    tone('triangle', 1400, 1300, .15, .05);
+  } else {
+    sfx.bear();
+    const tiles = DIRS.map(([dx, dy]) => [dv.x + dx, dv.y + dy]).filter(([a, b]) => isFloor(a, b));
+    G.fx.push({ type: 'spear', x: dv.x, y: dv.y, tiles, t: 0, dur: .45 });
+    const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
+    if (hits.length) trapSuccess();
+    for (const g of hits) { hitFoe(g, 22); if (!g.dead) g.stun = Math.max(g.stun, .8 * FOES[g.type].stunMul); }
+  }
+}
+function triggerAt(x, y, f, chained) {
+  const tr = G.traps.get(x + ',' + y);
+  if (!tr || tr.cd > 0 || f.dead) return;
+  tr.cdMax = tr.cd = TRAPS[tr.type].cd * stat.cd(); tr.anim = .35;
+  if (chained) { G.score += 50 * Math.max(1, G.combo); addText(x, y - 1.1, '連鎖！', '#f1d98e', 22); }
+  if (tr.type === 'bear') {
+    sfx.bear(); trapSuccess(); hitFoe(f, 14);
+    if (!f.dead) { f.stun = Math.max(f.stun, 2.2 * FOES[f.type].stunMul); tr.snap = f.stun; }
+  } else if (tr.type === 'spring') {
+    sfx.spring(); trapSuccess(); hitFoe(f, 6);
+    if (f.dead) return;
+    const [dx, dy] = DIRS[tr.dir]; let cx = x, cy = y, steps = 0, slam = false;
+    let fall = false;
+    while (steps < FOES[f.type].push) {
+      if (tileAt(cx + dx, cy + dy) === 'O') { cx += dx; cy += dy; steps++; fall = true; break; } // 奈落へ
+      if (!isFloor(cx + dx, cy + dy)) { slam = true; break; }
+      cx += dx; cy += dy; steps++;
+    }
+    f.moving = false; f.stun = 0;
+    f.fly = { fx: x, fy: y, tx: cx, ty: cy, t: 0, dur: .16 + .07 * Math.max(1, steps), slam, fall };
+  } else if (tr.type === 'rock') {
+    G.fx.push({ type: 'rock', x, y, t: 0, dur: .3 });
+    f.stun = Math.max(f.stun, .45); // 物音に気づいて見上げる
+  } else if (tr.type === 'fire') {
+    sfx.fire();
+    const tiles = [[x, y], ...DIRS.map(([dx, dy]) => [x + dx, y + dy]).filter(([a, b]) => isFloor(a, b))];
+    G.fx.push({ type: 'fire', tiles, t: 0, dur: .7 });
+    const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
+    if (hits.length) trapSuccess();
+    hits.forEach(g => hitFoe(g, 16));
+  }
+}
+
+// ---------- 更新 ----------
+// ---------- リリィの思考（CPU） ----------
+// かしこさ Lv が上がるほど: 間違いと混乱が減り、袋小路を避け、逃げ道の広い方を選び、罠の向こうへ誘い、扉の前を避ける
+const PANIC_TALK = ['あわわ…', 'こっちかな？', 'えっと、えっと…', 'どっち！？'];
+function heroBubble(text, t = .9) { G.hero.bubble = text; G.hero.bubbleT = t; }
+function fdist(x, y) { const v = G.foeField[x + y * COLS]; return v < 0 ? 99 : v; }
+function freedom(cx, cy, base) { // 3歩以内にある「今より侵入者に近づかないマス」の数
+  let n = 0; const seen = new Set([cx + cy * COLS]); let frontier = [[cx, cy]];
+  for (let step = 0; step < 3; step++) {
+    const next = [];
+    for (const [x, y] of frontier) for (const [dx, dy] of DIRS) {
+      const nx = x + dx, ny = y + dy, k = nx + ny * COLS;
+      if (!isFloor(nx, ny) || seen.has(k)) continue;
+      seen.add(k); if (fdist(nx, ny) >= base) n++; next.push([nx, ny]);
+    }
+    frontier = next;
+  }
+  return n;
+}
+const LURE_W = [0, 5, 9, 13, 16, 18]; // かしこさ Lv ごとの「罠へ誘う」重み
+// (sx,sy) の侵入者が field の起点へ向かう道で踏む罠の値。field は起点からの BFS
+function trapsOnPath(sx, sy, field, hx, hy) {
+  let x = sx, y = sy, v = 0, d = field[x + y * COLS];
+  if (d < 0) return 0;
+  while (d > 0) {
+    const st = DIRS.find(([dx, dy]) => field[x + dx + (y + dy) * COLS] === d - 1);
+    if (!st) break; x += st[0]; y += st[1]; d--;
+    if (d === 0) break; // 自分の足もとは数えない
+    if (tileAt(x, y) === '^') v += .4; // トゲ床
+    if (G.devices.some(dv => dv.cd <= 1 && deviceReach(dv, x, y))) v += .6; // 館の仕掛けが届く
+    const tr = G.traps.get(x + ',' + y);
+    if (!tr || tr.cd > d / 2) continue; // たどり着くまでに装填が間に合う罠だけ
+    if (tr.type === 'spring') { // 自分の方へ飛ばしてくる向きは危ない。奈落へ落とせる向きは大歓迎
+      const [px, py] = DIRS[tr.dir], toward = px * Math.sign(hx - x) + py * Math.sign(hy - y);
+      let pit = false;
+      for (let i = 1; i <= 3; i++) { const c = tileAt(x + px * i, y + py * i); if (c === 'O') { pit = true; break; } if (!isFloor(x + px * i, y + py * i)) break; }
+      v += pit ? 2 : toward > 0 ? -1 : 1.2;
+    } else v += 1;
+  }
+  return v;
+}
+function lureScore(cx, cy) { // 近い侵入者2人がここへ来る道の罠
+  const field = bfs(cx, cy, foeWalk);
+  const near = G.foes.filter(f => !f.dead && !f.fly).map(f => [field[f.tx + f.ty * COLS], f]).filter(([d]) => d > 0 && d <= 9).sort((a, b) => a[0] - b[0]).slice(0, 2);
+  let v = 0; for (const [, f] of near) v += Math.min(2, trapsOnPath(f.tx, f.ty, field, cx, cy));
+  return v;
+}
+function idleGoal() { // 扉から来る道に罠が並ぶ「罠の奥」の待ち場所を探す
+  const L = G.up.smart, doors = DOORS.slice(0, Math.min(DOORS.length, G.wave));
+  let best = null, bs = -1e9;
+  for (let y = 1; y < ROWS - 1; y++) for (let x = 1; x < COLS - 1; x++) {
+    if (!isFloor(x, y)) continue;
+    const field = bfs(x, y, foeWalk);
+    let sc = 0, nearDoor = 99;
+    for (const [dx, dy] of doors) { const d = field[dx + dy * COLS]; if (d < 0) continue; nearDoor = Math.min(nearDoor, d); sc += Math.min(3, trapsOnPath(dx, dy, field, x, y)) * LURE_W[Math.min(L, 5)]; }
+    sc += Math.min(nearDoor, 8) * 1.5 + DIRS.filter(([a, b]) => isFloor(x + a, y + b)).length * 2;
+    sc += rnd(0, Math.max(2, 16 - 3 * L));
+    if (sc > bs) { bs = sc; best = [x, y]; }
+  }
+  return best;
+}
+const pick = a => a[(Math.random() * a.length) | 0];
+function chooseHeroMove() {
+  const h = G.hero, L = G.up.smart;
+  const cands = [[-1, h.tx, h.ty], ...DIRS.map(([dx, dy], d) => [d, h.tx + dx, h.ty + dy]).filter(([, x, y]) => isFloor(x, y))];
+  const moves = cands.slice(1), here = fdist(h.tx, h.ty);
+  if (h.confused > 0) return moves.length ? pick(moves)[0] : -1; // 混乱中はでたらめに走る
+  if (here > 6) { // 侵入者が遠いときはのんびり
+    h.spotted = false;
+    h.goalT -= .2;
+    if (h.idle > 0) return -1;
+    if (Math.random() < .35) { h.idle = rnd(.5, 1.5); if (Math.random() < .3) heroBubble('♪', 1); return -1; }
+    if (L >= 1 && G.traps.size) { // 賢いと罠の奥で待つ
+      if (!h.goal || h.goalT <= 0) { h.goal = idleGoal(); h.goalT = 5; }
+      const gf = bfs(h.goal[0], h.goal[1], isFloor), cur = gf[h.tx + h.ty * COLS];
+      if (cur <= 0) { h.idle = rnd(.8, 1.6); return -1; }
+      const st = cands.find(([d, x, y]) => d >= 0 && gf[x + y * COLS] === cur - 1);
+      return st ? st[0] : -1;
+    }
+    return pick(cands)[0];
+  }
+  if (here <= 2 && Math.random() < Math.max(.03, .2 - .035 * L)) { h.confused = 1.3; heroBubble('？', 1.3); return moves.length ? pick(moves)[0] : -1; }
+  if (here <= 3 && !h.spotted) { h.spotted = true; heroBubble('！', .7); }
+  h.goal = null;
+  if (Math.random() < Math.max(.04, .22 - .04 * L)) { // うっかり（侵入者のいるマスには踏み込まない）
+    if (h.bubbleT <= 0 && Math.random() < .2) heroBubble(pick(PANIC_TALK), 1);
+    const safe = cands.filter(([, x, y]) => fdist(x, y) > 0);
+    return pick(safe.length ? safe : cands)[0];
+  }
+  let bd = -1, bs = -1e9, lured = false;
+  for (const [d, x, y] of cands) {
+    const fd = fdist(x, y);
+    let sc = Math.min(fd, 8) * 10, lure = 0;
+    if (fd === 0) sc -= 100;
+    if (d === -1) sc -= 3;
+    if (L >= 1) sc -= (4 - DIRS.filter(([dx, dy]) => isFloor(x + dx, y + dy)).length) * 6;
+    if (L >= 2) sc += freedom(x, y, fd) * 1.5;
+    if (L >= 1 && fd >= 2) { lure = lureScore(x, y) * LURE_W[Math.min(L, 5)]; sc += lure; }
+    if (L >= 4 && DOORS.some(([ex, ey]) => Math.abs(ex - x) + Math.abs(ey - y) <= 1)) sc -= 15;
+    sc += rnd(0, Math.max(1, 14 - 2.6 * L));
+    if (sc > bs) { bs = sc; bd = d; lured = lure > 0; }
+  }
+  if (lured && h.bubbleT <= 0 && Math.random() < .08) heroBubble(pick(['こっちだよ〜', 'ほらほら♪', '罠があるもん']), 1.1);
+  return bd;
+}
+function tryStep(d) {
+  const h = G.hero; h.facing = d;
+  const nx = h.tx + DIRS[d][0], ny = h.ty + DIRS[d][1];
+  if (!isFloor(nx, ny)) return false;
+  h.nx = nx; h.ny = ny; h.moving = true; return true;
+}
+function updateHero(dt) {
+  const h = G.hero;
+  h.inv = Math.max(0, h.inv - dt); h.hurt = Math.max(0, h.hurt - dt);
+  h.confused = Math.max(0, h.confused - dt); h.idle = Math.max(0, h.idle - dt); h.bubbleT = Math.max(0, h.bubbleT - dt);
+  if (h.moving) {
+    h.prog += dt * stat.speed() * (h.confused > 0 ? .8 : 1);
+    if (h.prog >= 1) { h.tx = h.nx; h.ty = h.ny; h.prog -= 1; h.moving = false; }
+  }
+  if (!h.moving) {
+    h.think -= dt; let stepped = false;
+    if (h.think <= 0) {
+      const d = chooseHeroMove();
+      stepped = d >= 0 && tryStep(d);
+      if (!stepped) h.think = .15;
+    }
+    if (!stepped) h.prog = 0;
+  }
+  h.x = h.moving ? lerp(h.tx, h.nx, h.prog) : h.tx;
+  h.y = h.moving ? lerp(h.ty, h.ny, h.prog) : h.ty;
+}
+function updateFoe(f, dt) {
+  f.flash = Math.max(0, f.flash - dt);
+  if (f.dead) { f.deadT += dt; return; }
+  if (f.fly) {
+    const fl = f.fly; fl.t += dt; const p = Math.min(1, fl.t / fl.dur);
+    f.x = lerp(fl.fx, fl.tx, p); f.y = lerp(fl.fy, fl.ty, p); f.z = Math.sin(p * Math.PI) * 22;
+    if (Math.random() < .6) G.parts.push({ x: f.x * T + T / 2, y: f.y * T + T / 2 + 10, vx: rnd(-20, 20), vy: rnd(-20, 0), life: .35, t: 0, color: '#d8c9a8', size: 2.5 });
+    if (p >= 1) {
+      f.tx = f.nx = fl.tx; f.ty = f.ny = fl.ty; f.x = f.tx; f.y = f.ty; f.z = 0; f.fly = null; f.prog = 0;
+      f.stun = Math.max(f.stun, .35 * FOES[f.type].stunMul);
+      if (fl.fall) {
+        addText(f.x, f.y - 1.1, '奈落へ！', '#c9b8ff', 22); G.score += 300 * Math.max(1, G.combo);
+        trapSuccess(); killFoe(f); G.shake = Math.max(G.shake, 7); sfx.rock(); return;
+      }
+      if (fl.slam) { addText(f.x, f.y - 1, '激突！', '#ffb38a', 18); hitFoe(f, 14); G.shake = Math.max(G.shake, 5); }
+      terrainAt(f.tx, f.ty, f);
+      if (!f.dead) triggerAt(f.tx, f.ty, f, true);
+    }
+    return;
+  }
+  if (f.stun > 0) { f.stun -= dt; return; }
+  if (f.moving) {
+    f.prog += dt * f.speed;
+    if (f.prog < 1) { f.x = lerp(f.tx, f.nx, f.prog); f.y = lerp(f.ty, f.ny, f.prog); return; }
+    f.tx = f.nx; f.ty = f.ny; f.x = f.tx; f.y = f.ty; f.moving = false; f.prog = 0;
+    terrainAt(f.tx, f.ty, f);
+    triggerAt(f.tx, f.ty, f, false);
+    if (f.dead || f.stun > 0 || f.fly) return;
+  }
+  const here = G.field[f.tx + f.ty * COLS]; let bestD = -1, bd = here < 0 ? 9999 : here;
+  for (const d of shuffled()) {
+    const x = f.tx + DIRS[d][0], y = f.ty + DIRS[d][1];
+    if (!foeWalk(x, y)) continue;
+    const v = G.field[x + y * COLS];
+    if (v >= 0 && v < bd) { bd = v; bestD = d; }
+  }
+  if (bestD >= 0) {
+    f.nx = f.tx + DIRS[bestD][0]; f.ny = f.ty + DIRS[bestD][1]; f.moving = true; f.prog = 0;
+    if (DIRS[bestD][0]) f.face = DIRS[bestD][0];
+  }
+}
+function update(dt) {
+  G.time += dt;
+  G.mana = Math.min(stat.maxMana(), G.mana + stat.regen() * dt);
+  G.foeField = bfsMulti(G.foes.filter(f => !f.dead).map(f => [Math.round(f.x), Math.round(f.y)]), foeWalk);
+  updateHero(dt);
+  const h = G.hero;
+  G.field = bfs(Math.round(h.x), Math.round(h.y), foeWalk);
+
+  if (G.phase > 0 && G.clearT < 0 && G.spawnQueue.length) {
+    G.spawnT -= dt;
+    if (G.spawnT <= 0) { spawn(G.spawnQueue.shift()); G.spawnT = Math.max(.8, 2.4 - .12 * G.wave - .2 * (G.phase - 1)); }
+  }
+  for (const f of G.foes) updateFoe(f, dt);
+  G.foes = G.foes.filter(f => !f.dead || f.deadT < .5);
+
+  for (const dv of G.devices) dv.cd = Math.max(0, dv.cd - dt);
+  for (const tr of G.traps.values()) { tr.cd = Math.max(0, tr.cd - dt); tr.snap = Math.max(0, tr.snap - dt); tr.anim = Math.max(0, tr.anim - dt); }
+  for (const fx of G.fx) {
+    fx.t += dt;
+    if (fx.type === 'chand' && !fx.done && fx.t >= fx.dur) {
+      fx.done = true; G.shake = Math.max(G.shake, 7); burst(fx.x, fx.y, '#f1d98e', 22, 170);
+      noise(.4, 2500, .25, 1); tone('sine', 90, 40, .3, .2);
+      const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.2);
+      if (hits.length) trapSuccess(); else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
+      for (const f of hits) { hitFoe(f, 35); if (!f.dead) f.stun = Math.max(f.stun, 1 * FOES[f.type].stunMul); }
+    }
+    if (fx.type === 'rock' && !fx.done && fx.t >= fx.dur) {
+      fx.done = true; sfx.rock(); G.shake = Math.max(G.shake, 6); burst(fx.x, fx.y, '#8c8478', 16, 140);
+      const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.hypot(f.x - fx.x, f.y - fx.y) < .75);
+      if (hits.length) trapSuccess(); else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
+      for (const f of hits) { hitFoe(f, 30); if (!f.dead) f.stun = Math.max(f.stun, .8 * FOES[f.type].stunMul); }
+    }
+  }
+  G.fx = G.fx.filter(fx => fx.t < fx.dur + .4);
+  for (const t of G.texts) t.t += dt;
+  G.texts = G.texts.filter(t => t.t < t.dur);
+  for (const p of G.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; }
+  G.parts = G.parts.filter(p => p.t < p.life);
+  if (G.time - G.lastHit > COMBO_WINDOW) G.combo = 0;
+  G.shake = Math.max(0, G.shake - dt * 20);
+  G.msgT = Math.max(0, G.msgT - dt); G.banner = Math.max(0, G.banner - dt);
+
+  // 接触したらダメージ
+  if (h.inv <= 0) {
+    for (const f of G.foes) {
+      if (f.dead || f.fly || f.z > 0) continue;
+      if (Math.hypot(f.x - h.x, f.y - h.y) < .6) {
+        G.hp--; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt();
+        f.stun = Math.max(f.stun, 1.2); // 捕まえかけて一瞬止まる
+        if (Math.random() < Math.max(.08, .35 - .06 * G.up.smart)) { h.confused = 1.2; heroBubble('？', 1.2); }
+        addText(h.x, h.y - 1, 'きゃっ！', '#ffc0d3', 20);
+        if (G.hp <= 0) { gameOver(); return; }
+        break;
+      }
+    }
+  }
+  if (G.clearT >= 0) { G.clearT -= dt; if (G.clearT <= 0) openShop(); return; }
+  if (G.phase === 0) { G.prepT -= dt; if (G.prepT <= 0) beginDefense(); }
+  if (G.phase > 0) {
+    G.nightT = Math.max(0, G.nightT - dt);
+    const live = G.foes.some(f => !f.dead), empty = !G.spawnQueue.length && !live;
+    if (G.nightT <= 0) clearNight(false);
+    else if (G.phase === 3 && empty) clearNight(true);
+    else if (G.phase < 3 && (G.nightT <= G.nightLen * (1 - G.phase / 3) || empty)) advancePhase();
+  }
+}
+
+// ---------- 描画 ----------
+function ell(x, y, rx, ry) { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill(); }
+function drawTrapIcon(c, type, cx, cy, s, dir, t, closed) {
+  c.save(); c.translate(cx, cy); c.scale(s, s);
+  if (type === 'bear') {
+    c.fillStyle = '#3a332e'; c.beginPath(); c.arc(0, 0, 15, 0, 7); c.fill();
+    c.strokeStyle = '#8e857b'; c.lineWidth = 3; c.beginPath(); c.arc(0, 0, 13, 0, 7); c.stroke();
+    c.fillStyle = '#cfc6b8';
+    const rIn = closed ? 2 : 6;
+    for (let i = 0; i < 10; i++) { const a = i / 10 * 6.283; c.beginPath(); c.moveTo(Math.cos(a - .25) * 12, Math.sin(a - .25) * 12); c.lineTo(Math.cos(a) * rIn, Math.sin(a) * rIn); c.lineTo(Math.cos(a + .25) * 12, Math.sin(a + .25) * 12); c.fill(); }
+    c.fillStyle = '#6b5a3a'; c.beginPath(); c.arc(0, 0, 3, 0, 7); c.fill();
+  } else if (type === 'spring') {
+    c.fillStyle = '#5b4a30'; c.fillRect(-15, -15, 30, 30);
+    c.strokeStyle = '#c9a24a'; c.lineWidth = 2; c.strokeRect(-14, -14, 28, 28);
+    c.strokeStyle = '#9a9086'; c.lineWidth = 2; c.beginPath();
+    for (let i = 0; i <= 6; i++) c.lineTo(i % 2 ? 6 : -6, -9 + i * 3); c.stroke();
+    c.rotate(dir * Math.PI / 2);
+    c.fillStyle = '#f1d98e'; c.beginPath(); c.moveTo(0, -21); c.lineTo(7, -13); c.lineTo(-7, -13); c.closePath(); c.fill();
+  } else if (type === 'rock') {
+    c.strokeStyle = 'rgba(220,210,190,.7)'; c.setLineDash([4, 3]); c.lineWidth = 2; c.beginPath(); c.arc(0, 0, 14, 0, 7); c.stroke(); c.setLineDash([]);
+    c.fillStyle = '#7d766c'; c.beginPath(); c.moveTo(-9, -2); c.lineTo(-4, -10); c.lineTo(6, -9); c.lineTo(10, 0); c.lineTo(5, 8); c.lineTo(-6, 8); c.closePath(); c.fill();
+    c.fillStyle = '#a49c90'; c.beginPath(); c.moveTo(-4, -10); c.lineTo(6, -9); c.lineTo(3, -2); c.lineTo(-5, -3); c.closePath(); c.fill();
+  } else if (type === 'fire') {
+    c.strokeStyle = '#c8463d'; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, 14, 0, 7); c.stroke();
+    c.strokeStyle = 'rgba(200,70,61,.6)'; c.lineWidth = 1.5; c.beginPath();
+    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + (t || 0) * .5; c.moveTo(Math.cos(a) * 14, Math.sin(a) * 14); c.lineTo(Math.cos(a) * 19, Math.sin(a) * 19); } c.stroke();
+    const fl = Math.sin((t || 0) * 10) * 1.5;
+    c.fillStyle = '#ff8a3c'; c.beginPath(); c.moveTo(0, -11 - fl); c.quadraticCurveTo(8, -1, 5, 6); c.quadraticCurveTo(0, 10, -5, 6); c.quadraticCurveTo(-8, -1, 0, -11 - fl); c.fill();
+    c.fillStyle = '#ffe08a'; c.beginPath(); c.moveTo(0, -4 - fl); c.quadraticCurveTo(4, 2, 2, 5); c.quadraticCurveTo(0, 7, -2, 5); c.quadraticCurveTo(-4, 2, 0, -4 - fl); c.fill();
+  }
+  c.restore();
+}
+function drawTraps() {
+  for (const tr of G.traps.values()) {
+    const cx = tr.x * T + T / 2, cy = tr.y * T + T / 2, armed = tr.cd <= 0;
+    const pop = tr.anim > 0 ? 1 + tr.anim * .6 : 1;
+    ctx.globalAlpha = armed ? 1 : .45;
+    drawTrapIcon(ctx, tr.type, cx, cy, pop, tr.dir, G.time, tr.snap > 0);
+    ctx.globalAlpha = 1;
+    if (!armed) { // 再装填の残り
+      ctx.strokeStyle = 'rgba(241,217,142,.85)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, 19, -Math.PI / 2, -Math.PI / 2 + 6.283 * (1 - tr.cd / tr.cdMax)); ctx.stroke();
+    }
+  }
+}
+function drawChandelier(cx, cy, s, lit) {
+  ctx.save(); ctx.translate(cx, cy); ctx.scale(s, s);
+  ctx.strokeStyle = '#7d5f22'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(0, -6); ctx.stroke();
+  ctx.strokeStyle = '#c9a24a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, 15, 5, 0, 0, 7); ctx.stroke();
+  for (let i = 0; i < 5; i++) {
+    const a = i / 5 * 6.283, x = Math.cos(a) * 15, y = Math.sin(a) * 5;
+    ctx.fillStyle = '#efe4cc'; ctx.fillRect(x - 1.5, y - 7, 3, 6);
+    if (lit) { ctx.fillStyle = '#ffcf6a'; ell(x, y - 9, 1.6, 2.4); }
+  }
+  ctx.restore();
+}
+function drawDevices() {
+  for (const dv of G.devices) {
+    const cx = dv.x * T + T / 2, cy = dv.y * T + T / 2, ready = dv.cd <= 0;
+    if (dv.type === 'chandelier') {
+      if (G.fx.some(f => f.type === 'chand' && f.x === dv.x && f.y === dv.y)) continue;
+      if (ready) {
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        const g = ctx.createRadialGradient(cx, cy - 16, 2, cx, cy - 16, 40 + Math.sin(G.time * 6) * 3);
+        g.addColorStop(0, 'rgba(255,200,110,.35)'); g.addColorStop(1, 'rgba(255,160,60,0)');
+        ctx.fillStyle = g; ctx.fillRect(cx - 45, cy - 60, 90, 90); ctx.restore();
+        drawChandelier(cx, cy - 16, 1, true);
+      }
+    } else if (ready) {
+      const a = .6 + Math.sin(G.time * 4) * .3;
+      ctx.fillStyle = `rgba(255,70,60,${a})`; ell(cx - 3, cy - 11, 1.6, 1.2); ell(cx + 3, cy - 11, 1.6, 1.2);
+    }
+    if (!ready) {
+      ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 7); ctx.stroke();
+      ctx.strokeStyle = 'rgba(157,136,255,.85)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, 20, -Math.PI / 2, -Math.PI / 2 + 6.283 * (1 - dv.cd / dv.cdMax)); ctx.stroke();
+    }
+  }
+}
+function drawPreview() {
+  const hv = G.hover; if (!hv || G.state !== 'play') return;
+  const dvh = G.devices.find(d => d.x === hv.x && d.y === hv.y);
+  if (dvh) { // 仕掛けの届く範囲
+    ctx.fillStyle = dvh.cd > 0 ? 'rgba(169,156,176,.12)' : 'rgba(157,136,255,.2)';
+    for (let y = hv.y - 1; y <= hv.y + 1; y++) for (let x = hv.x - 1; x <= hv.x + 1; x++) if (isFloor(x, y) && deviceReach(dvh, x, y)) ctx.fillRect(x * T + 3, y * T + 3, T - 6, T - 6);
+    ctx.strokeStyle = 'rgba(157,136,255,.8)'; ctx.lineWidth = 2; ctx.strokeRect(hv.x * T + 2, hv.y * T + 2, T - 4, T - 4);
+    return;
+  }
+  const ok = canPlace(hv.x, hv.y);
+  if (!G.selected) {
+    if (!ok) return;
+    ctx.strokeStyle = 'rgba(241,217,142,.35)'; ctx.lineWidth = 2; ctx.strokeRect(hv.x * T + 3, hv.y * T + 3, T - 6, T - 6); return;
+  }
+  const can = ok && G.mana >= TRAPS[G.selected].cost;
+  ctx.fillStyle = can ? 'rgba(241,217,142,.18)' : 'rgba(208,80,63,.25)';
+  ctx.fillRect(hv.x * T, hv.y * T, T, T);
+  if (!ok) return;
+  if (G.selected === 'spring') {
+    const [dx, dy] = DIRS[G.springDir]; let x = hv.x, y = hv.y;
+    ctx.fillStyle = 'rgba(241,217,142,.12)';
+    for (let i = 0; i < 3 && isFloor(x + dx, y + dy); i++) { x += dx; y += dy; ctx.fillRect(x * T + 6, y * T + 6, T - 12, T - 12); }
+  } else if (G.selected === 'fire') {
+    ctx.fillStyle = 'rgba(255,120,60,.14)';
+    for (const [dx, dy] of DIRS) if (isFloor(hv.x + dx, hv.y + dy)) ctx.fillRect((hv.x + dx) * T + 4, (hv.y + dy) * T + 4, T - 8, T - 8);
+  }
+  ctx.globalAlpha = .55; drawTrapIcon(ctx, G.selected, hv.x * T + T / 2, hv.y * T + T / 2, 1, G.springDir, G.time, false); ctx.globalAlpha = 1;
+}
+
+function drawHero() {
+  const h = G.hero, t = G.time;
+  const px = h.x * T + T / 2, py = h.y * T + T / 2 + 2;
+  if (h.inv > 0 && Math.floor(t * 18) % 2 === 0) ctx.globalAlpha = .35;
+  ctx.save(); ctx.translate(px, py);
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(0, 17, 12, 4);
+  const f = h.facing, up = f === 0, side = f === 1 || f === 3;
+  if (f === 3) ctx.scale(-1, 1);
+  const mv = h.moving;
+  const step = mv ? Math.sin(t * 14) : 0;
+  const bob = mv ? -Math.abs(Math.sin(t * 14)) * 2.5 : Math.sin(t * 2.5) * .8;
+  const HAIR = '#f4a9c6', HAIR_D = '#d77aa0', SKIN = '#ffe6d6';
+  // 脚
+  ctx.fillStyle = '#3b2b40';
+  ctx.fillRect(-5, 9 + step * 1.5, 3.5, 7); ctx.fillRect(1.5, 9 - step * 1.5, 3.5, 7);
+  ctx.fillStyle = '#6b2236'; ell(-3.3, 16 + step * 1.5, 3, 1.8); ell(3.3, 16 - step * 1.5, 3, 1.8);
+  // ドレス
+  ctx.fillStyle = '#9b2f4a';
+  ctx.beginPath(); ctx.moveTo(-6.5, -3 + bob); ctx.lineTo(6.5, -3 + bob); ctx.lineTo(11, 11); ctx.quadraticCurveTo(0, 14, -11, 11); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#fff3ea';
+  for (let i = -10; i <= 10; i += 4) { ctx.beginPath(); ctx.arc(i, 11.5, 2.2, 0, Math.PI); ctx.fill(); }
+  if (!up) { ctx.beginPath(); ctx.moveTo(-3.5 + (side ? 2 : 0), -1 + bob); ctx.lineTo(3.5 + (side ? 2 : 0), -1 + bob); ctx.lineTo(5.5 + (side ? 2 : 0), 10); ctx.lineTo(-5.5 + (side ? 2 : 0), 10); ctx.closePath(); ctx.fill(); }
+  // 腕
+  ctx.fillStyle = SKIN; const sw = mv ? Math.sin(t * 14) * 3 : 0;
+  ell(-8.5, 3 + bob + sw, 2.6, 2.6); ell(8.5, 3 + bob - sw, 2.6, 2.6);
+  const hy = -13 + bob, sway = Math.sin(t * 5) * .18 + (mv ? Math.sin(t * 14) * .15 : 0);
+  // ツインテール
+  ctx.fillStyle = HAIR_D;
+  for (const sx of side ? [-1] : [-1, 1]) {
+    ctx.save(); ctx.translate(sx * 11, hy + 2); ctx.rotate(sx * (.25 + sway));
+    ctx.beginPath(); ctx.ellipse(0, 8, 4.5, 10, 0, 0, 7); ctx.fill(); ctx.restore();
+  }
+  // 頭
+  ctx.fillStyle = HAIR; ell(0, hy + 1, 13, 12.5);
+  if (!up) {
+    ctx.fillStyle = SKIN; const fx = side ? 3 : 0;
+    ell(fx, hy + 3, 10, 9);
+    // 前髪
+    ctx.fillStyle = HAIR;
+    ctx.beginPath(); ctx.moveTo(-12, hy + 2); ctx.quadraticCurveTo(0, hy - 18, 12, hy + 2);
+    for (let i = 0; i < 5; i++) { const x = 12 - i * 5.5 + (side ? 2 : 0); ctx.lineTo(x - 2.5, hy - 2 + (i % 2) * 2); ctx.lineTo(x - 5.5, hy + 1); }
+    ctx.closePath(); ctx.fill();
+    // 目
+    const blink = (t % 3.2) < .12;
+    const eyes = side ? [[1, 1], [8, .75]] : [[-4.6, 1], [4.6, 1]];
+    for (const [ex, w] of eyes) {
+      if (blink || h.hurt > 0 || h.confused > 0) { ctx.strokeStyle = '#4b2a63'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(ex - 2.5 * w, hy + 3.5); ctx.lineTo(ex + 2.5 * w, hy + 3.5); ctx.stroke(); continue; }
+      ctx.fillStyle = '#4b2a63'; ctx.beginPath(); ctx.ellipse(ex, hy + 3.5, 2.4 * w, 3.4, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#9b6bd6'; ctx.beginPath(); ctx.ellipse(ex, hy + 4.8, 1.6 * w, 1.6, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#fff'; ell(ex - .8 * w, hy + 2.2, 1.1, 1.1);
+    }
+    ctx.fillStyle = 'rgba(255,120,150,.45)';
+    if (side) ell(7, hy + 8, 2.5, 1.4); else { ell(-7, hy + 8, 2.5, 1.4); ell(7, hy + 8, 2.5, 1.4); }
+    ctx.strokeStyle = '#a0405a'; ctx.lineWidth = 1.2; ctx.beginPath();
+    if (h.hurt > 0) { ctx.arc(fx, hy + 9, 1.6, 0, 7); } else { ctx.arc(fx, hy + 7.6, 1.6, .2, Math.PI - .2); }
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = HAIR_D; ctx.fillRect(-1, hy - 8, 2, 16);
+  }
+  // リボン
+  ctx.fillStyle = '#e0405e';
+  ctx.beginPath(); ctx.moveTo(6, hy - 10); ctx.lineTo(0, hy - 15); ctx.lineTo(1, hy - 6); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(6, hy - 10); ctx.lineTo(13, hy - 14); ctx.lineTo(11, hy - 5); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ff7a92'; ell(6, hy - 10, 2.2, 2.2);
+  ctx.restore(); ctx.globalAlpha = 1;
+  if (h.bubbleT > 0 && h.bubble) { // 吹き出し
+    const by = py - 42 - 6 * (TS - 1);
+    ctx.font = `700 ${Math.round(14 * TS)}px "Zen Maru Gothic", sans-serif`;
+    const w = Math.max(24, ctx.measureText(h.bubble).width + 14);
+    ctx.fillStyle = '#eadbbd'; ctx.strokeStyle = '#7d5f22'; ctx.lineWidth = 1.5;
+    const bh = 22 * TS;
+    ctx.fillRect(px - w / 2, by - bh / 2, w, bh); ctx.strokeRect(px - w / 2, by - bh / 2, w, bh);
+    ctx.beginPath(); ctx.moveTo(px - 4, by + bh / 2); ctx.lineTo(px, by + bh / 2 + 6); ctx.lineTo(px + 4, by + bh / 2); ctx.fill();
+    ctx.fillStyle = '#3a2819'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(h.bubble, px, by + 1);
+  }
+}
+function drawFoe(f) {
+  const t = G.time, px = f.x * T + T / 2, gy = f.y * T + T / 2 + 2, py = gy - f.z;
+  const sc = f.type === 'heavy' ? 1.18 : 1;
+  ctx.save();
+  if (f.dead) { const p = f.deadT / .5; ctx.globalAlpha = 1 - p; }
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, gy + 16, 12 * sc, 4 * sc);
+  ctx.translate(px, py); ctx.scale(sc * (f.face < 0 ? -1 : 1), sc);
+  if (f.dead) ctx.scale(1 + f.deadT, 1 - f.deadT * 1.2);
+  const walking = f.moving && f.stun <= 0;
+  const step = walking ? Math.sin(t * 10 + f.seed) : 0, bob = walking ? -Math.abs(step) * 1.5 : 0;
+  const W_ = f.flash > 0;
+  const col = (c) => W_ ? '#ffffff' : c;
+  ctx.fillStyle = col('#2a2530'); ctx.fillRect(-6, 8 + step * 1.5, 4.5, 8); ctx.fillRect(1.5, 8 - step * 1.5, 4.5, 8);
+  if (f.type === 'knight' || f.type === 'heavy') {
+    const body = f.type === 'heavy' ? '#565b68' : '#8d97ab', helm = f.type === 'heavy' ? '#6b7180' : '#aeb7c8';
+    ctx.fillStyle = col(body); ctx.fillRect(-10, -5 + bob, 20, 15);
+    ctx.fillStyle = col(f.type === 'heavy' ? '#3e2a2a' : '#7a2a33'); ctx.fillRect(-4, -4 + bob, 8, 14);
+    if (f.type === 'heavy') { ctx.fillStyle = col('#7c8392'); ell(-10, -3 + bob, 5, 4); ell(10, -3 + bob, 5, 4); }
+    ctx.fillStyle = col(helm); ell(0, -13 + bob, 9.5, 9);
+    ctx.fillStyle = '#111'; ctx.fillRect(-2, -14 + bob, 10, 3);
+    if (f.type === 'heavy') {
+      ctx.fillStyle = col('#d8cfb8');
+      ctx.beginPath(); ctx.moveTo(-7, -18 + bob); ctx.lineTo(-13, -27 + bob); ctx.lineTo(-3, -20 + bob); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(7, -18 + bob); ctx.lineTo(13, -27 + bob); ctx.lineTo(3, -20 + bob); ctx.fill();
+    } else {
+      ctx.fillStyle = col('#c8463d'); ctx.beginPath(); ctx.ellipse(-3, -22 + bob, 7, 3, -.4, 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = col('#c9c3b5'); ctx.fillRect(9, -2 + bob, 2, 14);
+  } else {
+    ctx.fillStyle = col('#3c4a33'); ctx.beginPath(); ctx.moveTo(-10, 10); ctx.lineTo(-7, -5 + bob); ctx.lineTo(7, -5 + bob); ctx.lineTo(10, 10); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col('#4e6a3c'); ctx.beginPath(); ctx.moveTo(-10, -9 + bob); ctx.quadraticCurveTo(0, -30 + bob, 10, -9 + bob); ctx.quadraticCurveTo(0, -1 + bob, -10, -9 + bob); ctx.fill();
+    ctx.fillStyle = '#16120f'; ell(1.5, -11 + bob, 6, 4.5);
+    ctx.fillStyle = '#ffd34a'; ell(-.5, -11 + bob, 1.3, 1.3); ell(4, -11 + bob, 1.3, 1.3);
+    ctx.fillStyle = col('#c9c3b5'); ctx.fillRect(8, 2 + bob, 6, 2);
+  }
+  ctx.restore();
+  if (!f.dead && f.hp < f.maxhp) {
+    const w = 26, x = px - w / 2, y = py - 32 * sc;
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, y - 1, w + 2, 5);
+    ctx.fillStyle = '#d0503f'; ctx.fillRect(x, y, w * Math.max(0, f.hp / f.maxhp), 3);
+  }
+  if (!f.dead && f.stun > 0 && !f.fly) {
+    ctx.fillStyle = '#ffe58a';
+    for (let i = 0; i < 3; i++) { const a = t * 5 + i * 2.09; ell(px + Math.cos(a) * 10, py - 26 * sc + Math.sin(a) * 3, 2, 2); }
+  }
+}
+function drawTorches() {
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const [x, y] of TORCHES) {
+    const px = x * T + T / 2, py = y === 0 ? T - 24 : y * T + 10;
+    const fl = 1 + Math.sin(G.time * 9 + x) * .06 + Math.sin(G.time * 23 + y) * .04;
+    const g = ctx.createRadialGradient(px, py, 2, px, py, 130 * fl);
+    g.addColorStop(0, 'rgba(255,170,80,.22)'); g.addColorStop(1, 'rgba(255,120,40,0)');
+    ctx.fillStyle = g; ctx.fillRect(px - 140, py - 140, 280, 280);
+  }
+  ctx.restore();
+  for (const [x, y] of TORCHES) {
+    const px = x * T + T / 2, py = y === 0 ? T - 24 : y * T + 10, fl = Math.sin(G.time * 12 + x) * 1.5;
+    ctx.fillStyle = '#ff8a3c'; ctx.beginPath(); ctx.moveTo(px, py - 10 - fl); ctx.quadraticCurveTo(px + 6, py - 2, px, py + 3); ctx.quadraticCurveTo(px - 6, py - 2, px, py - 10 - fl); ctx.fill();
+    ctx.fillStyle = '#ffe08a'; ell(px, py - 1, 2, 3);
+  }
+}
+function drawFx() {
+  for (const fx of G.fx) {
+    if (fx.type === 'rock') {
+      const cx = fx.x * T + T / 2, cy = fx.y * T + T / 2, p = Math.min(1, fx.t / fx.dur);
+      if (!fx.done) {
+        ctx.fillStyle = `rgba(0,0,0,${.2 + p * .35})`; ell(cx, cy + 6, 6 + p * 12, 3 + p * 5);
+        drawTrapIcon(ctx, 'rock', cx, cy - (1 - p) * 90, 1.3, 0, 0, false);
+      } else {
+        const q = (fx.t - fx.dur) / .4; ctx.globalAlpha = 1 - q;
+        drawTrapIcon(ctx, 'rock', cx, cy + 2, 1.3, 0, 0, false);
+        ctx.strokeStyle = 'rgba(200,190,170,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy + 6, 14 + q * 20, 0, 7); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    } else if (fx.type === 'chand') {
+      const cx = fx.x * T + T / 2, cy = fx.y * T + T / 2, p = Math.min(1, fx.t / fx.dur);
+      if (!fx.done) { ctx.fillStyle = `rgba(0,0,0,${.2 + p * .3})`; ell(cx, cy + 6, 20 + p * 16, 6 + p * 6); drawChandelier(cx, cy - 16 + p * p * 22, 1, true); }
+      else { ctx.globalAlpha = Math.max(0, 1 - (fx.t - fx.dur) / .4); drawChandelier(cx, cy + 8, 1.1, false); ctx.globalAlpha = 1; }
+    } else if (fx.type === 'spear') {
+      const p = Math.sin(Math.min(1, fx.t / fx.dur) * Math.PI);
+      ctx.strokeStyle = '#d8d0c4'; ctx.lineWidth = 3;
+      for (const [x, y] of fx.tiles) {
+        const sx = fx.x * T + T / 2, sy = fx.y * T + T / 2, ex = lerp(sx, x * T + T / 2, p), ey = lerp(sy, y * T + T / 2, p);
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+        ctx.fillStyle = '#f4ecdf'; ell(ex, ey, 4, 4);
+      }
+    } else if (fx.type === 'fire') {
+      const p = fx.t / fx.dur; if (p > 1) continue;
+      for (const [x, y] of fx.tiles) {
+        const cx = x * T + T / 2, by = y * T + T - 6, hgt = 40 * Math.sin(p * Math.PI);
+        const g = ctx.createLinearGradient(cx, by, cx, by - hgt);
+        g.addColorStop(0, 'rgba(255,90,40,.9)'); g.addColorStop(.6, 'rgba(255,170,60,.7)'); g.addColorStop(1, 'rgba(255,230,140,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.moveTo(cx - 16, by); ctx.quadraticCurveTo(cx - 10, by - hgt * .6, cx + Math.sin(fx.t * 30 + x) * 4, by - hgt); ctx.quadraticCurveTo(cx + 10, by - hgt * .6, cx + 16, by); ctx.fill();
+      }
+    }
+  }
+  for (const p of G.parts) { ctx.globalAlpha = 1 - p.t / p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size); }
+  ctx.globalAlpha = 1;
+}
+function outlined(text, x, y, size, color, align = 'center') {
+  size *= TS;
+  ctx.font = `800 ${size}px "Shippori Mincho B1", "Yu Mincho", serif`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.lineWidth = Math.max(3, size / 5); ctx.strokeStyle = 'rgba(20,10,16,.9)'; ctx.strokeText(text, x, y);
+  ctx.fillStyle = color; ctx.fillText(text, x, y);
+}
+function drawTexts() {
+  for (const t of G.texts) {
+    const p = t.t / t.dur; ctx.globalAlpha = p < .7 ? 1 : 1 - (p - .7) / .3;
+    outlined(t.text, t.x * T + T / 2, t.y * T + T / 2 - p * 22, t.size * (p < .1 ? 1 + (.1 - p) * 4 : 1), t.color);
+  }
+  ctx.globalAlpha = 1;
+}
+function drawHudCanvas() {
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, W * .65);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  if (G.combo >= 2) {
+    const left = Math.max(0, 1 - (G.time - G.lastHit) / COMBO_WINDOW), pop = 1 + Math.max(0, .25 - (G.time - G.lastHit)) * 1.6;
+    const cx = W - 70 * TS, bw = 80 * TS;
+    ctx.save(); ctx.translate(cx, 34 + 36 * TS); ctx.scale(pop, pop);
+    outlined(`${G.combo}`, 0, -6 * TS, 44, '#f1d98e');
+    outlined('連続', 0, 24 * TS, 16, '#fff4e0');
+    ctx.restore();
+    outlined(`得点 +${Math.round((comboMult() - 1) * 100)}%`, cx, 34 + 84 * TS, 13, '#ffc0d3');
+    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(cx - bw / 2, 34 + 96 * TS, bw, 4);
+    ctx.fillStyle = '#f1d98e'; ctx.fillRect(cx - bw / 2, 34 + 96 * TS, bw * left, 4);
+  }
+  if (G.banner > 0) {
+    const a = Math.min(1, G.banner / .5, (2.4 - G.banner) / .3);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = 'rgba(10,6,12,.55)'; ctx.fillRect(0, H / 2 - 44, W, 88);
+    ctx.fillStyle = '#c9a24a'; ctx.fillRect(0, H / 2 - 44, W, 2); ctx.fillRect(0, H / 2 + 42, W, 2);
+    outlined(G.bannerTitle, W / 2, H / 2 - 8, 40, '#f1d98e');
+    outlined(G.bannerSub, W / 2, H / 2 + 26, 15, '#fff4e0');
+    ctx.globalAlpha = 1;
+  }
+  if (G.state === 'play' && G.phase > 0) { // 夜明けまでの進み（区切りはフェイズの境目）
+    const x0 = 60, x1 = W - 60, y = 12, p = 1 - G.nightT / G.nightLen;
+    ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(x0, y, x1 - x0, 6);
+    ctx.fillStyle = '#c9a24a'; ctx.fillRect(x0, y, (x1 - x0) * p, 6);
+    ctx.fillStyle = '#f1d98e'; for (const k of [1, 2]) ctx.fillRect(x0 + (x1 - x0) * k / 3 - 1, y - 3, 2, 12);
+    outlined('夜', x0 - 16 * TS, y + 3, 13, '#c9b8ff'); outlined('朝', x1 + 16 * TS, y + 3, 13, '#ffd98a');
+  }
+  if (G.msgT > 0) {
+    ctx.globalAlpha = Math.min(1, G.msgT / .3);
+    outlined(G.msg, W / 2, H - 26, 16, '#ffd0c0');
+    ctx.globalAlpha = 1;
+  }
+}
+function draw() {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (G.shake > 0 && !reduceMotion) ctx.translate((Math.random() - .5) * G.shake, (Math.random() - .5) * G.shake);
+  ctx.drawImage(bg, 0, 0, W, H);
+  drawTorches();
+  drawTraps();
+  drawPreview();
+  const ents = [...G.foes.map(f => ({ y: f.y, f })), { y: G.hero.y + .01, hero: true }].sort((a, b) => a.y - b.y);
+  for (const e of ents) e.hero ? drawHero() : drawFoe(e.f);
+  drawDevices();
+  drawFx();
+  drawTexts();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  drawHudCanvas();
+}
+
+// ---------- HTML の HUD ----------
+const el = { hearts: $('#hearts'), manaFill: $('#manaFill'), manaText: $('#manaText'), wave: $('#sWave'), score: $('#sScore'), soul: $('#sSoul'), traps: $('#sTraps'), smart: $('#sSmart'), phase: $('#sPhase'), time: $('#sTime') };
+let hudCache = '';
+function updateHud() {
+  const maxHp = stat.maxHp(), mm = stat.maxMana();
+  const key = [G.hp, maxHp, Math.floor(G.mana), mm, G.wave, G.score, G.soul, G.traps.size, stat.limit(), G.selected, G.springDir, G.up.smart, G.phase, Math.ceil(G.nightT), Math.ceil(G.prepT || 0), G.state].join('|');
+  if (key === hudCache) return; hudCache = key;
+  el.hearts.innerHTML = Array.from({ length: maxHp }, (_, i) => `<span class="${i < G.hp ? '' : 'off'}">♥</span>`).join('');
+  el.hearts.setAttribute('aria-label', `体力 ${G.hp}/${maxHp}`);
+  el.manaFill.style.width = (G.mana / mm * 100) + '%';
+  el.manaText.textContent = `${Math.floor(G.mana)}/${mm}`;
+  el.wave.textContent = Math.max(1, G.wave);
+  el.score.textContent = G.score.toLocaleString('ja-JP');
+  el.soul.textContent = G.soul.toLocaleString('ja-JP');
+  el.traps.textContent = `${G.traps.size}/${stat.limit()}`;
+  el.smart.textContent = `Lv${G.up.smart + 1}`;
+  el.phase.textContent = G.state === 'shop' ? '夜明け' : G.phase ? `フェイズ${G.phase}/3` : '準備';
+  if (G.phase === 0 && G.state === 'play') $('#btnGo').textContent = `侵入者を迎える（あと${Math.max(0, Math.ceil(G.prepT))}秒で自動）`;
+  el.time.textContent = G.state === 'shop' ? '–' : G.phase ? `${Math.ceil(G.nightT)}秒` : '–';
+  for (const b of slots) {
+    const tp = b.dataset.type;
+    b.classList.toggle('sel', G.selected === tp);
+    b.setAttribute('aria-pressed', b.classList.contains('sel'));
+    b.classList.toggle('poor', G.mana < TRAPS[tp].cost);
+    if (tp === 'spring') b.querySelector('.dir').textContent = ARROW[G.springDir];
+  }
+}
+
+// ---------- 罠パレット ----------
+const palette = $('#palette'), slots = [];
+function makeSlot(type) {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'slot'; b.dataset.type = type;
+  const ic = document.createElement('canvas'); ic.width = 76; ic.height = 76;
+  const c = ic.getContext('2d'); c.scale(2, 2);
+  const d = TRAPS[type];
+  drawTrapIcon(c, type, 19, 19, .95, type === 'spring' ? 1 : 0, 0, false);
+  b.innerHTML = `<span class="k">${d.key}</span>${type === 'spring' ? '<span class="dir">→</span>' : ''}`;
+  b.append(ic);
+  b.insertAdjacentHTML('beforeend', `<span class="n">${d.name}</span><span class="c">魔力 ${d.cost}</span><span class="ds">${d.desc}</span>`);
+  b.title = `${d.name}: ${d.desc}`;
+  b._icon = { c, type };
+  b.addEventListener('click', () => {
+    audio();
+    selectTrap(type, false);
+    b.blur();
+  });
+  palette.append(b); slots.push(b);
+}
+TRAP_ORDER.forEach(makeSlot);
+function selectTrap(type, fromKey) {
+  if (type === 'spring' && G.selected === 'spring' && !fromKey) { rotateSpring(1); return; }
+  G.selected = type;
+}
+function rotateSpring(d) {
+  G.springDir = (G.springDir + d + 4) % 4;
+  const s = slots.find(b => b.dataset.type === 'spring');
+  s._icon.c.clearRect(0, 0, 38, 38); drawTrapIcon(s._icon.c, 'spring', 19, 19, .95, G.springDir, 0, false);
+}
+
+// ---------- 画面切り替え ----------
+const stage = $('#stage');
+const OVS = ['ovTitle', 'ovShop', 'ovOver', 'ovPause'];
+function showOv(id) {
+  OVS.forEach(o => $('#' + o).hidden = o !== id);
+  stage.classList.toggle('has-ov', !!id);
+}
+function bestText() { return best > 0 ? `これまでの最高得点 ${best.toLocaleString('ja-JP')}` : ''; }
+function startRun() {
+  audio();
+  G = makeRun('play'); paused = false; hudCache = '';
+  showOv(null); startWave(1);
+}
+function openShop() {
+  G.state = 'shop';
+  G.hp = Math.min(stat.maxHp(), G.hp + 1);
+  G.mana = stat.maxMana();
+  G.foes = []; G.fx = []; G.texts = []; G.parts = []; $('#btnGo').hidden = true;
+  G.banner = 0; G.combo = 0; G.msgT = 0; G.removedCd = {};
+  G.phaseBonus = 0;
+  const extra = [...G.traps.entries()].sort((a, b) => (b[1].bonus - a[1].bonus) || (b[1].at - a[1].at)).slice(0, Math.max(0, G.traps.size - stat.limit()));
+  extra.forEach(([k]) => G.traps.delete(k));
+  for (const tr of G.traps.values()) { tr.cd = 0; tr.snap = 0; }
+  for (const dv of G.devices) dv.cd = 0;
+  $('#shopNote').textContent = '体力が1つ回復し、魔力は満タンになった。罠はそのまま残る。' + (extra.length ? `フェイズで増やした罠のうち${extra.length}個は夜明けに崩れた。` : '');
+  $('#shopTitle').textContent = `第${G.wave}夜を越えた`;
+  renderShop(); showOv('ovShop');
+}
+function renderShop() {
+  $('#shopSoul').textContent = G.soul.toLocaleString('ja-JP');
+  const grid = $('#shopGrid'); grid.innerHTML = '';
+  for (const u of UPS) {
+    const lv = G.up[u.id], maxed = lv >= u.max, cost = upCost(u, lv);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'up'; b.id = 'up-' + u.id;
+    b.disabled = maxed || G.soul < cost;
+    b.innerHTML = `<span class="n">${u.name}</span><span class="d">${u.desc}</span><span class="lv">段階 ${lv} / ${u.max}</span><span class="c">${maxed ? 'これ以上は強くできない' : '魂 ' + cost}</span>`;
+    b.addEventListener('click', () => {
+      if (G.soul < cost || maxed) return;
+      G.soul -= cost; G.up[u.id]++;
+      if (u.id === 'hp') G.hp++;
+      if (u.id === 'maxMana') G.mana = stat.maxMana();
+      sfx.kill(); hudCache = ''; renderShop();
+      const again = $('#up-' + u.id); if (again && !again.disabled) again.focus();
+    });
+    grid.append(b);
+  }
+}
+function gameOver() {
+  G.state = 'over'; $('#btnGo').hidden = true;
+  if (G.score > best) { best = G.score; try { localStorage.setItem('wanakan-best', String(best)); } catch (e) {} }
+  $('#rWave').textContent = `第${G.wave}夜`;
+  $('#rScore').textContent = G.score.toLocaleString('ja-JP');
+  $('#rCombo').textContent = G.bestCombo;
+  $('#rKills').textContent = G.kills;
+  $('#rBest').textContent = bestText();
+  setTimeout(() => showOv('ovOver'), 700);
+}
+function setPause(p) {
+  if (G.state !== 'play') return;
+  paused = p;
+  $('#btnGo').hidden = p || G.phase !== 0;
+  showOv(p ? 'ovPause' : null);
+  $('#btnPause').textContent = p ? '再開' : '一時停止';
+}
+$('#btnStart').addEventListener('click', startRun);
+$('#btnRetry').addEventListener('click', startRun);
+$('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave(G.wave + 1); hudCache = ''; });
+$('#btnResume').addEventListener('click', () => setPause(false));
+$('#btnGo').addEventListener('click', beginDefense);
+$('#btnPause').addEventListener('click', () => setPause(!paused));
+$('#btnSound').addEventListener('click', () => { soundOn = !soundOn; $('#btnSound').textContent = soundOn ? '音: 入' : '音: 切'; });
+document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play' && !paused) setPause(true); });
+$('#bestLine').textContent = bestText();
+showOv('ovTitle');
+
+// ---------- ループ ----------
+let last = 0;
+function frame(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts;
+  if (G.state === 'play' && !paused) update(dt);
+  else if (G.state === 'title') G.time += dt;
+  else if (G.state === 'over') { G.time += dt; for (const p of G.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; } }
+  draw(); updateHud();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; } };
+})();
+</script>
