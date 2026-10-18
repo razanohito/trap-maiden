@@ -10,6 +10,7 @@ const LOADOUTS = {
   誘い込み: ['bell', 'rock', 'fire', 'ice'],
   直置き: ['caltrop', 'bear', 'rock', 'fire'],
   吸い寄せ: ['vortex', 'fire', 'rock', 'spring'],
+  得意入り: null, // 定番の跳ね床を、その子の得意な罠に替える（定番に入っていれば落石を跳ね床に）
 };
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -19,7 +20,9 @@ const LOADOUTS = {
   await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/src/game.html');
   const results = [];
   for (const char of ['lily', 'mina', 'noel', 'cecil']) {
-    for (const [lname, lo] of Object.entries(LOADOUTS)) {
+    for (const [lname, lo0] of Object.entries(LOADOUTS)) {
+      const fav = { lily: 'warp', mina: 'fire', noel: 'ice', cecil: 'rock' }[char];
+      const lo = lo0 || (LOADOUTS.定番.includes(fav) ? LOADOUTS.定番 : LOADOUTS.定番.map(t => t === 'spring' ? fav : t));
       const r = await p.evaluate(({ char, lo, RUNS }) => {
         const A = window.__wanakan.api, W = window.__wanakan;
         const COLS = 15, DT = 1 / 30;
@@ -60,23 +63,6 @@ const LOADOUTS = {
             if (type === 'blade' && st) { const back = A.DIRS.findIndex(([a, b]) => a === -st[0] && b === -st[1]); G.springDir = back >= 0 ? back : 1; }
             G.selected = type; A.placeTrap(x, y, type);
           };
-          const botSkill = () => {
-            if (G.skillCd > 0 || G.phase === 0) return;
-            A.setPaused(false); try { botSkillInner(); } finally { A.setPaused(true); } // useSkill は一時停止中だと動かない
-          };
-          const botSkillInner = () => {
-            const h = G.hero, live = G.foes.filter(f => !f.dead && !f.fly);
-            if (!live.length) return;
-            const near = live.filter(f => Math.max(Math.abs(f.x - h.x), Math.abs(f.y - h.y)) <= 2.2);
-            if (char === 'lily' && [...G.traps.values()].filter(t => t.cd > 1).length >= 3) A.useSkill();
-            else if (char === 'mina' && (G.mana < 40 || [...G.traps.values()].filter(t => t.cd > 1).length >= 3)) A.useSkill();
-            else if (char === 'noel' && near.length) A.useSkill();
-            else if (char === 'cecil') {
-              const tgt = live.map(f => [f, live.filter(g => Math.max(Math.abs(g.x - f.x), Math.abs(g.y - f.y)) <= 1.2).length]).sort((a, b) => b[1] - a[1])[0];
-              const close = Math.abs(tgt[0].x - h.x) + Math.abs(tgt[0].y - h.y) <= 5;
-              if (tgt[1] >= 2 || close) { A.useSkill(); A.doSkill(Math.round(tgt[0].x), Math.round(tgt[0].y)); }
-            }
-          };
           const PRI = ['limit', 'smart', 'power', 'regen', 'cd', 'hp', 'maxMana', 'speed'];
           while (G.state !== 'over' && guard++ < 30 * 60 * 25) {
             if (G.state === 'shop') {
@@ -94,7 +80,6 @@ const LOADOUTS = {
             }
             if (G.phase === 0 && G.time > 0 && G.prepT < 17) { A.setPaused(false); A.beginDefense(); A.setPaused(true); }
             if (G.time >= nextPlace) { botPlace(); nextPlace = G.time + .4; }
-            botSkill();
             for (const dv of G.devices) { // 館の仕掛けも使う
               if (dv.cd > 0) continue;
               const n = G.foes.filter(f => !f.dead && !f.fly && A.deviceReach(dv, Math.round(f.x), Math.round(f.y))).length;
@@ -103,7 +88,7 @@ const LOADOUTS = {
             A.update(DT);
             G = W.G;
           }
-          out.push({ skills: G.skillUses || 0, kills: G.kills, traps: G.traps.size, trig: [...G.traps.values()].map(t => t.type).join('+'), wave: G.wave, won: G.bannerTitle === '全滅させた！' || G.bannerTitle === '夜明け' ? G.wave >= 10 && G.hp > 0 : false, score: G.score, hp: G.hp, time: Math.round(G.time) });
+          out.push({ combo: G.bestCombo, kills: G.kills, traps: G.traps.size, trig: [...G.traps.values()].map(t => t.type).join('+'), wave: G.wave, won: G.bannerTitle === '全滅させた！' || G.bannerTitle === '夜明け' ? G.wave >= 10 && G.hp > 0 : false, score: G.score, hp: G.hp, time: Math.round(G.time) });
         }
         return out;
       }, { char, lo, RUNS });
@@ -116,7 +101,7 @@ const LOADOUTS = {
   const by = key => {
     const m = {};
     for (const x of results) for (const r of x.runs) { const k = x[key]; (m[k] ||= []).push(r); }
-    for (const [k, rs] of Object.entries(m)) console.log(`  ${key}=${k}: 到達夜 ${(rs.reduce((a, b) => a + b.wave, 0) / rs.length).toFixed(1)}  クリア ${rs.filter(r => r.wave >= 10 && r.hp > 0).length}/${rs.length}  平均得点 ${Math.round(rs.reduce((a, b) => a + b.score, 0) / rs.length)}`);
+    for (const [k, rs] of Object.entries(m)) console.log(`  ${key}=${k}: 到達夜 ${(rs.reduce((a, b) => a + b.wave, 0) / rs.length).toFixed(1)}  クリア ${rs.filter(r => r.wave >= 10 && r.hp > 0).length}/${rs.length}  平均得点 ${Math.round(rs.reduce((a, b) => a + b.score, 0) / rs.length)}  最大連続 ${(rs.reduce((a, b) => a + (b.combo || 0), 0) / rs.length).toFixed(1)}`);
   };
   console.log('--- 逃げる子ごと'); by('char');
   console.log('--- 罠の組み合わせごと'); by('loadout');
