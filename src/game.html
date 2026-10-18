@@ -537,6 +537,7 @@ const ART = { portrait_lily: '../art/portrait_lily.webp', portrait_mina: '../art
   lily_hit: '../art/sprites/lily_hit.png', mina_hit: '../art/sprites/mina_hit.png', noel_hit: '../art/sprites/noel_hit.png', cecil_hit: '../art/sprites/cecil_hit.png',
   lily_pinch: '../art/sprites/lily_pinch.png', mina_pinch: '../art/sprites/mina_pinch.png', noel_pinch: '../art/sprites/noel_pinch.png', cecil_pinch: '../art/sprites/cecil_pinch.png',
   fx_warp: '../art/fx/warp.png', fx_soul: '../art/fx/soul.png',
+  fx_bell: '../art/fx/bell.png', fx_caltrop: '../art/fx/caltrop.png', fx_vortex: '../art/fx/vortex.png', fx_slash: '../art/fx/slash.png', fx_spear: '../art/fx/spear.png', fx_spike: '../art/fx/spike.png', fx_pit: '../art/fx/pit.png', fx_chandelier: '../art/fx/chandelier.png', fx_bomb: '../art/fx/bomb.png', fx_hurt: '../art/fx/hurt.png', fx_keys: '../art/fx/keys.png', fx_mana: '../art/fx/mana.png',
   lily_jump: '../art/sprites/lily_jump.png', mina_jump: '../art/sprites/mina_jump.png', noel_jump: '../art/sprites/noel_jump.png', cecil_jump: '../art/sprites/cecil_jump.png',
   portrait_lily_happy: '../art/portrait_lily_happy.webp', portrait_mina_happy: '../art/portrait_mina_happy.webp', portrait_noel_happy: '../art/portrait_noel_happy.webp', portrait_cecil_happy: '../art/portrait_cecil_happy.webp',
   foe_knight_walk: '../art/sprites/foe_knight_walk.png', foe_knight_idle: '../art/sprites/foe_knight_idle.png',
@@ -1106,7 +1107,7 @@ function advancePhase() {
   const doorNote = G.wave === 1 ? '左の扉から侵入者が来る' : G.wave === 2 ? '右の扉も破られた' : G.wave === 3 ? '上の扉からも来る' : G.wave === 6 ? '書庫の3つの扉から来る' : `侵入者 ${G.phaseQ.flat().length}人`;
   if (G.phase === 1) { banner('フェイズ1', doorNote); sfx.door(); return; }
   G.phaseBonus = G.phase - 1;
-  G.mana = Math.min(stat.maxMana(), G.mana + 25);
+  G.mana = Math.min(stat.maxMana(), G.mana + 25); spr('mana', G.hero.x, G.hero.y, .8, 1.3, -18);
   banner(`フェイズ${G.phase}`, '置ける罠 +1・魔力 +25'); sfx.wave();
 }
 function clearNight(wiped) {
@@ -1144,7 +1145,7 @@ function burst(x, y, color, n, sp = 120) {
 function trapSuccess() {
   G.combo = (G.time - G.lastHit <= COMBO_WINDOW) ? G.combo + 1 : 1;
   G.lastHit = G.time; G.bestCombo = Math.max(G.bestCombo, G.combo); G.nightCombo = Math.max(G.nightCombo || 0, G.combo);
-  if (G.combo >= 3) G.mana = Math.min(stat.maxMana(), G.mana + 4);
+  if (G.combo >= 3) { G.mana = Math.min(stat.maxMana(), G.mana + 4); if (G.time - (G.manaFxT ?? -9) > 1.5) { G.manaFxT = G.time; spr('mana', G.hero.x, G.hero.y, .7, 1, -18); } } // 連続で魔力が戻る
   if (G.combo >= 2) { G.shake = Math.min(9, 2 + G.combo); sfx.combo(G.combo); }
 }
 function hitFoe(f, base) {
@@ -1175,7 +1176,7 @@ function killFoe(f) {
 const DOWN_MAX = 8; // HP0 の侵入者が残る最長の秒数（連続が切れたらその前に消える）
 function finishFoe(f) { f.dead = true; f.deadT = 0; f.down = 0; }
 // 絵のエフェクト（8 コマの横長画像）を出す。dy はマスの中心からのずれ（上が負）
-function spr(key, x, y, dur, s = 1, dy = 0) { if (imgReady(`fx_${key}`)) G.fx.push({ type: 'spr', key, x, y, t: 0, dur, s, dy }); }
+function spr(key, x, y, dur, s = 1, dy = 0, rot = 0) { if (imgReady(`fx_${key}`)) G.fx.push({ type: 'spr', key, x, y, t: 0, dur, s, dy, rot }); }
 function poisonTick(f) { // 毒は1秒ごと（連続には数えない）
   const dmg = Math.round(7 * stat.power());
   f.hp -= dmg; f.flash = .1; G.score += dmg * 5;
@@ -1185,7 +1186,7 @@ function poisonTick(f) { // 毒は1秒ごと（連続には数えない）
 const inBox = (f, x, y, r) => !f.dead && !f.fly && Math.max(Math.abs(f.x - x), Math.abs(f.y - y)) <= r;
 function terrainAt(x, y, f) { // 地形のダメージ（連続には数えない）
   if (f.dead || tileAt(x, y) !== '^') return;
-  hitFoe(f, 6); f.stun = Math.max(f.stun, .25); sfx.spike();
+  hitFoe(f, 6); f.stun = Math.max(f.stun, .25); sfx.spike(); spr('spike', x, y, .4);
   addText(x, y - .9, 'トゲ', '#d8d0c4', 14);
 }
 function activateDevice(dv) {
@@ -1199,6 +1200,7 @@ function activateDevice(dv) {
     sfx.spear();
     const tiles = DIRS.map(([dx, dy]) => [dv.x + dx, dv.y + dy]).filter(([a, b]) => isFloor(a, b));
     G.fx.push({ type: 'spear', x: dv.x, y: dv.y, tiles, t: 0, dur: .45 });
+    for (const [a, b] of tiles) spr('spear', a, b, .45, 1, 0, Math.atan2(b - dv.y, a - dv.x)); // 槍は外向き（絵は右向き）
     const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
     if (hits.length) { trapSuccess(); multiHit(hits); }
     for (const g of hits) { hitFoe(g, 22); if (!g.dead) shove(g, DIRS.findIndex(([dx, dy]) => dx === Math.round(g.x) - dv.x && dy === Math.round(g.y) - dv.y)); }
@@ -1296,6 +1298,7 @@ function triggerAt(x, y, f, chained) {
     const [ddx, ddy] = f.door || DOORS[0];
     G.fx.push({ type: 'warp', x, y, t: 0, dur: .5 }, { type: 'warp', x: ddx, y: ddy, t: 0, dur: .5 });
     spr('warp', x, y, .6); spr('warp', ddx, ddy, .6);
+    if (fav) spr('keys', ddx, ddy, .8, 1, -10); // リリィの館の鍵番
     f.tx = f.nx = ddx; f.ty = f.ny = ddy; f.x = ddx; f.y = ddy; f.moving = false; f.prog = 0;
     f.stun = Math.max(f.stun, fav ? 2.5 : .8); // リリィは扉の前で長く足止め
     addText(ddx, ddy - 1, '戻された！', '#c9b8ff', 16);
@@ -1304,21 +1307,22 @@ function triggerAt(x, y, f, chained) {
     const [dx, dy] = DIRS[tr.dir], tiles = [[x, y]];
     for (let i = 1; i < 4 && isFloor(x + dx * i, y + dy * i); i++) tiles.push([x + dx * i, y + dy * i]);
     G.fx.push({ type: 'blade', tiles, t: 0, dur: .35 });
+    tiles.forEach(([a, b], i) => setTimeout(() => spr('slash', a, b, .35, 1, 0, (tr.dir - 1) * Math.PI / 2), i * 40)); // 刃の向きに回す（絵は右向き）
     const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
     if (hits.length) { trapSuccess(); multiHit(hits); }
     hits.forEach(g => { hitFoe(g, 15); shove(g, tr.dir); });
   } else if (tr.type === 'bell') {
-    sfx.handbell();
+    sfx.handbell(); spr('bell', x, y, .7, 1.4);
     trapSuccess();
     G.lure = { x, y, t: 3 };
     for (const g of G.foes) if (!g.dead && !g.fly && Math.abs(g.x - x) + Math.abs(g.y - y) <= 4) g.stun = Math.max(g.stun, .3 * FOES[g.type].stunMul); // 音に気を取られる
     addText(x, y - 1, '鈴の音', '#f1d98e', 16);
   } else if (tr.type === 'caltrop') { // 弱いが安くてすぐ置ける
-    sfx.caltrop();
+    sfx.caltrop(); spr('caltrop', x, y, .45);
     trapSuccess(); hitFoe(f, 9); burst(x, y, '#c9c3b5', 6, 70);
     if (!f.dead) { f.slow = Math.max(f.slow, 1.5); shove(f, f.lastDir); }
   } else if (tr.type === 'vortex') { // 周りの侵入者をまとめて吸い寄せる（吸い寄せた先の罠も発動する）
-    sfx.vortex();
+    sfx.vortex(); spr('vortex', x, y, .7, 2);
     trapSuccess(); hitFoe(f, 6);
     G.fx.push({ type: 'vortex', x, y, t: 0, dur: .7 });
     const field = bfs(x, y, foeWalk), pulled = [f];
@@ -1524,7 +1528,7 @@ function updateFoe(f, dt) {
       f.stun = Math.max(f.stun, .35 * FOES[f.type].stunMul);
       if (fl.fall) {
         addText(f.x, f.y - 1.1, '奈落へ！', '#c9b8ff', 22); G.score += 300 * Math.max(1, G.combo);
-        trapSuccess(); killFoe(f); finishFoe(f); G.shake = Math.max(G.shake, 7); sfx.pit(); return;
+        trapSuccess(); killFoe(f); finishFoe(f); G.shake = Math.max(G.shake, 7); sfx.pit(); spr('pit', f.x, f.y, .7, 1.2); return;
       }
       if (fl.slam && fl.polish) { // ノエルの磨き上げた床: 勢いよくぶつかって目を回す
         addText(f.x, f.y - 1, '大激突！', '#ffb38a', 22); hitFoe(f, 34); G.shake = Math.max(G.shake, 7); sfx.crash();
@@ -1585,7 +1589,7 @@ function update(dt) {
     fx.t += dt;
     if (fx.type === 'chand' && !fx.done && fx.t >= fx.dur) {
       fx.done = true; G.shake = Math.max(G.shake, 7); burst(fx.x, fx.y, '#f1d98e', 22, 170);
-      sfx.crash();
+      sfx.crash(); spr('chandelier', fx.x, fx.y, .7, 2.6);
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.2);
       if (hits.length) { trapSuccess(); multiHit(hits); } else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
       for (const f of hits) { hitFoe(f, 35); if (!f.dead) f.stun = Math.max(f.stun, 1 * FOES[f.type].stunMul); }
@@ -1594,7 +1598,7 @@ function update(dt) {
       fx.done = true; sfx.rock(); spr('rock', fx.x, fx.y, .6, 1.4); G.shake = Math.max(G.shake, 6); burst(fx.x, fx.y, '#8c8478', 16, 140);
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.hypot(f.x - fx.x, f.y - fx.y) < .75);
       const near = fx.boom ? G.foes.filter(f => !f.dead && f.z <= 6 && !hits.includes(f) && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.4) : [];
-      if (fx.boom) { G.fx.push({ type: 'boom', x: fx.x, y: fx.y, t: 0, dur: 0 }); sfx.bomb(); G.shake = Math.max(G.shake, 8); burst(fx.x, fx.y, '#ffb35a', 22, 180); } // セシルの爆薬仕込み
+      if (fx.boom) { G.fx.push({ type: 'boom', x: fx.x, y: fx.y, t: 0, dur: 0 }); sfx.bomb(); spr('bomb', fx.x, fx.y, .7, 2.4); G.shake = Math.max(G.shake, 8); burst(fx.x, fx.y, '#ffb35a', 22, 180); } // セシルの爆薬仕込み
       if (hits.length || near.length) { trapSuccess(); multiHit(hits.concat(near)); } else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
       for (const f of hits) { hitFoe(f, fx.boom ? 45 : 30); if (!f.dead) { f.stun = Math.max(f.stun, .8 * FOES[f.type].stunMul); f.lurch = ((f.lastDir ?? 1) + 2) % 4; } }
       for (const f of near) { hitFoe(f, 22); if (!f.dead) f.stun = Math.max(f.stun, .5 * FOES[f.type].stunMul); }
@@ -1614,7 +1618,7 @@ function update(dt) {
     for (const f of G.foes) {
       if (f.dead || f.down > 0 || f.fly || f.z > 0) continue;
       if (Math.hypot(f.x - h.x, f.y - h.y) < .6) {
-        G.hp--; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt();
+        G.hp--; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt(); spr('hurt', h.x, h.y, .5, 1, -14);
         f.stun = Math.max(f.stun, 1.2); // 捕まえかけて一瞬止まる
         if (Math.random() < Math.max(.08, .35 - .06 * smartL())) { h.confused = 1.2; heroBubble('？', 1.2); }
         addText(h.x, h.y - 1, 'きゃっ！', '#ffc0d3', 20);
@@ -2110,7 +2114,7 @@ function drawFx() {
       }
     } else if (fx.type === 'spr') { // 絵のエフェクト
       const k = Math.min(7, Math.floor(fx.t / fx.dur * 8)), size = 48 * fx.s;
-      if (fx.t < fx.dur) { const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false; ctx.drawImage(IMG[`fx_${fx.key}`], k * 48, 0, 48, 48, fx.x * T + T / 2 - size / 2, fx.y * T + T / 2 - size / 2 + fx.dy, size, size); ctx.imageSmoothingEnabled = sm; }
+      if (fx.t < fx.dur) { const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false; ctx.save(); ctx.translate(fx.x * T + T / 2, fx.y * T + T / 2 + fx.dy); if (fx.rot) ctx.rotate(fx.rot); ctx.drawImage(IMG[`fx_${fx.key}`], k * 48, 0, 48, 48, -size / 2, -size / 2, size, size); ctx.restore(); ctx.imageSmoothingEnabled = sm; }
     } else if (fx.type === 'vortex') {
       const p = Math.min(1, fx.t / fx.dur), cx = fx.x * T + T / 2, cy = fx.y * T + T / 2;
       ctx.strokeStyle = `rgba(127,214,196,${.8 * (1 - p)})`; ctx.lineWidth = 3;
