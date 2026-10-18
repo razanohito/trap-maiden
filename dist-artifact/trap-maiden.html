@@ -497,7 +497,7 @@ const TRAP_ORDER = ['bear','spring','rock','fire','ice','warp','blade','bell','c
 const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
 // 逃げる子。数値は自動ボットで全員の到達夜・得点が近くなるように調整した
 const CHARS = {
-  lily:  { name:'リリィ', title:'館の娘', art:'lily', hp:3, speed:3.4, regen:7.5, maxMana:110, power:1, smart:0,
+  lily:  { name:'リリィ', title:'館の娘', art:'lily', hp:3, speed:3.4, regen:8, maxMana:110, power:1, smart:0,
            profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的', flawName:'怖がり', flaw:'侵入者がすぐ近くに来ると、足がすくんで一瞬動けなくなる',
            lure:['こ、こっちなら…', 'お願い、引っかかって…', '罠の向こうなら大丈夫…'], lureFav:'扉まで帰ってください…！', ready:'こ、この罠なら…きっと大丈夫…！', fav:'warp', passive:{ name:'館の鍵番', cd:3, desc:'送り返しの陣の再装填が3秒、威力が約2倍になり、送り返した侵入者は扉の前で2秒半動けない' },
            look:{ hair:'#f4a9c6', hairD:'#d77aa0', dress:'#9b2f4a', ribbon:'#e0405e', eye:'#4b2a63' } },
@@ -511,7 +511,7 @@ const CHARS = {
            look:{ hair:'#9a6a45', hairD:'#6e4a2e', dress:'#2f5a45', ribbon:'#f4efe6', eye:'#3a5a3a' } },
   cecil: { name:'セシル', title:'錬金術師の見習い', art:'cecil', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1, smart:0,
            profile:'器用で、爆薬の扱いが得意。体力・足は平均的で、魔力は溜まりにくい', flawName:'好奇心', flaw:'暇だと扉や仕掛けを覗きに行ってしまう（侵入者の来る扉に近づくことも）',
-           lure:['ほらほら、こっち！', '実験に付き合ってよ♪', 'そこ踏んでみて！'], lureFav:'上、気をつけてね♪', ready:'よーし、実験開始だね！', fav:'rock', passive:{ name:'爆薬仕込み', cost:25, desc:'落石の魔力が25になり、爆薬入りで威力1.5倍。落ちた場所の周り3x3もまとめて吹き飛ばす' },
+           lure:['ほらほら、こっち！', '実験に付き合ってよ♪', 'そこ踏んでみて！'], lureFav:'上、気をつけてね♪', ready:'よーし、実験開始だね！', fav:'rock', passive:{ name:'爆薬仕込み', cost:30, desc:'落石の魔力が30になり、爆薬入りで威力1.5倍。落ちた場所の周り3x3もまとめて吹き飛ばす' },
            look:{ hair:'#efcf7a', hairD:'#c9a24a', dress:'#7a4f2e', ribbon:'#3f8f8a', eye:'#2d5f8a' } },
 };
 const CHAR_ORDER = ['lily','mina','noel','cecil'];
@@ -897,6 +897,7 @@ cv.addEventListener('pointercancel', e => { endFlick(e, true); G.hover = null; }
 
 function say(text, dur = 1.8) { G.msg = text; G.msgT = dur; }
 function placeTrap(x, y, type) {
+  if (G.finale) return; // 大連鎖の間は置けない
   const def = TRAPS[type];
   if (!canPlace(x, y)) { say('そこには置けない'); sfx.bad(); return; }
   const key = x + ',' + y, old = G.traps.get(key);
@@ -997,7 +998,7 @@ function startWave(n) {
   if (n === LAST_NIGHT) q.push('heavy', 'thief', 'thief');
   const a = Math.round(q.length * .3), b = Math.round(q.length * .6);
   G.phaseQ = [q.slice(0, a), q.slice(a, b), q.slice(b)];
-  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1;
+  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1; G.finale = null;
   G.nightLen = G.nightT = 50 + 3 * (n - 1); G.prepT = 25;
   G.state = 'play';
   if (moved || n === 1) startIntro(mi);
@@ -1019,12 +1020,50 @@ function advancePhase() {
   G.mana = Math.min(stat.maxMana(), G.mana + 25);
   banner(`フェイズ${G.phase}`, '置ける罠 +1・魔力 +25'); sfx.wave();
 }
-function clearNight(wiped) {
+// 連続が続いたまま全滅させたら、置いてある罠が近い順につぎつぎ作動して連続を伸ばす（罠の大連鎖）
+function startFinale() {
+  const left = [...G.traps.entries()].map(([k, tr]) => { const [x, y] = k.split(',').map(Number); return { x, y, tr }; });
+  let [cx, cy] = G.lastKill || [Math.round(G.hero.x), Math.round(G.hero.y)];
+  const list = [];
+  while (left.length) { // 最後に倒した場所から、いちばん近い罠へ順にたどる
+    let bi = 0, bd = 1e9;
+    left.forEach((o, i) => { const d = Math.abs(o.x - cx) + Math.abs(o.y - cy); if (d < bd) { bd = d; bi = i; } });
+    const o = left.splice(bi, 1)[0]; list.push(o); cx = o.x; cy = o.y;
+  }
+  G.finale = { list, t: .45, n: 0, gained: 0 };
+  banner('罠の大連鎖！', '置いた罠がつぎつぎ作動する'); G.banner = 1.8; G.msgT = 0;
+}
+function updateFinale(dt) {
+  const fz = G.finale; fz.t -= dt; if (fz.t > 0) return;
+  if (!fz.list.length) { G.finale = null; clearNight(true, fz.gained, fz.n); return; }
+  const { x, y, tr } = fz.list.shift();
+  tr.anim = .35; trapShowFx(tr.type, x, y, tr.dir);
+  trapSuccess(); fz.n++;
+  const pts = 100 * Math.min(10, G.combo); G.score += pts; fz.gained += pts;
+  addText(x, y - 1.2, `${G.combo}連続 +${pts}`, '#f1d98e', 15 + Math.min(9, fz.n));
+  if (G.combo < 2) sfx.combo(2); G.shake = Math.max(G.shake, 3); // 連続の音は trapSuccess が鳴らす
+  fz.t = Math.max(.16, .4 - fz.n * .025); // だんだん速く
+}
+// 罠の見た目と音だけを出す（大連鎖用。侵入者には当たらない）
+function trapShowFx(type, x, y, dir = 1) {
+  burst(x, y, '#f1d98e', 10, 120);
+  if (type === 'bear') { sfx.bear(); spr('snap', x, y, .45); }
+  else if (type === 'spring') { sfx.spring(); spr('spring', x, y, .5, 1, -8); }
+  else if (type === 'rock') { sfx.rock(); spr('rock', x, y, .6, 1.4); burst(x, y, '#8c8478', 12, 130); }
+  else if (type === 'fire') { sfx.fire(); G.fx.push({ type: 'fire', tiles: [[x, y], ...DIRS.map(([dx, dy]) => [x + dx, y + dy]).filter(([a, b]) => isFloor(a, b))], t: 0, dur: .7 }); }
+  else if (type === 'ice') { sfx.ice(); spr('ice', x, y, .6); }
+  else if (type === 'warp') { sfx.warp(); G.fx.push({ type: 'warp', x, y, t: 0, dur: .5 }); }
+  else if (type === 'blade') { sfx.blade(); const [dx, dy] = DIRS[dir], tiles = [[x, y]]; for (let i = 1; i < 4 && isFloor(x + dx * i, y + dy * i); i++) tiles.push([x + dx * i, y + dy * i]); G.fx.push({ type: 'blade', tiles, t: 0, dur: .35 }); }
+  else if (type === 'bell') sfx.handbell();
+  else if (type === 'caltrop') sfx.caltrop();
+  else if (type === 'vortex') { sfx.vortex(); G.fx.push({ type: 'vortex', x, y, t: 0, dur: .7 }); }
+}
+function clearNight(wiped, finalePts = 0, finaleN = 0) {
   G.clearT = 1.8;
   if (wiped) {
     const bonus = 10 * G.wave, tb = Math.ceil(G.nightT) * 50;
     G.soul += bonus; G.score += 1000 * G.wave + tb;
-    banner('全滅させた！', `魂 +${bonus}・残り時間ボーナス ${tb.toLocaleString('ja-JP')}点`);
+    banner('全滅させた！', finaleN ? `罠${finaleN}つが大連鎖 +${finalePts.toLocaleString('ja-JP')}点・魂 +${bonus}・残り時間 ${tb.toLocaleString('ja-JP')}点` : `魂 +${bonus}・残り時間ボーナス ${tb.toLocaleString('ja-JP')}点`);
   } else {
     for (const f of G.foes) if (!f.dead) { f.dead = true; f.deadT = 0; burst(f.x, f.y, '#a99cb0', 8, 80); }
     G.score += 500 * G.wave;
@@ -1066,7 +1105,7 @@ function hitFoe(f, base) {
 function killFoe(f) {
   if (f.dead) return;
   const mult = comboMult();
-  f.dead = true; f.deadT = 0; f.hp = 0; G.kills++;
+  f.dead = true; f.deadT = 0; f.hp = 0; G.kills++; G.lastKill = [Math.round(f.x), Math.round(f.y)];
   const def = FOES[f.type], s = Math.round(def.soul * mult);
   G.soul += s; G.score += Math.round(def.score * mult);
   addText(f.x, f.y - 1, `魂 +${s}`, '#c9b8ff', 16);
@@ -1488,7 +1527,7 @@ function update(dt) {
       if (fx.boom) { G.fx.push({ type: 'boom', x: fx.x, y: fx.y, t: 0, dur: 0 }); sfx.bomb(); G.shake = Math.max(G.shake, 8); burst(fx.x, fx.y, '#ffb35a', 22, 180); } // セシルの爆薬仕込み
       if (hits.length || near.length) { trapSuccess(); multiHit(hits.concat(near)); } else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
       for (const f of hits) { hitFoe(f, fx.boom ? 45 : 30); if (!f.dead) { f.stun = Math.max(f.stun, .8 * FOES[f.type].stunMul); f.lurch = ((f.lastDir ?? 1) + 2) % 4; } }
-      for (const f of near) { hitFoe(f, 28); if (!f.dead) f.stun = Math.max(f.stun, .5 * FOES[f.type].stunMul); }
+      for (const f of near) { hitFoe(f, 22); if (!f.dead) f.stun = Math.max(f.stun, .5 * FOES[f.type].stunMul); }
     }
   }
   G.fx = G.fx.filter(fx => fx.t < fx.dur + .4);
@@ -1514,6 +1553,7 @@ function update(dt) {
       }
     }
   }
+  if (G.finale) { updateFinale(dt); return; }
   if (G.clearT >= 0) { G.clearT -= dt; if (G.clearT <= 0) { if (G.wave >= LAST_NIGHT) gameOver(true); else openShop(); } return; }
   if (G.phase === 0) { G.prepT -= dt; if (G.prepT <= 0) beginDefense(); }
   if (G.wave === 1 && G.phase === 0) { // 第1夜の準備中だけの案内
@@ -1525,7 +1565,7 @@ function update(dt) {
     G.nightT = Math.max(0, G.nightT - dt);
     const live = G.foes.some(f => !f.dead), empty = !G.spawnQueue.length && !live;
     if (G.nightT <= 0) clearNight(false);
-    else if (G.phase === 3 && empty) clearNight(true);
+    else if (G.phase === 3 && empty) { if (G.combo >= 2 && G.time - G.lastHit <= COMBO_WINDOW && G.traps.size) startFinale(); else clearNight(true); }
     else if (G.phase < 3 && (G.nightT <= G.nightLen * (1 - G.phase / 3) || empty)) advancePhase();
   }
 }
@@ -2227,7 +2267,7 @@ const HELP = [
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 2, 1, 1); miniTrap(g, 'blade', 4, 1, 2); miniLabel(g, 2, 0, '向き →'); miniLabel(g, 4, 0, '向き ↓'); miniLabel(g, 6, 1, '押して置く', '#fff4e0'); } },
   { t: '連続で得点アップ', d: '罠を3秒半以内に続けて当てると「連続」。続くほど得点と魂が増え、3連続からは魔力も少し戻る。罠に当たった侵入者はよろけて動く（火柱・まきびしは1歩前、落石は1歩後ろ、トラバサミは抜け出したあと1歩前、振り子刃は刃の向き、槍の石像は外へ）。動いた先に罠を置いておけば連鎖する。',
     draw() { const g = miniGrid(7, 3); miniFoe(g, 1, 1); miniTrap(g, 'bear', 3, 1); miniTrap(g, 'rock', 5, 1); miniArrow(g, [1, 1], [3, 1]); miniArrow(g, [3, 1], [5, 1]); miniLabel(g, 3, 0, '1'); miniLabel(g, 5, 0, '2連続！'); } },
-  { t: '巻き込みと玉突き', d: '1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。どちらも得点が大きく増える。',
+  { t: '巻き込みと玉突き', d: '1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。どちらも得点が大きく増える。連続が続いたまま最後の侵入者を倒すと「罠の大連鎖」で、置いた罠がつぎつぎ作動して連続と得点が伸びる。',
     draw() { const g = miniGrid(9, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniFoe(g, 4, 1); miniTile(g, 7, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniArrow(g, [4, 1], [7, 1], '#ffb38a'); miniLabel(g, 4, 0, '玉突き！', '#ffb38a'); miniLabel(g, 7, 0, '奈落へ！'); miniLabel(g, 2.5, 2, '飛ばして、ぶつける', '#fff4e0'); } },
   { t: '跳ね床と奈落', d: '跳ね床は踏んだ侵入者を矢印の向きへ3マス（重装兵は2マス）飛ばす。飛んだ先に罠があれば「連鎖」ボーナス。奈落に落とせば一撃で倒せる。壁にぶつけても追加ダメージ。',
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniTile(g, 4, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniLabel(g, 4, 0, '奈落へ！'); miniLabel(g, 2.5, 2, '矢印の向きへ飛ぶ', '#fff4e0'); } },
