@@ -133,6 +133,33 @@ body{
 .chardetail .ln.fl .tag{background:#c9b8ff;color:#241c33}
 .chardetail .ln.fl b{color:#d9ccff}
 .chardetail .warn{font-size:13px;color:#ffb3a0}
+.selsteps{display:flex;gap:4px;list-style:none;margin:0 0 4px;padding:0;counter-reset:st}
+.selsteps li{counter-increment:st;flex:1;text-align:center;font:700 12px var(--f-body);color:rgba(58,40,25,.55);padding:4px 2px;border-bottom:3px solid rgba(58,40,25,.18)}
+.selsteps li::before{content:counter(st) " ";font-family:var(--f-display)}
+.selsteps li.on{color:#5a1e2c;border-bottom-color:#5a1e2c}
+.selsteps li.done{color:#7d5f22;border-bottom-color:#c9a24a}
+.selnav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.selnav .btn{margin-top:0}
+/* スマホ横は次へのボタンを下に固定する */
+@media (max-height:520px) and (orientation:landscape){#ovSelect .selnav{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:8px max(14px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(20,14,22,0),rgba(20,14,22,.92) 35%)}#ovSelect .panel{padding-bottom:64px}}
+.selhint{margin:0 0 6px;font-size:13px;color:var(--parch-ink)}
+.selhint b{color:#5a1e2c}
+.confirm{display:grid;grid-template-columns:minmax(120px,210px) 1fr;gap:14px;padding:12px;background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;color:var(--parch)}
+.confirm .cf-ph{position:relative;aspect-ratio:4/5;overflow:hidden;border:1px solid var(--gold-dk);background:radial-gradient(ellipse at 50% 45%,#6a5468,#221a26 75%)}
+.confirm .cf-ph img{position:absolute;left:50%;top:1%;width:158%;max-width:none;transform:translateX(-50%)}
+.confirm .cf-ph .nm{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 6px;text-align:center;font:800 18px var(--f-display);color:var(--gold-hi);letter-spacing:.08em;background:linear-gradient(transparent,rgba(14,10,16,.9));text-shadow:0 2px 3px #000}
+.confirm .say{margin:0 0 8px;font:700 15px var(--f-display);color:#fff4e0;line-height:1.6}
+.confirm .say::before{content:"「";color:var(--gold-hi)}.confirm .say::after{content:"」";color:var(--gold-hi)}
+.confirm ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.confirm li{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(0,0,0,.25);border:1px solid rgba(201,162,74,.35);border-radius:2px;min-width:0}
+.confirm li>div{min-width:0}
+.confirm li canvas{width:30px;height:30px;flex:none}
+.confirm li b{display:block;font:800 14px var(--f-display);color:var(--gold-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.confirm li small{display:block;font-size:11px;color:var(--muted)}
+.confirm li.fav{border-color:var(--gold-hi);background:rgba(201,162,74,.14)}
+.confirm .fvline{margin:8px 0 0;font-size:13px;line-height:1.6}
+.confirm .fvline b{color:var(--gold-hi)}
+.confirm .fvline.warn{color:#ffb3a0}
 .pick .fvb{position:absolute;top:-1px;left:-1px;font:700 9px var(--f-body);color:var(--ink);background:var(--gold-hi);padding:1px 6px;border-radius:2px}
 .pick.favt{border-color:var(--gold-hi)}
 .pick .row>div{min-width:0}
@@ -143,6 +170,12 @@ body{
   .charsel{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px;align-items:stretch}
   .charsel .chardetail{margin-top:0;align-content:start;padding:10px 12px;gap:6px}
   .charsel .chargrid{align-self:start}
+  .confirm{grid-template-columns:118px 1fr;gap:10px;padding:8px 10px}
+  .confirm li{padding:4px 8px}
+  .confirm .fvline{margin-top:6px;font-size:12px;line-height:1.5}
+  #selStep3 .selh{margin-top:4px}
+  .confirm .cf-ph{aspect-ratio:1/1}
+  .confirm .say{margin-bottom:6px}
   .cpick .ph{max-height:none;aspect-ratio:4/5}
   .chardetail .d,.chardetail .ln{font-size:13px;line-height:1.5}
 }
@@ -176,6 +209,13 @@ body{
   .slot .n{font-size:11px}
   .slot .k,.slot .ds{display:none}
   .trapgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .confirm{grid-template-columns:1fr;padding:10px}
+  .confirm .cf-ph{width:min(200px,70%);margin:0 auto}
+  .confirm li b{font-size:13px}
+  .confirm ul{grid-template-columns:1fr}
+  .confirm li small{display:inline;margin-left:6px}
+  .confirm li b{display:inline}
+  .selnav .btn{flex:1 1 auto;padding:10px 12px}
   .chargrid{gap:5px}
   .cpick .n{font-size:15px;letter-spacing:.02em}
   .cpick .t{display:none}
@@ -325,15 +365,27 @@ body{
       <div class="overlay" id="ovSelect" hidden>
         <div class="panel wide">
           <h2>今夜の支度</h2>
-          <h3 class="selh">逃げる子を選ぶ</h3>
-          <div class="charsel">
-            <div class="chargrid" id="charGrid"></div>
-            <div class="chardetail" id="charDetail"></div>
-          </div>
-          <h3 class="selh">持っていく罠を4つ選ぶ <span id="pickCount">0/4</span></h3>
-          <div class="trapgrid" id="trapGrid"></div>
-          <button class="btn" id="btnBegin" type="button">この支度で夜を迎える</button>
-          <p class="sm" id="selNote"></p>
+          <ol class="selsteps" id="selSteps"><li>逃げる子</li><li>罠を4つ</li><li>確かめる</li></ol>
+          <section id="selStep1">
+            <h3 class="selh">逃げる子を選ぶ</h3>
+            <div class="charsel">
+              <div class="chargrid" id="charGrid"></div>
+              <div class="chardetail" id="charDetail"></div>
+            </div>
+            <div class="selnav"><button class="btn sub" id="btnBack1" type="button">◀ タイトルへ</button><button class="btn" id="btnNext1" type="button">この子で罠を選ぶ ▶</button></div>
+          </section>
+          <section id="selStep2" hidden>
+            <h3 class="selh">持っていく罠を4つ選ぶ <span id="pickCount">0/4</span></h3>
+            <p class="selhint" id="favHint"></p>
+            <div class="trapgrid" id="trapGrid"></div>
+            <p class="sm" id="selNote"></p>
+            <div class="selnav"><button class="btn sub" id="btnBack2" type="button">◀ 逃げる子を選び直す</button><button class="btn" id="btnNext2" type="button">支度を確かめる ▶</button></div>
+          </section>
+          <section id="selStep3" hidden>
+            <h3 class="selh">この支度で夜を迎える？</h3>
+            <div class="confirm" id="selConfirm"></div>
+            <div class="selnav"><button class="btn sub" id="btnBack3" type="button">◀ 罠を選び直す</button><button class="btn" id="btnBegin" type="button">この支度で夜を迎える</button></div>
+          </section>
         </div>
       </div>
 
@@ -447,19 +499,19 @@ const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
 const CHARS = {
   lily:  { name:'リリィ', title:'館の娘', art:'lily', hp:3, speed:3.4, regen:7.5, maxMana:110, power:1, smart:0,
            profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的', flawName:'怖がり', flaw:'侵入者がすぐ近くに来ると、足がすくんで一瞬動けなくなる',
-           lure:['こ、こっちなら…', 'お願い、引っかかって…', '罠の向こうなら大丈夫…'], lureFav:'扉まで帰ってください…！', fav:'warp', passive:{ name:'館の鍵番', cd:3, desc:'送り返しの陣の再装填が3秒、威力が約2倍になり、送り返した侵入者は扉の前で2秒半動けない' },
+           lure:['こ、こっちなら…', 'お願い、引っかかって…', '罠の向こうなら大丈夫…'], lureFav:'扉まで帰ってください…！', ready:'こ、この罠なら…きっと大丈夫…！', fav:'warp', passive:{ name:'館の鍵番', cd:3, desc:'送り返しの陣の再装填が3秒、威力が約2倍になり、送り返した侵入者は扉の前で2秒半動けない' },
            look:{ hair:'#f4a9c6', hairD:'#d77aa0', dress:'#9b2f4a', ribbon:'#e0405e', eye:'#4b2a63' } },
   mina:  { name:'ミーナ', title:'見習い魔女', art:'mina', hp:3, speed:3.3, regen:9.5, maxMana:140, power:1, smart:0,
            profile:'魔力が多く、溜まるのも速い。走るのは苦手', flawName:'寝坊すけ', flaw:'暇だとうたた寝して、侵入者が近づくまで起きない',
-           lure:['こっちだよ…ふぁ', '魔法の罠の先だよ〜', 'おいで〜…むにゃ'], lureFav:'そこ、燃えるよ？', fav:'fire', passive:{ name:'炎の見習い', desc:'火柱の十字が2マスずつ伸び（9マス）、威力も1.5倍になる' },
+           lure:['こっちだよ…ふぁ', '魔法の罠の先だよ〜', 'おいで〜…むにゃ'], lureFav:'そこ、燃えるよ？', ready:'ふぁ…準備、できたよ〜', fav:'fire', passive:{ name:'炎の見習い', desc:'火柱の十字が2マスずつ伸び（9マス）、威力も1.5倍になる' },
            look:{ hair:'#8a74c4', hairD:'#5a4890', dress:'#43305f', ribbon:'#d9b44a', eye:'#2e6b5e' } },
   noel:  { name:'ノエル', title:'館のメイド', art:'noel', hp:4, speed:3.0, regen:6.8, maxMana:100, power:1, smart:0,
            profile:'丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい', flawName:'ドジ', flaw:'侵入者から逃げて走っていると、たまにつまずいて止まる',
-           lure:['こちらへどうぞ…', 'お足元にご注意を', 'お通りはこちらです'], lureFav:'床は磨いてありますので', fav:'ice', passive:{ name:'磨き上げた床', cost:10, desc:'氷床の魔力が10になり、滑って壁にぶつかった侵入者は大ダメージを受けて1秒半目を回す' },
+           lure:['こちらへどうぞ…', 'お足元にご注意を', 'お通りはこちらです'], lureFav:'床は磨いてありますので', ready:'お支度、整いました', fav:'ice', passive:{ name:'磨き上げた床', cost:10, desc:'氷床の魔力が10になり、滑って壁にぶつかった侵入者は大ダメージを受けて1秒半目を回す' },
            look:{ hair:'#9a6a45', hairD:'#6e4a2e', dress:'#2f5a45', ribbon:'#f4efe6', eye:'#3a5a3a' } },
   cecil: { name:'セシル', title:'錬金術師の見習い', art:'cecil', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1, smart:0,
            profile:'器用で、爆薬の扱いが得意。体力・足は平均的で、魔力は溜まりにくい', flawName:'好奇心', flaw:'暇だと扉や仕掛けを覗きに行ってしまう（侵入者の来る扉に近づくことも）',
-           lure:['ほらほら、こっち！', '実験に付き合ってよ♪', 'そこ踏んでみて！'], lureFav:'上、気をつけてね♪', fav:'rock', passive:{ name:'爆薬仕込み', cost:25, desc:'落石の魔力が25になり、爆薬入りで威力1.5倍。落ちた場所の周り3x3もまとめて吹き飛ばす' },
+           lure:['ほらほら、こっち！', '実験に付き合ってよ♪', 'そこ踏んでみて！'], lureFav:'上、気をつけてね♪', ready:'よーし、実験開始だね！', fav:'rock', passive:{ name:'爆薬仕込み', cost:25, desc:'落石の魔力が25になり、爆薬入りで威力1.5倍。落ちた場所の周り3x3もまとめて吹き飛ばす' },
            look:{ hair:'#efcf7a', hairD:'#c9a24a', dress:'#7a4f2e', ribbon:'#3f8f8a', eye:'#2d5f8a' } },
 };
 const CHAR_ORDER = ['lily','mina','noel','cecil'];
@@ -2240,7 +2292,7 @@ function renderCharDetail() {
     <div class="chips"><span><i>体力</i>${'♥'.repeat(ch.hp)}</span><span><i>足</i>${Math.round(ch.speed / 3.4 * 100)}%</span><span><i>魔力</i>${ch.maxMana}</span><span><i>回復</i>毎秒 ${Math.round(ch.regen)}</span></div>
     <div class="ln fav"><span class="tag">得意</span><div><b>${fv.name}「${ch.passive.name}」</b><br>${ch.passive.desc}</div></div>
     <div class="ln fl"><span class="tag">弱点</span><div><b>${ch.flawName}</b><br>${ch.flaw}</div></div>
-    ${sel.traps.includes(ch.fav) ? '' : `<p class="warn">得意な罠（${fv.name}）を持っていかないと、この力は使えない</p>`}`;
+`;
   box.querySelector('.ln.fav').prepend(trapIconCanvas(ch.fav, 36));
 }
 function renderSelect() {
@@ -2281,10 +2333,33 @@ function renderSelect() {
   }
   renderCharDetail();
   $('#pickCount').textContent = `${sel.traps.length}/4`;
-  $('#btnBegin').disabled = sel.traps.length !== 4;
-  $('#btnBegin').textContent = `この支度で夜を迎える（罠 ${sel.traps.length}/4）`;
+  $('#btnNext2').disabled = sel.traps.length !== 4;
+  $('#btnNext2').textContent = sel.traps.length === 4 ? '支度を確かめる ▶' : `罠をあと${4 - sel.traps.length}つ選ぶ`;
+  $('#btnNext1').textContent = `${CHARS[sel.char].name}で罠を選ぶ ▶`;
+  const fc = CHARS[sel.char];
+  $('#favHint').innerHTML = `★は${fc.name}の得意な罠（<b>${TRAPS[fc.fav].name}</b>）。持っていくと「${fc.passive.name}」でとても強くなる`;
 }
-function openSelect() { audio(); renderSelect(); showOv('ovSelect'); }
+let selStep = 1;
+function setSelStep(n) {
+  selStep = n;
+  [1, 2, 3].forEach(i => { $(`#selStep${i}`).hidden = i !== n; });
+  [...$('#selSteps').children].forEach((li, i) => { li.className = i + 1 === n ? 'on' : i + 1 < n ? 'done' : ''; });
+  if (n === 3) renderConfirm();
+  const ov = $('#ovSelect'); ov.scrollTop = 0; window.scrollTo(0, 0);
+  const next = $(`#selStep${n} .selnav .btn:last-child`); if (next) try { next.focus({ preventScroll: true }); } catch (e) {}
+}
+function renderConfirm() {
+  const ch = CHARS[sel.char], box = $('#selConfirm'), has = sel.traps.includes(ch.fav);
+  const lo = TRAP_ORDER.filter(t => sel.traps.includes(t)), pic = ch.art && ART[`portrait_${ch.art}`];
+  const items = lo.map(t => {
+    const d = TRAPS[t], fv = t === ch.fav;
+    return `<li class="${fv ? 'fav' : ''}" data-t="${t}"><div><b>${fv ? '★' : ''}${d.name}</b><small>魔力 ${fv && ch.passive.cost || d.cost}・再装填 ${fv && ch.passive.cd || d.cd}秒</small></div></li>`;
+  }).join('');
+  const fvline = has ? `<p class="fvline">★得意「<b>${ch.passive.name}</b>」：${ch.passive.desc}</p>` : `<p class="fvline warn">得意な罠（${TRAPS[ch.fav].name}）を持っていないので、得意の力は使えない</p>`;
+  box.innerHTML = `<div class="cf-ph">${pic ? `<img alt="" src="${pic}">` : ''}<div class="nm">${ch.name}</div></div><div><p class="say">${ch.ready}</p><ul>${items}</ul>${fvline}</div>`;
+  box.querySelectorAll('li').forEach(li => li.prepend(trapIconCanvas(li.dataset.t, 30)));
+}
+function openSelect() { audio(); renderSelect(); showOv('ovSelect'); setSelStep(1); }
 function startRun(char = sel.char, loadout = sel.traps) {
   audio();
   const lo = TRAP_ORDER.filter(t => loadout.includes(t)); // 罠ボタンは図鑑の順に並べる
@@ -2356,6 +2431,15 @@ $('#btnStart').addEventListener('click', openSelect);
 $('#btnRetry').addEventListener('click', openSelect);
 $('#btnRetry').textContent = '支度をして、もう一度';
 $('#btnBegin').addEventListener('click', () => { if (sel.traps.length === 4) startRun(); });
+$('#btnNext1').addEventListener('click', () => { audio(); setSelStep(2); });
+$('#btnNext2').addEventListener('click', () => { if (sel.traps.length === 4) { audio(); setSelStep(3); } });
+$('#btnBack2').addEventListener('click', () => setSelStep(1));
+$('#btnBack1').addEventListener('click', () => showOv('ovTitle'));
+addEventListener('keydown', e => { // 支度画面は Escape で前の段へ
+  if (e.code !== 'Escape' || $('#ovSelect').hidden || !$('#ovHelp').hidden) return;
+  e.preventDefault(); if (selStep > 1) setSelStep(selStep - 1); else showOv('ovTitle');
+});
+$('#btnBack3').addEventListener('click', () => setSelStep(2));
 $('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave(G.wave + 1); hudCache = ''; });
 $('#btnResume').addEventListener('click', () => setPause(false));
 $('#btnGo').addEventListener('click', beginDefense);
