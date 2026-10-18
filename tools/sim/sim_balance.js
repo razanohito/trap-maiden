@@ -88,7 +88,7 @@ const LOADOUTS = {
             A.update(DT);
             G = W.G;
           }
-          out.push({ combo: G.bestCombo, kills: G.kills, traps: G.traps.size, trig: [...G.traps.values()].map(t => t.type).join('+'), wave: G.wave, won: G.bannerTitle === '全滅させた！' || G.bannerTitle === '夜明け' ? G.wave >= 10 && G.hp > 0 : false, score: G.score, hp: G.hp, time: Math.round(G.time) });
+          out.push({ multi: G.multiHits || 0, crash: G.crashes || 0, combo: G.bestCombo, kills: G.kills, traps: G.traps.size, trig: [...G.traps.values()].map(t => t.type).join('+'), wave: G.wave, won: G.bannerTitle === '全滅させた！' || G.bannerTitle === '夜明け' ? G.wave >= 10 && G.hp > 0 : false, score: G.score, hp: G.hp, time: Math.round(G.time) });
         }
         return out;
       }, { char, lo, RUNS });
@@ -101,7 +101,7 @@ const LOADOUTS = {
   const by = key => {
     const m = {};
     for (const x of results) for (const r of x.runs) { const k = x[key]; (m[k] ||= []).push(r); }
-    for (const [k, rs] of Object.entries(m)) console.log(`  ${key}=${k}: 到達夜 ${(rs.reduce((a, b) => a + b.wave, 0) / rs.length).toFixed(1)}  クリア ${rs.filter(r => r.wave >= 10 && r.hp > 0).length}/${rs.length}  平均得点 ${Math.round(rs.reduce((a, b) => a + b.score, 0) / rs.length)}  最大連続 ${(rs.reduce((a, b) => a + (b.combo || 0), 0) / rs.length).toFixed(1)}`);
+    for (const [k, rs] of Object.entries(m)) console.log(`  ${key}=${k}: 到達夜 ${(rs.reduce((a, b) => a + b.wave, 0) / rs.length).toFixed(1)}  クリア ${rs.filter(r => r.wave >= 10 && r.hp > 0).length}/${rs.length}  平均得点 ${Math.round(rs.reduce((a, b) => a + b.score, 0) / rs.length)}  最大連続 ${(rs.reduce((a, b) => a + (b.combo || 0), 0) / rs.length).toFixed(1)}  まとめ当て ${(rs.reduce((a, b) => a + (b.multi || 0), 0) / rs.length).toFixed(1)}  玉突き ${(rs.reduce((a, b) => a + (b.crash || 0), 0) / rs.length).toFixed(1)}`);
   };
   console.log('--- 逃げる子ごと'); by('char');
   console.log('--- 罠の組み合わせごと'); by('loadout');
