@@ -4,9 +4,9 @@
 1 行ぶん（192x48）から人物のかたまりを4つ取り出し、それぞれをマスの中央・足もと y=46 にそろえ直す。
 
 - 入力: art-src/sprites48/<名前>_walk_4dir_48px.png（4列×4行、行は 下・左・右・上）
-        art-src/sprites48/<名前>_hit_critical_4dir_48px.png（1行目の「被弾」だけ使う）
+        art-src/sprites48/<名前>_hit_critical_4dir_48px.png（1行目＝被弾、2行目＝ピンチ）
 - 出力: art/sprites/<名前>_walk.png（4列×4行）、<名前>_idle.png（各行の2コマ目を待機姿勢に）、
-        <名前>_hit.png（4列×1行。下・左・右・上）
+        <名前>_hit.png・<名前>_pinch.png（4列×1行。下・左・右・上）
 - 侵入者は foe_knight / foe_thief / foe_heavy（歩行だけ）
 
 使い方: python tools/import_sprites.py
@@ -85,11 +85,12 @@ def main():
             idle.paste(cells[1], (r * F, 0))
         walk.save(OUT / f"{name}_walk.png"); idle.save(OUT / f"{name}_idle.png")
         hit_path = SRC / f"{name}_hit_critical_4dir_48px.png"
-        if hit_path.exists():  # 1行目（被弾）だけ使う。2行目（ピンチ）は服が破れる表現なので使わない
-            hit = Image.new("RGBA", (F * 4, F))
-            for c, im in enumerate(fix_row(Image.open(hit_path).crop((0, 0, F * 4, F)))):
-                hit.paste(im, (c * F, 0))
-            hit.save(OUT / f"{name}_hit.png")
+        if hit_path.exists():  # 1行目＝被弾、2行目＝ピンチ（体力が残り1のとき。服がほつれるだけで肌の露出はない）
+            for r, suffix in ((0, "hit"), (1, "pinch")):
+                row = Image.new("RGBA", (F * 4, F))
+                for c, im in enumerate(fix_row(Image.open(hit_path).crop((0, r * F, F * 4, r * F + F)))):
+                    row.paste(im, (c * F, 0))
+                row.save(OUT / f"{name}_{suffix}.png")
         print(name, "ok", "(被弾あり)" if hit_path.exists() else "")
 
 

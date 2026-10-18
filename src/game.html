@@ -520,6 +520,8 @@ const ART = { portrait_lily: '../art/portrait_lily.webp', portrait_mina: '../art
   lily_walk: '../art/sprites/lily_walk.png', lily_idle: '../art/sprites/lily_idle.png', mina_walk: '../art/sprites/mina_walk.png', mina_idle: '../art/sprites/mina_idle.png',
   noel_walk: '../art/sprites/noel_walk.png', noel_idle: '../art/sprites/noel_idle.png', cecil_walk: '../art/sprites/cecil_walk.png', cecil_idle: '../art/sprites/cecil_idle.png',
   lily_hit: '../art/sprites/lily_hit.png', mina_hit: '../art/sprites/mina_hit.png', noel_hit: '../art/sprites/noel_hit.png', cecil_hit: '../art/sprites/cecil_hit.png',
+  lily_pinch: '../art/sprites/lily_pinch.png', mina_pinch: '../art/sprites/mina_pinch.png', noel_pinch: '../art/sprites/noel_pinch.png', cecil_pinch: '../art/sprites/cecil_pinch.png',
+  fx_warp: '../art/fx/warp.png', fx_soul: '../art/fx/soul.png',
   foe_knight_walk: '../art/sprites/foe_knight_walk.png', foe_knight_idle: '../art/sprites/foe_knight_idle.png',
   foe_thief_walk: '../art/sprites/foe_thief_walk.png', foe_thief_idle: '../art/sprites/foe_thief_idle.png',
   foe_heavy_walk: '../art/sprites/foe_heavy_walk.png', foe_heavy_idle: '../art/sprites/foe_heavy_idle.png',
@@ -1078,7 +1080,7 @@ function killFoe(f) {
   f.down = 1; f.downT = 0; f.hp = 0; G.kills++; // HP0 でも連続が切れるまでは歩き続け、罠に当たる
   const def = FOES[f.type], s = Math.round(def.soul * mult);
   G.soul += s; G.score += Math.round(def.score * mult);
-  addText(f.x, f.y - 1, `魂 +${s}`, '#c9b8ff', 16);
+  addText(f.x, f.y - 1, `魂 +${s}`, '#c9b8ff', 16); spr('soul', f.x, f.y, .8, 1, -12);
   burst(f.x, f.y, '#b9a5ff', 18, 160); sfx.kill();
 }
 const DOWN_MAX = 8; // HP0 の侵入者が残る最長の秒数（連続が切れたらその前に消える）
@@ -1204,6 +1206,7 @@ function triggerAt(x, y, f, chained) {
     if (f.dead) return;
     const [ddx, ddy] = f.door || DOORS[0];
     G.fx.push({ type: 'warp', x, y, t: 0, dur: .5 }, { type: 'warp', x: ddx, y: ddy, t: 0, dur: .5 });
+    spr('warp', x, y, .6); spr('warp', ddx, ddy, .6);
     f.tx = f.nx = ddx; f.ty = f.ny = ddy; f.x = ddx; f.y = ddy; f.moving = false; f.prog = 0;
     f.stun = Math.max(f.stun, fav ? 2.5 : .8); // リリィは扉の前で長く足止め
     addText(ddx, ddy - 1, '戻された！', '#c9b8ff', 16);
@@ -1738,11 +1741,17 @@ function drawHero() {
     const left = Math.round(px - 24) + (h.freeze > 0 ? Math.round(Math.sin(t * 70) * 1.5) : 0), top = footY - 46 + (h.doze > 0 ? Math.round(Math.sin(t * 2.4) + 1) : 0);
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 9, 3);
     const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
-    if ((h.hurt > 0 || h.trip > 0) && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[`${pk}_hit`], row * 48, 0, 48, 48, left, top, 48, 48); // 被弾してのけぞる
+    const pinch = G.hp <= 1 && imgReady(`${pk}_pinch`); // 体力が残り1: 服がほつれたピンチの姿
+    if ((h.hurt > 0 || h.trip > 0) && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[pinch ? `${pk}_pinch` : `${pk}_hit`], row * 48, 0, 48, 48, left, top, 48, 48); // 被弾してのけぞる
     else if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * 48, row * 48, 48, 48, left, top, 48, 48);
+    else if (pinch) ctx.drawImage(IMG[`${pk}_pinch`], row * 48, 0, 48, 48, left, top, 48, 48);
     else ctx.drawImage(IMG[`${pk}_idle`], row * 48, 0, 48, 48, left, top, 48, 48);
     ctx.imageSmoothingEnabled = sm; ctx.globalAlpha = 1;
     drawFlawFx(px, top, footY);
+    if (G.hp <= 1) { // ピンチ: 歩いている間も汗の粒で分かるように
+      const k = (G.time * 1.6) % 1; ctx.globalAlpha = 1 - k; ctx.fillStyle = '#bfe6f2'; ctx.strokeStyle = '#1a1220'; ctx.lineWidth = 1;
+      const sx = px + 13, sy = top + 12 + k * 8; ctx.beginPath(); ctx.moveTo(sx, sy - 5); ctx.quadraticCurveTo(sx + 4, sy + 1, sx, sy + 2); ctx.quadraticCurveTo(sx - 4, sy + 1, sx, sy - 5); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
+    }
     drawHeroBubble(px, top - 6 - 6 * (TS - 1));
     return;
   }

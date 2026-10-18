@@ -23,7 +23,10 @@ F = 48
 def clean(im: Image.Image) -> Image.Image:
     a = np.asarray(im.convert("RGBA")).astype(int)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
-    magenta = (r - g > 45) & (b - g > 45)  # マゼンタとそのふち（エフェクトにはピンク・紫を使わない約束）
+    if (a[..., 3] == 0).any():  # 透過済みの絵は紫の演出（送り返し・魂）を消さないよう、ほぼ純粋なマゼンタだけ消す
+        magenta = (r > 200) & (g < 70) & (b > 200)
+    else:
+        magenta = (r - g > 45) & (b - g > 45)  # マゼンタとそのふち（背景がマゼンタの絵）
     a[magenta, 3] = 0
     return Image.fromarray(a.astype("uint8"), "RGBA")
 
