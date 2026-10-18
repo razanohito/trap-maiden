@@ -25,6 +25,8 @@
 | `docs/art-brief.html` | ChatGPT に頼むグラフィックと演出の提案 |
 | `art-src/` | ChatGPT に描いてもらった原画（4人の設定画 `<名前>_sheet.webp`、参考の絵は `reference/`） |
 | `tools/import_sprites.py` | ChatGPT に作ってもらった 48px のスプライトシート（`art-src/sprites48/`）のずれを直して `art/sprites/` に入れる（4人と侵入者3種の歩行、4人の被弾。ピンチの絵は服が破れる表現なので使わない） |
+| `tools/import_fx.py` | エフェクトの絵（`art-src/fx/`、8 コマ横長か 3x3）を、マゼンタのふちを消して `art/fx/`（384x48）に入れる |
+| `docs/sound-fx-brief.html` | BGM・エフェクト・効果音の提案（Gemini 用プロンプト） |
 | `tools/make_sprites.py` | 手で組み立てたドット絵の予備（`art/sprites_gen/`） |
 | `tools/cut_sheet.py` | 設定画から3方向を切り出して背景を抜き、`art/*.webp`（盤面用と立ち絵）を作る。ビルドで HTML に埋め込む |
 | `tools/sim/` | ヘッドレスブラウザでの動作確認（罠を活かす AI の比較、地形と仕掛けの確認） |
@@ -55,6 +57,7 @@ node tools/sim/shot_map2.js       # 第6夜で東の書庫に移るか
 node tools/sim/shot_help.js       # 遊び方の全ページ
 node tools/sim/test_flick.js      # スマホのフリックで矢印のある罠の向きを決められるか
 node tools/sim/rec_walk.js lily   # 盤面で歩く様子を連続で撮る（止まったときにマスの中心にいるかも確認）
+node tools/sim/test_fx_sound.js   # 効果音をすべて鳴らし、絵のエフェクトが出るか
 ```
 
 127.0.0.1 で開いたときだけ、デバッグ用に `window.__wanakan.G` でゲーム状態を読めます。

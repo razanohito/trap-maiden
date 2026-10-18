@@ -403,6 +403,7 @@ const ART = {
   foe_knight_walk: '../art/sprites/foe_knight_walk.png', foe_knight_idle: '../art/sprites/foe_knight_idle.png',
   foe_thief_walk: '../art/sprites/foe_thief_walk.png', foe_thief_idle: '../art/sprites/foe_thief_idle.png',
   foe_heavy_walk: '../art/sprites/foe_heavy_walk.png', foe_heavy_idle: '../art/sprites/foe_heavy_idle.png',
+  fx_fire: '../art/fx/fire.png', fx_ice: '../art/fx/ice.png', fx_rock: '../art/fx/rock.png', fx_snap: '../art/fx/snap.png', fx_spring: '../art/fx/spring.png',
   cecil_down: '../art/cecil_down.webp', cecil_side: '../art/cecil_side.webp', cecil_up: '../art/cecil_up.webp', portrait_cecil: '../art/portrait_cecil.webp',
 };
 const IMG = {};
@@ -515,31 +516,75 @@ function audio() {
   if (AC && AC.state === 'suspended') AC.resume().catch(() => {});
   return AC;
 }
-function tone(type, f0, f1, dur, vol = .15, delay = 0) {
-  const a = audio(); if (!a || !soundOn) return;
+// すべての音はここを通す（少しだけ館の残響を足す）
+let master = null, verb = null;
+function bus() {
+  const a = audio(); if (!a || !soundOn) return null;
+  if (!master) {
+    master = a.createGain(); master.gain.value = .9; master.connect(a.destination);
+    verb = a.createConvolver();
+    const len = Math.floor(a.sampleRate * 1.4), ir = a.createBuffer(2, len, a.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+    verb.buffer = ir;
+    const wet = a.createGain(); wet.gain.value = .22; verb.connect(wet).connect(master);
+  }
+  return a;
+}
+function send(node, wet) { node.connect(master); if (wet) node.connect(verb); }
+function tone(type, f0, f1, dur, vol = .15, delay = 0, wet = true) {
+  const a = bus(); if (!a) return;
   const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
   o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
   g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
-  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02);
+  o.connect(g); send(g, wet); o.start(t); o.stop(t + dur + .02);
 }
-function noise(dur, freq, vol = .2, q = 1) {
-  const a = audio(); if (!a || !soundOn || !noiseBuf) return;
-  const t = a.currentTime, s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
-  s.buffer = noiseBuf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+// 雑音（f1 を指定するとフィルターの高さを動かす）
+function noise(dur, freq, vol = .2, q = 1, delay = 0, f1 = 0, kind = 'bandpass') {
+  const a = bus(); if (!a || !noiseBuf) return;
+  const t = a.currentTime + delay, src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  src.buffer = noiseBuf; src.loop = dur > .5; f.type = kind; f.frequency.setValueAtTime(freq, t); f.Q.value = q;
+  if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
   g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
-  s.connect(f).connect(g).connect(a.destination); s.start(t); s.stop(t + dur);
+  src.connect(f).connect(g); send(g, true); src.start(t); src.stop(t + dur + .02);
 }
+const pluck = (f, vol = .08, delay = 0, dur = .55) => { // オルゴールの一音
+  tone('sine', f, f, dur, vol, delay); tone('triangle', f * 2, f * 2, dur * .45, vol * .28, delay); tone('sine', f * 4.01, f * 4.01, dur * .22, vol * .14, delay);
+};
+const bell = (f, vol = .08, delay = 0, dur = 1.3) => { // 鐘（倍音がずれた響き）
+  [1, 2.76, 5.4, 8.93].forEach((m, i) => tone('sine', f * m, f * m, dur / (1 + i * .7), vol / (1 + i * 1.6), delay));
+};
+const pings = (n, lo, hi, vol, spread) => { for (let i = 0; i < n; i++) { const f = lo + Math.random() * (hi - lo); tone('sine', f, f * .97, .08 + Math.random() * .14, vol, Math.random() * spread); } };
+const MUSIC_BOX = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760, 2093];
 const sfx = {
-  place: () => tone('triangle', 520, 780, .08, .08),
-  bad:   () => tone('square', 180, 140, .12, .05),
-  bear:  () => { tone('square', 300, 90, .12, .1); noise(.08, 3000, .15, 2); },
-  spring:() => tone('sine', 180, 720, .22, .16),
-  rock:  () => { noise(.35, 200, .35, .7); tone('sine', 110, 40, .3, .2); },
-  fire:  () => noise(.5, 900, .25, .5),
-  hurt:  () => { tone('triangle', 1200, 700, .12, .12); tone('triangle', 900, 500, .14, .1, .08); },
-  kill:  () => { tone('triangle', 660, 660, .1, .08); tone('triangle', 990, 990, .14, .08, .07); },
-  combo: n => tone('sine', 440 * Math.pow(1.06, Math.min(n, 16)), 440 * Math.pow(1.06, Math.min(n, 16)) * 1.5, .12, .07),
-  wave:  () => { tone('sine', 392, 392, .5, .1); tone('sine', 523, 523, .6, .08, .15); },
+  place:   () => { noise(.06, 900, .2, 2); tone('sine', 220, 120, .08, .12, 0, false); pluck(1568, .025, .02); },  // 木の床にコトン
+  bad:     () => { noise(.05, 500, .12, 1.5); tone('sine', 150, 110, .1, .07, 0, false); },
+  bear:    () => { noise(.07, 3500, .22, 4); tone('square', 740, 420, .06, .05); tone('sine', 2400, 2300, .15, .04); tone('sine', 3100, 3000, .12, .03, .01); }, // 鉄がかみ合う
+  spring:  () => { tone('sine', 160, 520, .18, .14); tone('sine', 520, 300, .25, .06, .12); noise(.05, 1200, .08, 1); },  // ビヨン
+  rock:    () => { tone('sine', 90, 38, .35, .25, 0, false); noise(.4, 250, .3, .7, 0, 0, 'lowpass'); noise(.3, 2500, .06, 1.5, .05); }, // 重い石と砂
+  fire:    () => { noise(.55, 500, .22, .6, 0, 1500); for (let i = 0; i < 6; i++) noise(.02, 3000, .08, 5, Math.random() * .45); }, // ボッと燃えてパチパチ
+  ice:     () => { noise(.45, 6000, .07, 2); pings(4, 2600, 4200, .03, .25); },  // 冷気ときらめき
+  warp:    () => { [1568, 1319, 1175, 1047, 880, 784, 659, 523].forEach((f, i) => pluck(f, .05, i * .04, .4)); }, // ハープが吸い込まれていく
+  blade:   () => noise(.22, 1500, .2, 2, 0, 5000),  // 空を切る
+  handbell:() => { bell(1046, .1, 0, 1.5); bell(1568, .04, .12, 1); },  // 澄んだハンドベル
+  caltrop: () => { tone('sine', 3200, 3100, .08, .04); noise(.04, 4000, .08, 4); },  // 小さなチリン
+  vortex:  () => { noise(.8, 300, .25, .8, 0, 1200); tone('sine', 180, 600, .7, .05); },  // 風がうず巻く
+  spike:   () => { tone('sine', 2800, 2700, .06, .03); noise(.03, 3500, .06, 4); },
+  spear:   () => { noise(.25, 350, .18, 3); noise(.15, 2500, .12, 2, .08, 4000); },  // 石がこすれて槍が空を切る
+  rope:    () => tone('triangle', 1400, 1300, .15, .04),
+  crash:   () => { pings(12, 2000, 6000, .03, .15); noise(.5, 5000, .15, .8); tone('sine', 90, 40, .3, .2, 0, false); }, // ガラスと金属が砕ける
+  pit:     () => { tone('sine', 400, 60, .6, .1); noise(.5, 300, .15, .6); },  // 奈落へ
+  bomb:    () => { pings(8, 2500, 5000, .03, .08); tone('sine', 120, 40, .35, .25, 0, false); noise(.4, 800, .3, .6); }, // びんが割れてはじける
+  throwBomb: () => noise(.2, 1000, .1, 2, 0, 3000),
+  keys:    () => { pings(6, 2500, 4500, .035, .25); bell(1760, .03, .05, .9); },  // 鍵束がチャリン
+  mana:    () => { tone('sine', 1200, 400, .12, .08); [784, 988, 1175, 1568, 1976].forEach((f, i) => pluck(f, .04, .1 + i * .06, .5)); }, // しずくとハープ
+  sweep:   () => noise(.3, 1800, .2, .7, 0, 900),  // ほうきでサッ
+  hurt:    () => { noise(.08, 400, .2, 1, 0, 0, 'lowpass'); tone('sine', 1300, 950, .18, .06, .03); }, // ポフッと小さな笛
+  kill:    () => { bell(880, .05); bell(1320, .035, .06); },  // 小さな鐘の和音
+  combo:   n => pluck(MUSIC_BOX[Math.min(Math.max(n - 2, 0), MUSIC_BOX.length - 1)], .08),  // 連続ごとに上がるオルゴール
+  door:    () => { noise(.6, 300, .2, 12, 0, 700); bell(196, .09, .45, 1.8); },  // 古い扉のきしみと低い鐘
+  wave:    () => { bell(392, .06, 0, 1.2); bell(523, .04, .15, 1); },
+  dawn:    () => { [698, 880, 1047, 1397, 1760].forEach((f, i) => pluck(f, .06, i * .09, .7)); bell(1397, .06, .5, 1.6); }, // 朝が来た
+  lose:    () => { [784, 659, 523, 440, 392].forEach((f, i) => pluck(f, .06, i * (.18 + i * .05), .8)); },  // オルゴールが遅くなって止まる
 };
 
 // ---------- 背景（一度だけ描く） ----------
@@ -798,7 +843,7 @@ function advancePhase() {
   G.spawnQueue = G.spawnQueue.concat(G.phaseQ[G.phase - 1]);
   G.spawnT = Math.min(G.spawnT > 0 ? G.spawnT : 1.2, 1.2);
   const doorNote = G.wave === 1 ? '左の扉から侵入者が来る' : G.wave === 2 ? '右の扉も破られた' : G.wave === 3 ? '上の扉からも来る' : G.wave === 6 ? '書庫の3つの扉から来る' : `侵入者 ${G.phaseQ.flat().length}人`;
-  if (G.phase === 1) { banner('フェイズ1', doorNote); sfx.wave(); return; }
+  if (G.phase === 1) { banner('フェイズ1', doorNote); sfx.door(); return; }
   G.phaseBonus = G.phase - 1;
   G.mana = Math.min(stat.maxMana(), G.mana + 25);
   banner(`フェイズ${G.phase}`, '置ける罠 +1・魔力 +25'); sfx.wave();
@@ -814,7 +859,7 @@ function clearNight(wiped) {
     G.score += 500 * G.wave;
     banner('夜明け', '侵入者は朝日に逃げていった');
   }
-  G.spawnQueue = []; sfx.kill();
+  G.spawnQueue = []; if (G.wave < LAST_NIGHT) sfx.dawn(); else sfx.kill();
 }
 function spawn(type) {
   const open = DOORS.slice(0, Math.min(DOORS.length, G.wave));
@@ -856,6 +901,8 @@ function killFoe(f) {
   addText(f.x, f.y - 1, `魂 +${s}`, '#c9b8ff', 16);
   burst(f.x, f.y, '#b9a5ff', 18, 160); sfx.kill();
 }
+// 絵のエフェクト（8 コマの横長画像）を出す。dy はマスの中心からのずれ（上が負）
+function spr(key, x, y, dur, s = 1, dy = 0) { if (imgReady(`fx_${key}`)) G.fx.push({ type: 'spr', key, x, y, t: 0, dur, s, dy }); }
 function poisonTick(f) { // 毒は1秒ごと（連続には数えない）
   const dmg = Math.round(7 * stat.power());
   f.hp -= dmg; f.flash = .1; G.score += dmg * 5;
@@ -865,7 +912,7 @@ function poisonTick(f) { // 毒は1秒ごと（連続には数えない）
 const inBox = (f, x, y, r) => !f.dead && !f.fly && Math.max(Math.abs(f.x - x), Math.abs(f.y - y)) <= r;
 function terrainAt(x, y, f) { // 地形のダメージ（連続には数えない）
   if (f.dead || tileAt(x, y) !== '^') return;
-  hitFoe(f, 6); f.stun = Math.max(f.stun, .25);
+  hitFoe(f, 6); f.stun = Math.max(f.stun, .25); sfx.spike();
   addText(x, y - .9, 'トゲ', '#d8d0c4', 14);
 }
 function activateDevice(dv) {
@@ -874,9 +921,9 @@ function activateDevice(dv) {
   dv.cd = dv.cdMax;
   if (dv.type === 'chandelier') {
     G.fx.push({ type: 'chand', x: dv.x, y: dv.y, t: 0, dur: .45 });
-    tone('triangle', 1400, 1300, .15, .05);
+    sfx.rope();
   } else {
-    sfx.bear();
+    sfx.spear();
     const tiles = DIRS.map(([dx, dy]) => [dv.x + dx, dv.y + dy]).filter(([a, b]) => isFloor(a, b));
     G.fx.push({ type: 'spear', x: dv.x, y: dv.y, tiles, t: 0, dur: .45 });
     const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
@@ -890,10 +937,10 @@ function triggerAt(x, y, f, chained) {
   tr.cdMax = tr.cd = TRAPS[tr.type].cd * stat.cd(); tr.anim = .35;
   if (chained) { G.score += 50 * Math.max(1, G.combo); addText(x, y - 1.1, '連鎖！', '#f1d98e', 22); }
   if (tr.type === 'bear') {
-    sfx.bear(); trapSuccess(); hitFoe(f, 14);
+    sfx.bear(); spr('snap', x, y, .45); trapSuccess(); hitFoe(f, 14);
     if (!f.dead) { f.stun = Math.max(f.stun, 2.2 * FOES[f.type].stunMul); tr.snap = f.stun; }
   } else if (tr.type === 'spring') {
-    sfx.spring(); trapSuccess(); hitFoe(f, 6);
+    sfx.spring(); spr('spring', x, y, .5, 1, -8); trapSuccess(); hitFoe(f, 6);
     if (f.dead) return;
     const [dx, dy] = DIRS[tr.dir]; let cx = x, cy = y, steps = 0, slam = false;
     let fall = false;
@@ -916,7 +963,7 @@ function triggerAt(x, y, f, chained) {
     if (hits.length) trapSuccess();
     hits.forEach(g => hitFoe(g, 21));
   } else if (tr.type === 'ice') { // 進んでいた向きのまま、壁か奈落まで滑る
-    tone('sine', 1800, 2600, .18, .07); noise(.4, 5000, .08, 2);
+    sfx.ice(); spr('ice', x, y, .6);
     trapSuccess(); hitFoe(f, 8); burst(x, y, '#bfe6f2', 14, 110);
     if (f.dead) return;
     const d = f.lastDir ?? 1, [dx, dy] = DIRS[d];
@@ -929,7 +976,7 @@ function triggerAt(x, y, f, chained) {
     f.moving = false; f.stun = 0; f.lastDir = d;
     f.fly = { fx: x, fy: y, tx: cx, ty: cy, t: 0, dur: .12 + .09 * Math.max(1, steps), slam, fall, slide: true };
   } else if (tr.type === 'warp') { // 入ってきた扉まで送り返す
-    tone('sine', 300, 900, .35, .08); tone('triangle', 900, 300, .35, .05, .2);
+    sfx.warp();
     trapSuccess(); hitFoe(f, 8);
     if (f.dead) return;
     const [ddx, ddy] = f.door || DOORS[0];
@@ -938,7 +985,7 @@ function triggerAt(x, y, f, chained) {
     f.stun = Math.max(f.stun, .8);
     addText(ddx, ddy - 1, '戻された！', '#c9b8ff', 16);
   } else if (tr.type === 'blade') {
-    noise(.25, 3000, .2, 3); tone('sawtooth', 600, 200, .2, .05);
+    sfx.blade();
     const [dx, dy] = DIRS[tr.dir], tiles = [[x, y]];
     for (let i = 1; i < 4 && isFloor(x + dx * i, y + dy * i); i++) tiles.push([x + dx * i, y + dy * i]);
     G.fx.push({ type: 'blade', tiles, t: 0, dur: .35 });
@@ -946,17 +993,17 @@ function triggerAt(x, y, f, chained) {
     if (hits.length) trapSuccess();
     hits.forEach(g => hitFoe(g, 15));
   } else if (tr.type === 'bell') {
-    tone('sine', 1320, 1320, .6, .1); tone('sine', 1760, 1760, .5, .06, .12);
+    sfx.handbell();
     trapSuccess();
     G.lure = { x, y, t: 3 };
     for (const g of G.foes) if (!g.dead && !g.fly && Math.abs(g.x - x) + Math.abs(g.y - y) <= 4) g.stun = Math.max(g.stun, .3 * FOES[g.type].stunMul); // 音に気を取られる
     addText(x, y - 1, '鈴の音', '#f1d98e', 16);
   } else if (tr.type === 'caltrop') { // 弱いが安くてすぐ置ける
-    noise(.12, 4000, .12, 3);
+    sfx.caltrop();
     trapSuccess(); hitFoe(f, 9); burst(x, y, '#c9c3b5', 6, 70);
     if (!f.dead) f.slow = Math.max(f.slow, 1.5);
   } else if (tr.type === 'vortex') { // 周りの侵入者をまとめて吸い寄せる（吸い寄せた先の罠も発動する）
-    noise(.7, 600, .25, .4); tone('sine', 200, 700, .6, .06);
+    sfx.vortex();
     trapSuccess(); hitFoe(f, 6);
     G.fx.push({ type: 'vortex', x, y, t: 0, dur: .7 });
     const field = bfs(x, y, foeWalk);
@@ -994,22 +1041,22 @@ function doSkill(tx, ty) {
   if (G.char === 'lily') {
     for (const tr of G.traps.values()) { tr.cd = 0; tr.anim = .35; }
     for (const dv of G.devices) dv.cd = 0;
-    tone('sine', 880, 880, .3, .08); tone('sine', 1175, 1175, .4, .07, .1);
+    sfx.keys();
     heroBubble('みんな、お願い！', 1.4);
   } else if (G.char === 'mina') {
     G.mana = Math.min(stat.maxMana(), G.mana + 40); G.costHalfT = 8;
-    tone('triangle', 520, 1560, .5, .08);
+    sfx.mana();
     heroBubble('魔力よ、満ちて！', 1.4);
   } else if (G.char === 'noel') {
     const hits = G.foes.filter(f => inBox(f, h.x, h.y, 2.2));
     if (hits.length) trapSuccess();
     for (const f of hits) { hitFoe(f, 8); if (!f.dead) f.stun = Math.max(f.stun, 1.3 * FOES[f.type].stunMul); }
-    G.fx.push({ type: 'sweep', x: h.x, y: h.y, t: 0, dur: .45 }); noise(.3, 1500, .2, .8);
+    G.fx.push({ type: 'sweep', x: h.x, y: h.y, t: 0, dur: .45 }); sfx.sweep();
     heroBubble('お掃除です！', 1.2);
   } else if (G.char === 'cecil') {
     G.aiming = false;
     G.fx.push({ type: 'bomb', x: tx, y: ty, sx: h.x, sy: h.y, t: 0, dur: .8 });
-    tone('triangle', 400, 700, .2, .06);
+    sfx.throwBomb();
     heroBubble('えいっ！', 1);
   }
   addText(h.x, h.y - 1.4, sk.name, '#f1d98e', 18);
@@ -1187,7 +1234,7 @@ function updateFoe(f, dt) {
       f.stun = Math.max(f.stun, .35 * FOES[f.type].stunMul);
       if (fl.fall) {
         addText(f.x, f.y - 1.1, '奈落へ！', '#c9b8ff', 22); G.score += 300 * Math.max(1, G.combo);
-        trapSuccess(); killFoe(f); G.shake = Math.max(G.shake, 7); sfx.rock(); return;
+        trapSuccess(); killFoe(f); G.shake = Math.max(G.shake, 7); sfx.pit(); return;
       }
       if (fl.slam) { addText(f.x, f.y - 1, '激突！', '#ffb38a', 18); hitFoe(f, 14); G.shake = Math.max(G.shake, 5); }
       terrainAt(f.tx, f.ty, f);
@@ -1242,19 +1289,19 @@ function update(dt) {
     fx.t += dt;
     if (fx.type === 'chand' && !fx.done && fx.t >= fx.dur) {
       fx.done = true; G.shake = Math.max(G.shake, 7); burst(fx.x, fx.y, '#f1d98e', 22, 170);
-      noise(.4, 2500, .25, 1); tone('sine', 90, 40, .3, .2);
+      sfx.crash();
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.2);
       if (hits.length) trapSuccess(); else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
       for (const f of hits) { hitFoe(f, 35); if (!f.dead) f.stun = Math.max(f.stun, 1 * FOES[f.type].stunMul); }
     }
     if (fx.type === 'bomb' && !fx.done && fx.t >= fx.dur) {
-      fx.done = true; G.shake = Math.max(G.shake, 8); burst(fx.x, fx.y, '#ffb35a', 26, 190); sfx.rock();
+      fx.done = true; G.shake = Math.max(G.shake, 8); burst(fx.x, fx.y, '#ffb35a', 26, 190); sfx.bomb();
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.2);
       if (hits.length) trapSuccess(); else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
       for (const f of hits) hitFoe(f, 18);
     }
     if (fx.type === 'rock' && !fx.done && fx.t >= fx.dur) {
-      fx.done = true; sfx.rock(); G.shake = Math.max(G.shake, 6); burst(fx.x, fx.y, '#8c8478', 16, 140);
+      fx.done = true; sfx.rock(); spr('rock', fx.x, fx.y, .6, 1.4); G.shake = Math.max(G.shake, 6); burst(fx.x, fx.y, '#8c8478', 16, 140);
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.hypot(f.x - fx.x, f.y - fx.y) < .75);
       if (hits.length) trapSuccess(); else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
       for (const f of hits) { hitFoe(f, 30); if (!f.dead) f.stun = Math.max(f.stun, .8 * FOES[f.type].stunMul); }
@@ -1704,6 +1751,9 @@ function drawFx() {
         ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
         ctx.fillStyle = '#f4ecdf'; ell(ex, ey, 4, 4);
       }
+    } else if (fx.type === 'spr') { // 絵のエフェクト
+      const k = Math.min(7, Math.floor(fx.t / fx.dur * 8)), size = 48 * fx.s;
+      if (fx.t < fx.dur) { const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false; ctx.drawImage(IMG[`fx_${fx.key}`], k * 48, 0, 48, 48, fx.x * T + T / 2 - size / 2, fx.y * T + T / 2 - size / 2 + fx.dy, size, size); ctx.imageSmoothingEnabled = sm; }
     } else if (fx.type === 'vortex') {
       const p = Math.min(1, fx.t / fx.dur), cx = fx.x * T + T / 2, cy = fx.y * T + T / 2;
       ctx.strokeStyle = `rgba(127,214,196,${.8 * (1 - p)})`; ctx.lineWidth = 3;
@@ -1733,6 +1783,11 @@ function drawFx() {
         const q = (fx.t - fx.dur) / .4;
         ctx.fillStyle = `rgba(255,170,80,${.5 * (1 - q)})`; ell(fx.x * T + T / 2, fx.y * T + T / 2, 60 * (.5 + q), 50 * (.5 + q));
       }
+    } else if (fx.type === 'fire' && imgReady('fx_fire')) {
+      const p = fx.t / fx.dur; if (p > 1) continue;
+      const k = Math.min(7, Math.floor(p * 8)), sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
+      for (const [x, y] of fx.tiles) ctx.drawImage(IMG.fx_fire, k * 48, 0, 48, 48, x * T, y * T - 10, 48, 48);
+      ctx.imageSmoothingEnabled = sm;
     } else if (fx.type === 'fire') {
       const p = fx.t / fx.dur; if (p > 1) continue;
       for (const [x, y] of fx.tiles) {
@@ -2121,7 +2176,7 @@ function gameOver(won) {
   $('#rCombo').textContent = G.bestCombo;
   $('#rKills').textContent = G.kills;
   $('#rBest').textContent = (won ? `体力ボーナス +${hpBonus.toLocaleString('ja-JP')}点。` : '') + (newBest ? 'ハイスコア更新！ ' : '') + bestText();
-  if (won) sfx.wave();
+  if (won) sfx.dawn(); else sfx.lose();
   setTimeout(() => showOv('ovOver'), won ? 300 : 700);
 }
 function setPause(p) {
@@ -2150,7 +2205,7 @@ $('#btnFull').addEventListener('click', async () => {
   } catch (e) { say('この画面では全画面にできない。スマホを横にすると盤面が大きくなる'); }
 });
 document.addEventListener('fullscreenchange', () => { $('#btnFull').textContent = document.fullscreenElement ? '全画面を終了' : '全画面'; });
-$('#btnSound').addEventListener('click', () => { soundOn = !soundOn; $('#btnSound').textContent = soundOn ? '音: 入' : '音: 切'; });
+$('#btnSound').addEventListener('click', () => { soundOn = !soundOn; if (master) master.gain.value = soundOn ? .9 : 0; $('#btnSound').textContent = soundOn ? '音: 入' : '音: 切'; });
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play' && !paused) setPause(true); });
 $('#bestLine').textContent = bestText();
 function setKv(el, key) { // 立ち絵があれば出す
@@ -2175,6 +2230,6 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, useSkill, doSkill, setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, useSkill, doSkill, setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
 })();
 </script>
