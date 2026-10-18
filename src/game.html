@@ -656,6 +656,77 @@ function bus() {
   return a;
 }
 function send(node, wet) { node.connect(master); if (wet) node.connect(verb); }
+
+// ---------- BGM（Gemini に作ってもらった曲。ビルドで data URI に埋め込む） ----------
+const BGM = {
+  title: '../art/bgm/bgm_title.mp3', prep: '../art/bgm/bgm_prep.mp3', night: '../art/bgm/bgm_night.mp3', library: '../art/bgm/bgm_library.mp3',
+  phase3: '../art/bgm/bgm_phase3.mp3', lastnight: '../art/bgm/bgm_lastnight.mp3', shop: '../art/bgm/bgm_shop.mp3',
+  dawn: '../art/bgm/jingle_dawn.mp3', over: '../art/bgm/jingle_over.mp3',
+};
+const BGM_VOL = .42, BGM_XF = 1.2; // 効果音より小さめ。ループのつなぎ目は 1.2 秒かけて重ねる
+const bgmBuf = {}, bgmLoading = {};
+let bgmBus = null, bgmKey = null, bgmVoice = null, bgmTimer = 0;
+function bgmOut() {
+  const a = audio(); if (!a) return null;
+  if (!master) { const on = soundOn; soundOn = true; bus(); soundOn = on; if (!on) master.gain.value = 0; }
+  if (!bgmBus) { bgmBus = a.createGain(); bgmBus.gain.value = BGM_VOL; bgmBus.connect(master); }
+  return a;
+}
+function bgmLoad(key) { // data URI を自前でほどいて decodeAudioData（fetch を使わない）
+  if (bgmBuf[key] || bgmLoading[key] || !AC) return;
+  const url = BGM[key]; if (!url) return;
+  bgmLoading[key] = true;
+  const done = b => { bgmBuf[key] = b; if (bgmKey === key && !bgmVoice) bgmStart(key, 0); };
+  if (!url.startsWith('data:')) { fetch(url).then(r => r.arrayBuffer()).then(ab => AC.decodeAudioData(ab, done, () => {})).catch(() => {}); return; } // 開発中（src を直接開いたとき）
+  try {
+    const bin = atob(url.slice(url.indexOf(',') + 1)), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    AC.decodeAudioData(u8.buffer, done, () => {});
+  } catch (e) {}
+}
+function bgmVoiceStart(key, when, fadeIn, loop) {
+  const a = bgmOut(), b = bgmBuf[key]; if (!a || !b) return null;
+  const src = a.createBufferSource(), g = a.createGain(); src.buffer = b;
+  g.gain.setValueAtTime(fadeIn ? 0 : 1, when); if (fadeIn) g.gain.linearRampToValueAtTime(1, when + fadeIn);
+  src.connect(g).connect(bgmBus); src.start(when);
+  const v = { key, src, g, end: when + b.duration };
+  if (loop) { // 終わる少し前に次の回を重ねて、つなぎ目を目立たせない
+    clearTimeout(bgmTimer);
+    bgmTimer = setTimeout(() => { if (bgmVoice === v && bgmKey === key) { bgmFade(v, BGM_XF); bgmVoice = bgmVoiceStart(key, Math.max(a.currentTime, v.end - BGM_XF), BGM_XF, true); } }, Math.max(0, (v.end - BGM_XF - a.currentTime - .3) * 1000));
+  }
+  return v;
+}
+function bgmFade(v, t) {
+  if (!v || !AC) return;
+  const now = AC.currentTime;
+  try { v.g.gain.cancelScheduledValues(now); v.g.gain.setValueAtTime(v.g.gain.value, now); v.g.gain.linearRampToValueAtTime(0, now + t); v.src.stop(now + t + .05); } catch (e) {}
+}
+function bgmStart(key, fadeIn) { bgmVoice = bgmVoiceStart(key, AC.currentTime + .02, fadeIn, key !== 'dawn' && key !== 'over'); }
+// 流したい曲を伝える（同じ曲なら何もしない）。null で止める
+function playBgm(key) {
+  if (key === bgmKey) return;
+  bgmKey = key;
+  if (bgmVoice) { bgmFade(bgmVoice, .5); bgmVoice = null; clearTimeout(bgmTimer); }
+  if (!key || !bgmOut()) return;
+  if (bgmBuf[key]) bgmStart(key, key === 'dawn' || key === 'over' ? 0 : .5); else bgmLoad(key);
+}
+// 今の場面に合う曲（毎フレーム呼ぶ）
+function sceneBgm() {
+  if (!AC || AC.state !== 'running') return;
+  for (const k of ['title', 'prep', 'night']) bgmLoad(k); // よく使う曲は先にほどいておく
+  let want = null;
+  if (G.state === 'title') want = 'title';
+  else if (G.state === 'shop') want = 'shop';
+  else if (G.state === 'over') want = bgmKey === 'dawn' || bgmKey === 'over' ? bgmKey : null;
+  else if (G.state === 'play') {
+    if (G.clearT >= 0) want = 'dawn';
+    else if (G.phase === 0 || G.intro) want = G.wave >= LAST_NIGHT && G.phase > 0 ? 'lastnight' : 'prep';
+    else if (G.wave >= LAST_NIGHT) want = 'lastnight';
+    else if (G.phase === 3) want = 'phase3';
+    else want = G.wave >= 6 ? 'library' : 'night';
+  }
+  if (want !== bgmKey) { if (want) bgmLoad(want); playBgm(want); }
+}
 function tone(type, f0, f1, dur, vol = .15, delay = 0, wet = true) {
   const a = bus(); if (!a) return;
   const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
@@ -1032,7 +1103,7 @@ function clearNight(wiped) {
     G.score += 500 * G.wave;
     banner('夜明け', '侵入者は朝日に逃げていった');
   }
-  G.spawnQueue = []; if (G.wave < LAST_NIGHT) sfx.dawn(); else sfx.kill();
+  G.spawnQueue = []; if (bgmBuf.dawn) playBgm('dawn'); else if (G.wave < LAST_NIGHT) sfx.dawn(); else sfx.kill();
 }
 function spawn(type) {
   const open = DOORS.slice(0, Math.min(DOORS.length, G.wave));
@@ -2455,7 +2526,7 @@ function gameOver(won) {
   $('#rCombo').textContent = G.bestCombo;
   $('#rKills').textContent = G.kills;
   $('#rBest').textContent = (won ? `体力ボーナス +${hpBonus.toLocaleString('ja-JP')}点。` : '') + (newBest ? 'ハイスコア更新！ ' : '') + bestText();
-  if (won) sfx.dawn(); else sfx.lose();
+  if (bgmBuf[won ? 'dawn' : 'over']) { if (!won || bgmKey !== 'dawn') { bgmKey = null; playBgm(won ? 'dawn' : 'over'); } } else if (won) sfx.dawn(); else sfx.lose();
   setTimeout(() => showOv('ovOver'), won ? 300 : 700);
 }
 function setPause(p) {
@@ -2517,10 +2588,10 @@ function frame(ts) {
   else if (G.state === 'over') { G.time += dt; for (const p of G.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; } }
   // ショップ・タイトル・結果などの画面が重なっている間は、盤面を描く回数を減らす（電池と熱のため）
   if (G.state === 'play' || !(drawSkip = (drawSkip + 1) % 6)) draw();
-  updateHud();
+  updateHud(); sceneBgm();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
 })();
 </script>

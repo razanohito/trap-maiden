@@ -3,7 +3,7 @@
 - index.html                     … GitHub Pages 用（doctype と html 要素を付ける）
 - dist-artifact/trap-maiden.html … claude.ai Artifact 用（中身だけ。骨組みは Artifact 側が付ける）
 
-art/*.webp は data URI にして埋め込む。
+art/ の画像（webp・png）と BGM（mp3）は data URI にして埋め込む。
 """
 import base64
 import re
@@ -16,11 +16,12 @@ src = (ROOT / "src" / "game.html").read_text(encoding="utf-8")
 def embed(m: re.Match) -> str:
     """'../art/xxx.webp' や '../art/sprites/xxx.png' を data URI にする（HTML 1 枚で動かすため）"""
     data = (ROOT / "art" / m.group(1)).read_bytes()
-    mime = "image/png" if m.group(1).endswith(".png") else "image/webp"
+    ext = m.group(1).rsplit(".", 1)[1]
+    mime = {"png": "image/png", "webp": "image/webp", "mp3": "audio/mpeg"}[ext]
     return f"'data:{mime};base64," + base64.b64encode(data).decode() + "'"
 
 
-src = re.sub(r"'\.\./art/([\w/-]+\.(?:webp|png))'", embed, src)
+src = re.sub(r"'\.\./art/([\w/-]+\.(?:webp|png|mp3))'", embed, src)
 
 (ROOT / "index.html").write_text('<!doctype html>\n<html lang="ja">\n' + src + "\n</html>\n", encoding="utf-8")
 out = ROOT / "dist-artifact" / "trap-maiden.html"
