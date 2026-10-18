@@ -537,6 +537,8 @@ const ART = { portrait_lily: '../art/portrait_lily.webp', portrait_mina: '../art
   lily_hit: '../art/sprites/lily_hit.png', mina_hit: '../art/sprites/mina_hit.png', noel_hit: '../art/sprites/noel_hit.png', cecil_hit: '../art/sprites/cecil_hit.png',
   lily_pinch: '../art/sprites/lily_pinch.png', mina_pinch: '../art/sprites/mina_pinch.png', noel_pinch: '../art/sprites/noel_pinch.png', cecil_pinch: '../art/sprites/cecil_pinch.png',
   fx_warp: '../art/fx/warp.png', fx_soul: '../art/fx/soul.png',
+  lily_jump: '../art/sprites/lily_jump.png', mina_jump: '../art/sprites/mina_jump.png', noel_jump: '../art/sprites/noel_jump.png', cecil_jump: '../art/sprites/cecil_jump.png',
+  portrait_lily_happy: '../art/portrait_lily_happy.webp', portrait_mina_happy: '../art/portrait_mina_happy.webp', portrait_noel_happy: '../art/portrait_noel_happy.webp', portrait_cecil_happy: '../art/portrait_cecil_happy.webp',
   foe_knight_walk: '../art/sprites/foe_knight_walk.png', foe_knight_idle: '../art/sprites/foe_knight_idle.png',
   foe_thief_walk: '../art/sprites/foe_thief_walk.png', foe_thief_idle: '../art/sprites/foe_thief_idle.png',
   foe_heavy_walk: '../art/sprites/foe_heavy_walk.png', foe_heavy_idle: '../art/sprites/foe_heavy_idle.png',
@@ -1832,6 +1834,7 @@ function drawHero() {
     const pinch = G.hp <= 1 && imgReady(`${pk}_pinch`); // 体力が残り1: 服がほつれたピンチの姿
     if ((h.hurt > 0 || h.trip > 0) && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[pinch ? `${pk}_pinch` : `${pk}_hit`], row * 48, 0, 48, 48, left, top, 48, 48); // 被弾してのけぞる
     else if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * 48, row * 48, 48, 48, left, top, 48, 48);
+    else if (h.joy > 0 && imgReady(`${pk}_jump`)) ctx.drawImage(IMG[`${pk}_jump`], (Math.floor(t * 9) % 4) * 48, 0, 48, 48, left, top, 48, 48); // 喜びのジャンプ
     else if (pinch) ctx.drawImage(IMG[`${pk}_pinch`], row * 48, 0, 48, 48, left, top, 48, 48);
     else ctx.drawImage(IMG[`${pk}_idle`], row * 48, 0, 48, 48, left, top, 48, 48);
     ctx.imageSmoothingEnabled = sm; ctx.globalAlpha = 1;
@@ -2546,7 +2549,7 @@ function gameOver(won) {
   G.score += hpBonus;
   const newBest = G.score > best;
   if (newBest) { best = G.score; try { localStorage.setItem('wanakan-best', String(best)); } catch (e) {} }
-  setKv($('#kvOver'), CH().art ? `portrait_${CH().art}` : null);
+  setKv($('#kvOver'), CH().art ? `portrait_${CH().art}${won && ART[`portrait_${CH().art}_happy`] ? '_happy' : ''}` : null); // 勝ったら笑顔の立ち絵
   $('#kvOver').classList.toggle('joy', !!won);
   $('#rSay').textContent = won ? CH().win : CH().lose;
   $('#rTitle').textContent = won ? '館を守り抜いた！' : `${CH().name}は捕まってしまった…`;

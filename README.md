@@ -26,6 +26,7 @@
 | `art-src/` | ChatGPT に描いてもらった原画（4人の設定画 `<名前>_sheet.webp`、参考の絵は `reference/`） |
 | `tools/import_sprites.py` | ChatGPT に作ってもらった 48px のスプライトシート（`art-src/sprites48/`）のずれを直して `art/sprites/` に入れる（4人と侵入者3種の歩行、4人の被弾。ピンチの絵は服が破れる表現なので使わない） |
 | `tools/import_fx.py` | エフェクトの絵（`art-src/fx/`、8 コマ横長か 3x3）を、マゼンタのふちを消して `art/fx/`（384x48）に入れる |
+| `tools/cut_happy.py` | 喜びの立ち絵（`art-src/happy/`、白背景）の背景を抜いて `art/portrait_<名前>_happy.webp` にする（全10夜クリアの結果画面で使う） |
 | `tools/import_bgm.py` | BGM（`art-src/bgm/` の mp3）を音量 -18 LUFS・モノラル 64kbps にそろえて `art/bgm/` に入れる（ffmpeg を使う）。場面ごとの曲はタイトル・準備・第1〜5夜・書庫（第6〜9夜）・フェイズ3・最後の夜・ショップ、ジングルは夜明けと終わり |
 | `docs/sound-fx-brief.html` | BGM・エフェクト・効果音の提案（Gemini 用プロンプト） |
 | `tools/make_sprites.py` | 手で組み立てたドット絵の予備（`art/sprites_gen/`） |

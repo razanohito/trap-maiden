@@ -6,7 +6,7 @@
 - 入力: art-src/sprites48/<名前>_walk_4dir_48px.png（4列×4行、行は 下・左・右・上）
         art-src/sprites48/<名前>_hit_critical_4dir_48px.png（1行目＝被弾、2行目＝ピンチ）
 - 出力: art/sprites/<名前>_walk.png（4列×4行）、<名前>_idle.png（各行の2コマ目を待機姿勢に）、
-        <名前>_hit.png・<名前>_pinch.png（4列×1行。下・左・右・上）
+        <名前>_hit.png・<名前>_pinch.png（4列×1行。下・左・右・上）、<名前>_jump.png（喜びのジャンプ、正面4コマ）
 - 侵入者は foe_knight / foe_thief / foe_heavy（歩行だけ）
 
 使い方: python tools/import_sprites.py
@@ -91,7 +91,13 @@ def main():
                 for c, im in enumerate(fix_row(Image.open(hit_path).crop((0, r * F, F * 4, r * F + F)))):
                     row.paste(im, (c * F, 0))
                 row.save(OUT / f"{name}_{suffix}.png")
-        print(name, "ok", "(被弾あり)" if hit_path.exists() else "")
+        jump_path = SRC / f"{name}_jump_4frames_48px.png"
+        if jump_path.exists():  # 喜びのジャンプ（正面4コマ）。足もとをそろえ、跳ねる高さはゲームの中で付ける
+            jump = Image.new("RGBA", (F * 4, F))
+            for c, im in enumerate(fix_row(Image.open(jump_path))):
+                jump.paste(im, (c * F, 0))
+            jump.save(OUT / f"{name}_jump.png")
+        print(name, "ok", "(被弾あり)" if hit_path.exists() else "", "(喜びあり)" if jump_path.exists() else "")
 
 
 if __name__ == "__main__":
