@@ -9,6 +9,7 @@
 
 使い方: python tools/import_fx.py
 """
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -40,8 +41,20 @@ def to_frame(cell: Image.Image) -> Image.Image:
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     done = set()
+    # 中身がまったく同じ絵（別の名前で複製されたもの）は取り込まない。すでに art/fx にある名前だけ残す
+    groups = {}
+    for p in sorted(SRC.glob("fx_*_strip.png")):
+        groups.setdefault(hashlib.md5(p.read_bytes()).hexdigest(), []).append(p.name[3:-len("_strip.png")])
+    skip = set()
+    for names in groups.values():
+        if len(names) > 1:
+            keep = [n for n in names if (OUT / f"{n}.png").exists()][:1]
+            skip |= set(names) - set(keep)
+            print("同じ絵:", "・".join(names), "→ 取り込まない:", "・".join(sorted(set(names) - set(keep))) or "なし")
     for p in sorted(SRC.glob("fx_*_strip.png")):
         name = p.name[3:-len("_strip.png")]
+        if name in skip:
+            continue
         im = clean(Image.open(p))
         if im.size != (F * 8, F):
             im = im.resize((F * 8, F), Image.NEAREST)
