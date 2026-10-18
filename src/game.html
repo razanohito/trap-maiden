@@ -897,7 +897,6 @@ cv.addEventListener('pointercancel', e => { endFlick(e, true); G.hover = null; }
 
 function say(text, dur = 1.8) { G.msg = text; G.msgT = dur; }
 function placeTrap(x, y, type) {
-  if (G.finale) return; // 大連鎖の間は置けない
   const def = TRAPS[type];
   if (!canPlace(x, y)) { say('そこには置けない'); sfx.bad(); return; }
   const key = x + ',' + y, old = G.traps.get(key);
@@ -906,7 +905,7 @@ function placeTrap(x, y, type) {
     G.traps.delete(key); G.removedCd[key] = { cd: old.cd, at: G.time }; G.mana = Math.min(stat.maxMana(), G.mana + back);
     say(`${def.name}を撤去した（魔力 +${back}）`); sfx.bad(); return;
   }
-  const under = G.foes.find(f => !f.dead && !f.fly && Math.round(f.x) === x && Math.round(f.y) === y);
+  const under = G.foes.find(f => !f.dead && !(f.down > 0) && !f.fly && Math.round(f.x) === x && Math.round(f.y) === y);
   if (under && !def.direct) { say(G.loadout.includes('caltrop') ? '侵入者の足もとには置けない（まきびしなら置ける）' : '侵入者の足もとには置けない'); sfx.bad(); return; }
   if (!old && G.traps.size >= stat.limit()) { say(`罠は${stat.limit()}個まで。同じ罠を押すと撤去できる`); sfx.bad(); return; }
   const refund = old ? Math.floor(old.paid / 2) : 0, cost = trapCost(type);
@@ -998,7 +997,7 @@ function startWave(n) {
   if (n === LAST_NIGHT) q.push('heavy', 'thief', 'thief');
   const a = Math.round(q.length * .3), b = Math.round(q.length * .6);
   G.phaseQ = [q.slice(0, a), q.slice(a, b), q.slice(b)];
-  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1; G.finale = null;
+  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1;
   G.nightLen = G.nightT = 50 + 3 * (n - 1); G.prepT = 25;
   G.state = 'play';
   if (moved || n === 1) startIntro(mi);
@@ -1020,50 +1019,12 @@ function advancePhase() {
   G.mana = Math.min(stat.maxMana(), G.mana + 25);
   banner(`フェイズ${G.phase}`, '置ける罠 +1・魔力 +25'); sfx.wave();
 }
-// 連続が続いたまま全滅させたら、置いてある罠が近い順につぎつぎ作動して連続を伸ばす（罠の大連鎖）
-function startFinale() {
-  const left = [...G.traps.entries()].map(([k, tr]) => { const [x, y] = k.split(',').map(Number); return { x, y, tr }; });
-  let [cx, cy] = G.lastKill || [Math.round(G.hero.x), Math.round(G.hero.y)];
-  const list = [];
-  while (left.length) { // 最後に倒した場所から、いちばん近い罠へ順にたどる
-    let bi = 0, bd = 1e9;
-    left.forEach((o, i) => { const d = Math.abs(o.x - cx) + Math.abs(o.y - cy); if (d < bd) { bd = d; bi = i; } });
-    const o = left.splice(bi, 1)[0]; list.push(o); cx = o.x; cy = o.y;
-  }
-  G.finale = { list, t: .45, n: 0, gained: 0 };
-  banner('罠の大連鎖！', '置いた罠がつぎつぎ作動する'); G.banner = 1.8; G.msgT = 0;
-}
-function updateFinale(dt) {
-  const fz = G.finale; fz.t -= dt; if (fz.t > 0) return;
-  if (!fz.list.length) { G.finale = null; clearNight(true, fz.gained, fz.n); return; }
-  const { x, y, tr } = fz.list.shift();
-  tr.anim = .35; trapShowFx(tr.type, x, y, tr.dir);
-  trapSuccess(); fz.n++;
-  const pts = 100 * Math.min(10, G.combo); G.score += pts; fz.gained += pts;
-  addText(x, y - 1.2, `${G.combo}連続 +${pts}`, '#f1d98e', 15 + Math.min(9, fz.n));
-  if (G.combo < 2) sfx.combo(2); G.shake = Math.max(G.shake, 3); // 連続の音は trapSuccess が鳴らす
-  fz.t = Math.max(.16, .4 - fz.n * .025); // だんだん速く
-}
-// 罠の見た目と音だけを出す（大連鎖用。侵入者には当たらない）
-function trapShowFx(type, x, y, dir = 1) {
-  burst(x, y, '#f1d98e', 10, 120);
-  if (type === 'bear') { sfx.bear(); spr('snap', x, y, .45); }
-  else if (type === 'spring') { sfx.spring(); spr('spring', x, y, .5, 1, -8); }
-  else if (type === 'rock') { sfx.rock(); spr('rock', x, y, .6, 1.4); burst(x, y, '#8c8478', 12, 130); }
-  else if (type === 'fire') { sfx.fire(); G.fx.push({ type: 'fire', tiles: [[x, y], ...DIRS.map(([dx, dy]) => [x + dx, y + dy]).filter(([a, b]) => isFloor(a, b))], t: 0, dur: .7 }); }
-  else if (type === 'ice') { sfx.ice(); spr('ice', x, y, .6); }
-  else if (type === 'warp') { sfx.warp(); G.fx.push({ type: 'warp', x, y, t: 0, dur: .5 }); }
-  else if (type === 'blade') { sfx.blade(); const [dx, dy] = DIRS[dir], tiles = [[x, y]]; for (let i = 1; i < 4 && isFloor(x + dx * i, y + dy * i); i++) tiles.push([x + dx * i, y + dy * i]); G.fx.push({ type: 'blade', tiles, t: 0, dur: .35 }); }
-  else if (type === 'bell') sfx.handbell();
-  else if (type === 'caltrop') sfx.caltrop();
-  else if (type === 'vortex') { sfx.vortex(); G.fx.push({ type: 'vortex', x, y, t: 0, dur: .7 }); }
-}
-function clearNight(wiped, finalePts = 0, finaleN = 0) {
+function clearNight(wiped) {
   G.clearT = 1.8;
   if (wiped) {
     const bonus = 10 * G.wave, tb = Math.ceil(G.nightT) * 50;
     G.soul += bonus; G.score += 1000 * G.wave + tb;
-    banner('全滅させた！', finaleN ? `罠${finaleN}つが大連鎖 +${finalePts.toLocaleString('ja-JP')}点・魂 +${bonus}・残り時間 ${tb.toLocaleString('ja-JP')}点` : `魂 +${bonus}・残り時間ボーナス ${tb.toLocaleString('ja-JP')}点`);
+    banner('全滅させた！', `魂 +${bonus}・残り時間ボーナス ${tb.toLocaleString('ja-JP')}点`);
   } else {
     for (const f of G.foes) if (!f.dead) { f.dead = true; f.deadT = 0; burst(f.x, f.y, '#a99cb0', 8, 80); }
     G.score += 500 * G.wave;
@@ -1081,7 +1042,10 @@ function spawn(type) {
 
 // ---------- 罠の効果 ----------
 function comboMult() { return Math.min(5, 1 + .25 * (G.combo - 1)); }
-function addText(x, y, text, color, size = 18) { G.texts.push({ x, y, text, color, size, t: 0, dur: 1 }); }
+function addText(x, y, text, color, size = 18) { // 同じ場所に続けて出た文字は上へずらして重ねない
+  const k = G.texts.filter(o => o.t < .25 && Math.abs(o.x - x) < 1.2 && Math.abs(o.y - y) < .5).length;
+  G.texts.push({ x, y: y - k * .5, text, color, size, t: 0, dur: 1 });
+}
 function burst(x, y, color, n, sp = 120) {
   for (let i = 0; i < n; i++) { const a = rnd(0, 6.28), v = rnd(sp * .3, sp); G.parts.push({ x: x * T + T / 2, y: y * T + T / 2, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, life: rnd(.4, .8), t: 0, color, size: rnd(2, 4) }); }
 }
@@ -1094,6 +1058,12 @@ function trapSuccess() {
 }
 function hitFoe(f, base) {
   if (f.dead) return;
+  if (f.down > 0) { // 倒れている侵入者への追い打ち: ダメージは無いが得点が入り、倒れている時間が少し延びる
+    const pts = 80 * Math.min(10, Math.max(1, G.combo));
+    G.score += pts; G.oiuchi = (G.oiuchi || 0) + 1; f.flash = .15; f.down = Math.max(f.down, .8);
+    addText(f.x, f.y - .6, `追い打ち +${pts}`, '#ffd27a', 15); burst(f.x, f.y, '#ffd27a', 6, 90);
+    return;
+  }
   const dmg = Math.round(base * stat.power());
   f.hp -= dmg; f.flash = .15;
   const mult = comboMult();
@@ -1103,14 +1073,17 @@ function hitFoe(f, base) {
   if (f.hp <= 0) killFoe(f);
 }
 function killFoe(f) {
-  if (f.dead) return;
+  if (f.dead || f.down > 0) return;
   const mult = comboMult();
-  f.dead = true; f.deadT = 0; f.hp = 0; G.kills++; G.lastKill = [Math.round(f.x), Math.round(f.y)];
+  f.down = DOWN_TIME; f.downT = 0; f.hp = 0; f.moving = false; f.stun = 0; f.lurch = null; G.kills++; // 倒れてもしばらく当たり判定が残る
+  f.tx = f.nx = Math.round(f.x); f.ty = f.ny = Math.round(f.y);
   const def = FOES[f.type], s = Math.round(def.soul * mult);
   G.soul += s; G.score += Math.round(def.score * mult);
   addText(f.x, f.y - 1, `魂 +${s}`, '#c9b8ff', 16);
   burst(f.x, f.y, '#b9a5ff', 18, 160); sfx.kill();
 }
+const DOWN_TIME = 1.4, DOWN_MAX = 3; // 倒れたまま残る秒数（追い打ちで延びるが最大3秒）
+function finishFoe(f) { f.dead = true; f.deadT = 0; f.down = 0; }
 // 絵のエフェクト（8 コマの横長画像）を出す。dy はマスの中心からのずれ（上が負）
 function spr(key, x, y, dur, s = 1, dy = 0) { if (imgReady(`fx_${key}`)) G.fx.push({ type: 'spr', key, x, y, t: 0, dur, s, dy }); }
 function poisonTick(f) { // 毒は1秒ごと（連続には数えない）
@@ -1143,6 +1116,7 @@ function activateDevice(dv) {
 }
 // 1回でまとめて当てた（巻き込んだ）ときのボーナス。2体目からは連続にも数える
 function multiHit(list) {
+  list = list.filter(f => !(f.down > 0)); // 倒れている侵入者は追い打ちで数えるので、ここには入れない
   const n = list.length; if (n < 2) return;
   for (let i = 1; i < n; i++) trapSuccess();
   const bonus = 150 * n * (n - 1) * Math.min(10, Math.max(1, G.combo)); // 連続の掛け算は10まで
@@ -1325,7 +1299,7 @@ function trapsOnPath(sx, sy, field, hx, hy) {
 }
 function lureScore(cx, cy) { // 近い侵入者2人がここへ来る道の罠
   const field = bfs(cx, cy, foeWalk);
-  const near = G.foes.filter(f => !f.dead && !f.fly).map(f => [field[f.tx + f.ty * COLS], f]).filter(([d]) => d > 0 && d <= 9).sort((a, b) => a[0] - b[0]).slice(0, 2);
+  const near = G.foes.filter(f => !f.dead && !(f.down > 0) && !f.fly).map(f => [field[f.tx + f.ty * COLS], f]).filter(([d]) => d > 0 && d <= 9).sort((a, b) => a[0] - b[0]).slice(0, 2);
   let v = 0; for (const [, f] of near) v += Math.min(2, trapsOnPath(f.tx, f.ty, field, cx, cy));
   return v;
 }
@@ -1458,7 +1432,7 @@ function updateFoe(f, dt) {
       f.stun = Math.max(f.stun, .35 * FOES[f.type].stunMul);
       if (fl.fall) {
         addText(f.x, f.y - 1.1, '奈落へ！', '#c9b8ff', 22); G.score += 300 * Math.max(1, G.combo);
-        trapSuccess(); killFoe(f); G.shake = Math.max(G.shake, 7); sfx.pit(); return;
+        trapSuccess(); killFoe(f); finishFoe(f); G.shake = Math.max(G.shake, 7); sfx.pit(); return;
       }
       if (fl.slam && fl.polish) { // ノエルの磨き上げた床: 勢いよくぶつかって目を回す
         addText(f.x, f.y - 1, '大激突！', '#ffb38a', 22); hitFoe(f, 34); G.shake = Math.max(G.shake, 7); sfx.crash();
@@ -1467,6 +1441,11 @@ function updateFoe(f, dt) {
       terrainAt(f.tx, f.ty, f);
       if (!f.dead) triggerAt(f.tx, f.ty, f, true);
     }
+    return;
+  }
+  if (f.down > 0) { // 倒れている: 動かないが、罠や玉突きには当たる
+    f.down -= dt; f.downT += dt;
+    if (f.down <= 0 || f.downT > DOWN_MAX) finishFoe(f);
     return;
   }
   if (f.stun > 0) { f.stun -= dt; if (f.stun <= 0 && f.lurch != null) { const d = f.lurch; f.lurch = null; shove(f, d); } return; }
@@ -1496,7 +1475,7 @@ function update(dt) {
   G.time += dt;
   G.mana = Math.min(stat.maxMana(), G.mana + stat.regen() * dt);
   if (G.lure) { G.lure.t -= dt; if (G.lure.t <= 0) G.lure = null; }
-  G.foeField = bfsMulti(G.foes.filter(f => !f.dead).map(f => [Math.round(f.x), Math.round(f.y)]), foeWalk);
+  G.foeField = bfsMulti(G.foes.filter(f => !f.dead && !(f.down > 0)).map(f => [Math.round(f.x), Math.round(f.y)]), foeWalk);
   updateHero(dt);
   const h = G.hero;
   G.field = G.lure ? bfs(G.lure.x, G.lure.y, foeWalk) : bfs(Math.round(h.x), Math.round(h.y), foeWalk); // 鈴が鳴っている間は鈴へ向かう
@@ -1542,7 +1521,7 @@ function update(dt) {
   // 接触したらダメージ
   if (h.inv <= 0) {
     for (const f of G.foes) {
-      if (f.dead || f.fly || f.z > 0) continue;
+      if (f.dead || f.down > 0 || f.fly || f.z > 0) continue;
       if (Math.hypot(f.x - h.x, f.y - h.y) < .6) {
         G.hp--; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt();
         f.stun = Math.max(f.stun, 1.2); // 捕まえかけて一瞬止まる
@@ -1553,7 +1532,6 @@ function update(dt) {
       }
     }
   }
-  if (G.finale) { updateFinale(dt); return; }
   if (G.clearT >= 0) { G.clearT -= dt; if (G.clearT <= 0) { if (G.wave >= LAST_NIGHT) gameOver(true); else openShop(); } return; }
   if (G.phase === 0) { G.prepT -= dt; if (G.prepT <= 0) beginDefense(); }
   if (G.wave === 1 && G.phase === 0) { // 第1夜の準備中だけの案内
@@ -1565,7 +1543,7 @@ function update(dt) {
     G.nightT = Math.max(0, G.nightT - dt);
     const live = G.foes.some(f => !f.dead), empty = !G.spawnQueue.length && !live;
     if (G.nightT <= 0) clearNight(false);
-    else if (G.phase === 3 && empty) { if (G.combo >= 2 && G.time - G.lastHit <= COMBO_WINDOW && G.traps.size) startFinale(); else clearNight(true); }
+    else if (G.phase === 3 && empty) clearNight(true);
     else if (G.phase < 3 && (G.nightT <= G.nightLen * (1 - G.phase / 3) || empty)) advancePhase();
   }
 }
@@ -1900,22 +1878,24 @@ function drawFoe(f) {
     const left = Math.round(px - size / 2), top = Math.round(footY - 46 * sc - f.z);
     ctx.save();
     if (f.dead) ctx.globalAlpha = Math.max(0, 1 - f.deadT / .5);
+    else if (f.down > 0) ctx.globalAlpha = f.down < .5 && Math.floor(t * 16) % 2 ? .35 : .85;
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 11 * sc, 3.5 * sc);
     const walking = f.moving && f.stun <= 0 && !f.fly;
     const img = walking ? IMG[`${key}_walk`] : IMG[`${key}_idle`];
     const sx = walking ? (Math.floor((f.walk || 0) / WALK_STEP) % 4) * 48 : row * 48, sy = walking ? row * 48 : 0;
     ctx.imageSmoothingEnabled = false;
     if (f.dead) { ctx.translate(px, footY); ctx.scale(1 + f.deadT, 1 - f.deadT * 1.2); ctx.translate(-px, -footY); }
+    else if (f.down > 0 && !f.fly) { const pv = footY - 8; ctx.translate(px, pv); ctx.rotate((f.face < 0 ? -1 : 1) * Math.PI / 2 * Math.min(1, f.downT * 6)); ctx.translate(-px, -pv); }
     ctx.drawImage(img, sx, sy, 48, 48, left, top, size, size);
     if (f.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .6; ctx.drawImage(img, sx, sy, 48, 48, left, top, size, size); }
     ctx.restore();
-    if (!f.dead && f.hp < f.maxhp) {
+    if (!f.dead && !(f.down > 0) && f.hp < f.maxhp) {
       const w = 26, x = px - w / 2, y = top + 4;
       ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, y - 1, w + 2, 5);
       ctx.fillStyle = '#d0503f'; ctx.fillRect(x, y, w * Math.max(0, f.hp / f.maxhp), 3);
     }
     if (!f.dead && f.slow > 0) { ctx.fillStyle = 'rgba(168,220,239,.8)'; ell(px - 12, top + 14, 2.5, 2.5); ell(px + 12, top + 18, 2, 2); }
-    if (!f.dead && f.stun > 0 && !f.fly) {
+    if (!f.dead && !(f.down > 0) && f.stun > 0 && !f.fly) {
       ctx.fillStyle = '#ffe58a';
       for (let i = 0; i < 3; i++) { const a = t * 5 + i * 2.09; ell(px + Math.cos(a) * 10, top + 6 + Math.sin(a) * 3, 2, 2); }
     }
@@ -1923,8 +1903,10 @@ function drawFoe(f) {
   }
   ctx.save();
   if (f.dead) { const p = f.deadT / .5; ctx.globalAlpha = 1 - p; }
+  else if (f.down > 0) ctx.globalAlpha = f.down < .5 && Math.floor(t * 16) % 2 ? .35 : .85;
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, gy + 16, 12 * sc, 4 * sc);
   ctx.translate(px, py); ctx.scale(sc * (f.face < 0 ? -1 : 1), sc);
+  if (f.down > 0 && !f.fly) ctx.rotate(Math.PI / 2 * Math.min(1, f.downT * 6));
   if (f.dead) ctx.scale(1 + f.deadT, 1 - f.deadT * 1.2);
   const walking = f.moving && f.stun <= 0;
   const step = walking ? Math.sin(t * 10 + f.seed) : 0, bob = walking ? -Math.abs(step) * 1.5 : 0;
@@ -1954,7 +1936,7 @@ function drawFoe(f) {
     ctx.fillStyle = col('#c9c3b5'); ctx.fillRect(8, 2 + bob, 6, 2);
   }
   ctx.restore();
-  if (!f.dead && f.hp < f.maxhp) {
+  if (!f.dead && !(f.down > 0) && f.hp < f.maxhp) {
     const w = 26, x = px - w / 2, y = py - 32 * sc;
     ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, y - 1, w + 2, 5);
     ctx.fillStyle = '#d0503f'; ctx.fillRect(x, y, w * Math.max(0, f.hp / f.maxhp), 3);
@@ -2267,7 +2249,7 @@ const HELP = [
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 2, 1, 1); miniTrap(g, 'blade', 4, 1, 2); miniLabel(g, 2, 0, '向き →'); miniLabel(g, 4, 0, '向き ↓'); miniLabel(g, 6, 1, '押して置く', '#fff4e0'); } },
   { t: '連続で得点アップ', d: '罠を3秒半以内に続けて当てると「連続」。続くほど得点と魂が増え、3連続からは魔力も少し戻る。罠に当たった侵入者はよろけて動く（火柱・まきびしは1歩前、落石は1歩後ろ、トラバサミは抜け出したあと1歩前、振り子刃は刃の向き、槍の石像は外へ）。動いた先に罠を置いておけば連鎖する。',
     draw() { const g = miniGrid(7, 3); miniFoe(g, 1, 1); miniTrap(g, 'bear', 3, 1); miniTrap(g, 'rock', 5, 1); miniArrow(g, [1, 1], [3, 1]); miniArrow(g, [3, 1], [5, 1]); miniLabel(g, 3, 0, '1'); miniLabel(g, 5, 0, '2連続！'); } },
-  { t: '巻き込みと玉突き', d: '1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。どちらも得点が大きく増える。連続が続いたまま最後の侵入者を倒すと「罠の大連鎖」で、置いた罠がつぎつぎ作動して連続と得点が伸びる。',
+  { t: '巻き込み・玉突き・追い打ち', d: '1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。ダブルヒットと玉突きは得点が大きく増える。倒した侵入者も少しのあいだ倒れたまま残り、罠に当てると「追い打ち」で連続が続く。',
     draw() { const g = miniGrid(9, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniFoe(g, 4, 1); miniTile(g, 7, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniArrow(g, [4, 1], [7, 1], '#ffb38a'); miniLabel(g, 4, 0, '玉突き！', '#ffb38a'); miniLabel(g, 7, 0, '奈落へ！'); miniLabel(g, 2.5, 2, '飛ばして、ぶつける', '#fff4e0'); } },
   { t: '跳ね床と奈落', d: '跳ね床は踏んだ侵入者を矢印の向きへ3マス（重装兵は2マス）飛ばす。飛んだ先に罠があれば「連鎖」ボーナス。奈落に落とせば一撃で倒せる。壁にぶつけても追加ダメージ。',
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniTile(g, 4, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniLabel(g, 4, 0, '奈落へ！'); miniLabel(g, 2.5, 2, '矢印の向きへ飛ぶ', '#fff4e0'); } },
