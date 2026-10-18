@@ -144,6 +144,11 @@ body{
   .help .pc{display:none}
 }
 @media (min-width:641px){.help .sp{display:none}}
+/* PC の低い画面: 遊んでいる間はスクロールできないので、見出し・状態・盤面・罠ボタンが高さに収まる幅にする */
+@media (min-width:641px) and (min-height:521px){
+  body.playing .wrap{max-width:min(820px,calc((var(--vh,100dvh) - 330px) * 14 / 9 + 30px));min-width:min(560px,100%)}
+  body.playing .help{display:none}
+}
 /* スマホ縦: 遊んでいる間は画面を固定し、罠とスキルのボタンを下に固定する */
 @media (max-width:640px){
   body.playing{position:fixed;top:0;left:0;right:0;bottom:auto;height:var(--vh,100dvh);padding-block:6px 0;padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px))}
@@ -160,11 +165,15 @@ body{
   body.playing .stats{font-size:11px;gap:2px 8px}
   body.playing .stats b{font-size:13px}
   body.playing .help{display:none}
-  body.playing .palette{position:fixed;left:0;right:0;bottom:auto;top:calc(var(--vh,100dvh) - var(--palH,94px));z-index:5;background:var(--ink);border-top:1px solid var(--gold-dk);
-    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
-  body.playing #btnGo{position:fixed;z-index:6;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  body.playing .palette{margin-inline:2px}
+  body.playing .rotate{order:9}
+  body.playing #btnGo{margin-inline:4px;width:auto}
   body.playing #ovHelp,body.playing #ovPause{position:fixed;inset:0;z-index:20;background:rgba(14,10,16,.94);overflow-y:auto;align-items:flex-start;padding:12px max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
   body.playing #ovHelp .panel,body.playing #ovPause .panel{max-height:none}
+}
+@media (max-height:520px) and (orientation:landscape){
+  .stage.has-ov .overlay{position:fixed;inset:0;z-index:20;overflow-y:auto;align-items:flex-start;background:rgba(14,10,16,.95);padding:10px max(10px,env(safe-area-inset-right,0px)) 10px max(10px,env(safe-area-inset-left,0px))}
+  .stage.has-ov .overlay .panel{max-height:none}
 }
 /* スマホ横（iPhone 16 の横持ち 852x393 を基準）: 盤面を画面の高さいっぱいに、状態と罠ボタンは右の細い列に。
    ノッチ側の余白には盤面の外周の壁がかかってもよいので、左右の余白は安全領域より少し詰める */
@@ -382,9 +391,9 @@ const CHARS = {
            profile:'魔力が多く、溜まるのも速い。走るのは苦手', flaw:'寝坊すけ。暇だとうたた寝して、侵入者が近づくまで起きない',
            skill:{ name:'魔力のしずく', cd:26, desc:'魔力が40回復し、8秒間は罠の魔力が半分、再装填が2倍速くなる' },
            look:{ hair:'#8a74c4', hairD:'#5a4890', dress:'#43305f', ribbon:'#d9b44a', eye:'#2e6b5e' } },
-  noel:  { name:'ノエル', title:'館のメイド', art:'noel', hp:4, speed:3.0, regen:5.2, maxMana:100, power:1, smart:0,
+  noel:  { name:'ノエル', title:'館のメイド', art:'noel', hp:4, speed:3.0, regen:6, maxMana:100, power:1, smart:0,
            profile:'丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい', flaw:'ドジ。走っているとたまにつまずく',
-           skill:{ name:'ほうき払い', cd:30, desc:'周り2マスの侵入者を転ばせて少し止める' },
+           skill:{ name:'ほうき払い', cd:24, desc:'周り2マスの侵入者を転ばせて少し止める' },
            look:{ hair:'#9a6a45', hairD:'#6e4a2e', dress:'#2f5a45', ribbon:'#f4efe6', eye:'#3a5a3a' } },
   cecil: { name:'セシル', title:'錬金術師の見習い', art:'cecil', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1, smart:0,
            profile:'器用で、爆薬の扱いが得意', flaw:'好奇心が強すぎる。暇だと扉や仕掛けを覗きに行ってしまう',
@@ -393,18 +402,14 @@ const CHARS = {
 };
 const CHAR_ORDER = ['lily','mina','noel','cecil'];
 // ChatGPT に描いてもらった絵。ビルドで data URI に埋め込む。絵の無い子は今までどおりキャンバスで描く
-const ART = {
-  lily_down: '../art/lily_down.webp', lily_side: '../art/lily_side.webp', lily_up: '../art/lily_up.webp', portrait_lily: '../art/portrait_lily.webp',
-  mina_down: '../art/mina_down.webp', mina_side: '../art/mina_side.webp', mina_up: '../art/mina_up.webp', portrait_mina: '../art/portrait_mina.webp',
-  noel_down: '../art/noel_down.webp', noel_side: '../art/noel_side.webp', noel_up: '../art/noel_up.webp', portrait_noel: '../art/portrait_noel.webp',
+const ART = { portrait_lily: '../art/portrait_lily.webp', portrait_mina: '../art/portrait_mina.webp', portrait_noel: '../art/portrait_noel.webp',
   lily_walk: '../art/sprites/lily_walk.png', lily_idle: '../art/sprites/lily_idle.png', mina_walk: '../art/sprites/mina_walk.png', mina_idle: '../art/sprites/mina_idle.png',
   noel_walk: '../art/sprites/noel_walk.png', noel_idle: '../art/sprites/noel_idle.png', cecil_walk: '../art/sprites/cecil_walk.png', cecil_idle: '../art/sprites/cecil_idle.png',
   lily_hit: '../art/sprites/lily_hit.png', mina_hit: '../art/sprites/mina_hit.png', noel_hit: '../art/sprites/noel_hit.png', cecil_hit: '../art/sprites/cecil_hit.png',
   foe_knight_walk: '../art/sprites/foe_knight_walk.png', foe_knight_idle: '../art/sprites/foe_knight_idle.png',
   foe_thief_walk: '../art/sprites/foe_thief_walk.png', foe_thief_idle: '../art/sprites/foe_thief_idle.png',
   foe_heavy_walk: '../art/sprites/foe_heavy_walk.png', foe_heavy_idle: '../art/sprites/foe_heavy_idle.png',
-  fx_fire: '../art/fx/fire.png', fx_ice: '../art/fx/ice.png', fx_rock: '../art/fx/rock.png', fx_snap: '../art/fx/snap.png', fx_spring: '../art/fx/spring.png',
-  cecil_down: '../art/cecil_down.webp', cecil_side: '../art/cecil_side.webp', cecil_up: '../art/cecil_up.webp', portrait_cecil: '../art/portrait_cecil.webp',
+  fx_fire: '../art/fx/fire.png', fx_ice: '../art/fx/ice.png', fx_rock: '../art/fx/rock.png', fx_snap: '../art/fx/snap.png', fx_spring: '../art/fx/spring.png', portrait_cecil: '../art/portrait_cecil.webp',
 };
 const IMG = {};
 for (const [k, src] of Object.entries(ART)) { const im = new Image(); im.decoding = 'async'; im.src = src; IMG[k] = im; }
@@ -786,7 +791,7 @@ function placeTrap(x, y, type) {
     say(`${def.name}を撤去した（魔力 +${back}）`); sfx.bad(); return;
   }
   const under = G.foes.find(f => !f.dead && !f.fly && Math.round(f.x) === x && Math.round(f.y) === y);
-  if (under && !def.direct) { say('侵入者の足もとには置けない（まきびしなら置ける）'); sfx.bad(); return; }
+  if (under && !def.direct) { say(G.loadout.includes('caltrop') ? '侵入者の足もとには置けない（まきびしなら置ける）' : '侵入者の足もとには置けない'); sfx.bad(); return; }
   if (!old && G.traps.size >= stat.limit()) { say(`罠は${stat.limit()}個まで。同じ罠を押すと撤去できる`); sfx.bad(); return; }
   const refund = old ? Math.floor(old.paid / 2) : 0, cost = trapCost(type);
   if (G.mana + refund < cost) { say('魔力が足りない'); sfx.bad(); return; }
@@ -797,7 +802,7 @@ function placeTrap(x, y, type) {
   const bonusCount = [...G.traps.values()].filter(t => t.bonus).length;
   const bonus = old ? old.bonus : G.traps.size >= baseLimit() && bonusCount < G.phaseBonus; // フェイズで増えた枠に置いた罠
   G.traps.set(key, { type, x, y, dir: G.springDir, cd, cdMax: cd, snap: 0, anim: .25, at: G.time, bonus, paid: cost });
-  if (def.direct && under) { G.traps.get(key).cd = 0; triggerAt(x, y, under, false); } // 足もとに直接置いたら、すぐ刺さる
+  if (def.direct && under && !old && rmCd <= 0) { G.traps.get(key).cd = 0; triggerAt(x, y, under, false); } // 足もとに直接置いたら、すぐ刺さる（撤去したばかりの場所は再装填を待つ）
   sfx.place();
   if (!G.placed) G.placed = {};
   const firstTip = { caltrop: 'まきびし: 侵入者の足もとに直接置ける。置いた瞬間に刺さる', vortex: 'つむじ風の陣: 踏まれると周りの侵入者を吸い寄せる。吸い寄せる先に罠を', bell: '誘いの鈴: 踏まれると侵入者が鈴に集まる。周りに罠を置こう', ice: '氷床: 踏んだ侵入者は進んでいた向きへ壁まで滑る', warp: '送り返しの陣: 踏んだ侵入者を入ってきた扉へ戻す', spring: '跳ね床: 置くとき向けたい方向へフリック（ドラッグ）。飛ぶ先に罠か奈落を', blade: '振り子刃: 置くとき斬りたい方向へフリック（ドラッグ）' };
@@ -1081,7 +1086,7 @@ function freedom(cx, cy, base) { // 3歩以内にある「今より侵入者に�
   }
   return n;
 }
-const LURE_W = [0, 5, 9, 13, 16, 18]; // かしこさ Lv ごとの「罠へ誘う」重み
+const LURE_W = [3, 6, 9, 13, 16, 18]; // かしこさ Lv ごとの「罠へ誘う」重み
 // (sx,sy) の侵入者が field の起点へ向かう道で踏む罠の値。field は起点からの BFS
 function trapsOnPath(sx, sy, field, hx, hy) {
   let x = sx, y = sy, v = 0, d = field[x + y * COLS];
@@ -1150,7 +1155,7 @@ function chooseHeroMove() {
       h.peek = null; h.idle = rnd(1, 2); heroBubble('ふむふむ', 1.2); return -1;
     }
     if (Math.random() < .35) { h.idle = rnd(.5, 1.5); if (Math.random() < .3) heroBubble('♪', 1); return -1; }
-    if (L >= 1 && G.traps.size) { // 賢いと罠の奥で待つ
+    if (G.traps.size && Math.random() < .5 + .1 * L) { // 罠の奥で待つ（賢いほど確実に）
       if (!h.goal || h.goalT <= 0) { h.goal = idleGoal(); h.goalT = 5; }
       const gf = bfs(h.goal[0], h.goal[1], isFloor), cur = gf[h.tx + h.ty * COLS];
       if (cur <= 0) { h.idle = rnd(.8, 1.6); return -1; }
@@ -1177,7 +1182,7 @@ function chooseHeroMove() {
     if (d === -1) sc -= 3;
     if (L >= 1) sc -= (4 - DIRS.filter(([dx, dy]) => isFloor(x + dx, y + dy)).length) * 6;
     if (L >= 2) sc += freedom(x, y, fd) * 1.5;
-    if (L >= 1 && fd >= 2) { lure = lureScore(x, y) * LURE_W[Math.min(L, 5)]; sc += lure; }
+    if (fd >= 2) { lure = lureScore(x, y) * LURE_W[Math.min(L, 5)]; sc += lure; }
     if (L >= 4 && DOORS.some(([ex, ey]) => Math.abs(ex - x) + Math.abs(ey - y) <= 1)) sc -= 15;
     sc += rnd(0, Math.max(1, 14 - 2.6 * L));
     if (sc > bs) { bs = sc; bd = d; lured = lure > 0; }
@@ -1461,7 +1466,8 @@ function drawDevices() {
         const g = ctx.createRadialGradient(cx, cy - 16, 2, cx, cy - 16, 40 + Math.sin(G.time * 6) * 3);
         g.addColorStop(0, 'rgba(255,200,110,.35)'); g.addColorStop(1, 'rgba(255,160,60,0)');
         ctx.fillStyle = g; ctx.fillRect(cx - 45, cy - 60, 90, 90); ctx.restore();
-        drawChandelier(cx, cy - 16, 1, true);
+        const over = G.traps.has(dv.x + ',' + (dv.y - 1)) || G.traps.has(dv.x + ',' + dv.y);
+        ctx.globalAlpha = over ? .5 : 1; drawChandelier(cx, cy - 16, 1, true); ctx.globalAlpha = 1;
       }
     } else if (ready) {
       const a = .6 + Math.sin(G.time * 4) * .3;
@@ -1815,6 +1821,17 @@ function outlined(text, x, y, size, color, align = 'center') {
   ctx.lineWidth = Math.max(3, size / 5); ctx.strokeStyle = 'rgba(20,10,16,.9)'; ctx.strokeText(text, x, y);
   ctx.fillStyle = color; ctx.fillText(text, x, y);
 }
+// 盤面の幅に入らない文は、読点などの区切りで 2 行に分ける
+function wrapText(text, x, y, size, color, up = false) {
+  ctx.font = `800 ${size * TS}px "Shippori Mincho B1", "Yu Mincho", serif`;
+  if (ctx.measureText(text).width <= VW - 24) { outlined(text, x, y, size, color); return; }
+  const mid = text.length / 2; let cut = -1;
+  for (let i = 0; i < text.length; i++) if ('、。：（）・ 　'.includes(text[i]) && (cut < 0 || Math.abs(i - mid) < Math.abs(cut - mid))) cut = i;
+  if (cut < 0) cut = Math.floor(mid);
+  const a = text.slice(0, cut + (text[cut] === '（' ? 0 : 1)).trim(), b = text.slice(cut + (text[cut] === '（' ? 0 : 1)).trim();
+  const lh = size * TS * 1.25;
+  outlined(a, x, up ? y - lh : y - lh / 2, size, color); outlined(b, x, up ? y : y + lh / 2, size, color);
+}
 function drawTexts() {
   for (const t of G.texts) {
     const p = t.t / t.dur; ctx.globalAlpha = p < .7 ? 1 : 1 - (p - .7) / .3;
@@ -1822,10 +1839,10 @@ function drawTexts() {
   }
   ctx.globalAlpha = 1;
 }
+let vignette = null; // 周辺減光（一度だけ作る）
 function drawHudCanvas() {
-  const v = ctx.createRadialGradient(VW / 2, VH / 2, VH * .35, VW / 2, VH / 2, VW * .65);
-  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)');
-  ctx.fillStyle = v; ctx.fillRect(0, 0, VW, VH);
+  if (!vignette) { vignette = ctx.createRadialGradient(VW / 2, VH / 2, VH * .35, VW / 2, VH / 2, VW * .65); vignette.addColorStop(0, 'rgba(0,0,0,0)'); vignette.addColorStop(1, 'rgba(0,0,0,.55)'); }
+  ctx.fillStyle = vignette; ctx.fillRect(0, 0, VW, VH);
   if (G.combo >= 2) {
     const left = Math.max(0, 1 - (G.time - G.lastHit) / COMBO_WINDOW), pop = 1 + Math.max(0, .25 - (G.time - G.lastHit)) * 1.6;
     const cx = VW - 70 * TS, bw = 80 * TS;
@@ -1840,10 +1857,11 @@ function drawHudCanvas() {
   if (G.banner > 0) {
     const a = Math.min(1, G.banner / .5, (2.4 - G.banner) / .3);
     ctx.globalAlpha = a;
-    ctx.fillStyle = 'rgba(10,6,12,.55)'; ctx.fillRect(0, VH / 2 - 44, VW, 88);
-    ctx.fillStyle = '#c9a24a'; ctx.fillRect(0, VH / 2 - 44, VW, 2); ctx.fillRect(0, VH / 2 + 42, VW, 2);
-    outlined(G.bannerTitle, VW / 2, VH / 2 - 8, 40, '#f1d98e');
-    outlined(G.bannerSub, VW / 2, VH / 2 + 26, 15, '#fff4e0');
+    const bh = 44 * TS;
+    ctx.fillStyle = 'rgba(10,6,12,.55)'; ctx.fillRect(0, VH / 2 - bh, VW, bh * 2);
+    ctx.fillStyle = '#c9a24a'; ctx.fillRect(0, VH / 2 - bh, VW, 2); ctx.fillRect(0, VH / 2 + bh - 2, VW, 2);
+    outlined(G.bannerTitle, VW / 2, VH / 2 - 8 * TS, 40, '#f1d98e');
+    wrapText(G.bannerSub, VW / 2, VH / 2 + 26 * TS, 15, '#fff4e0');
     ctx.globalAlpha = 1;
   }
   if (G.state === 'play' && G.phase > 0) { // 夜明けまでの進み（区切りはフェイズの境目）
@@ -1855,7 +1873,7 @@ function drawHudCanvas() {
   }
   if (G.msgT > 0) {
     ctx.globalAlpha = Math.min(1, G.msgT / .3);
-    outlined(G.msg, VW / 2, VH - 26, 16, '#ffd0c0');
+    wrapText(G.msg, VW / 2, VH - 26 * TS, 16, '#ffd0c0', true);
     ctx.globalAlpha = 1;
   }
 }
@@ -1881,8 +1899,10 @@ let hudCache = '';
 function updateHud() {
   const maxHp = stat.maxHp(), mm = stat.maxMana();
   const key = [G.hp, maxHp, Math.floor(G.mana), mm, G.wave, G.score, G.soul, G.traps.size, stat.limit(), G.selected, G.springDir, smartL(), G.char, Math.ceil(G.skillCd), G.aiming, G.costHalfT > 0, G.phase, Math.ceil(G.nightT), Math.ceil(G.prepT || 0), G.state].join('|');
+  if (G.state === 'over') el.time.textContent = '–';
   if (key === hudCache) return; hudCache = key;
-  el.hearts.innerHTML = Array.from({ length: maxHp }, (_, i) => `<span class="${i < G.hp ? '' : 'off'}">♥</span>`).join('');
+  const hk = G.hp + '/' + maxHp;
+  if (el.hearts.dataset.k !== hk) { el.hearts.dataset.k = hk; el.hearts.innerHTML = Array.from({ length: maxHp }, (_, i) => `<span class="${i < G.hp ? '' : 'off'}">♥</span>`).join(''); }
   el.hearts.setAttribute('aria-label', `体力 ${G.hp}/${maxHp}`);
   el.manaFill.style.width = (G.mana / mm * 100) + '%';
   el.manaText.textContent = `${Math.floor(G.mana)}/${mm}`;
@@ -1891,7 +1911,7 @@ function updateHud() {
   el.soul.textContent = G.soul.toLocaleString('ja-JP');
   el.traps.textContent = `${G.traps.size}/${stat.limit()}`;
   el.smart.textContent = `Lv${smartL() + 1}`;
-  el.phase.textContent = G.state === 'shop' ? '夜明け' : G.phase ? `フェイズ${G.phase}/3` : '準備';
+  el.phase.textContent = G.state === 'over' ? '終わり' : G.state === 'shop' ? '夜明け' : G.phase ? `フェイズ${G.phase}/3` : '準備';
   if (G.phase === 0 && G.state === 'play') $('#btnGo').textContent = `侵入者を迎える（あと${Math.max(0, Math.ceil(G.prepT))}秒で自動）`;
   el.time.textContent = G.state === 'shop' ? '–' : G.phase ? `${Math.ceil(G.nightT)}秒` : '–';
   for (const b of slots) {
@@ -2219,14 +2239,16 @@ showOv('ovTitle');
 
 // ---------- ループ ----------
 let last = 0;
-let playingCls = false;
+let playingCls = false, drawSkip = 0;
 function frame(ts) {
   const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts;
   if ((G.state === 'play') !== playingCls) { playingCls = G.state === 'play'; document.body.classList.toggle('playing', playingCls); requestAnimationFrame(setViewportVars); }
   if (G.state === 'play' && !paused) update(dt);
   else if (G.state === 'title') G.time += dt;
   else if (G.state === 'over') { G.time += dt; for (const p of G.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; } }
-  draw(); updateHud();
+  // ショップ・タイトル・結果などの画面が重なっている間は、盤面を描く回数を減らす（電池と熱のため）
+  if (G.state === 'play' || !(drawSkip = (drawSkip + 1) % 6)) draw();
+  updateHud();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
