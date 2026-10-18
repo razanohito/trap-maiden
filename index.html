@@ -70,6 +70,12 @@ body{
 .btn:hover{filter:brightness(1.08)}
 .btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
 .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--gold-dk)}
+.rcombo{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px;padding:8px 12px;background:var(--stone);border:1px solid var(--gold-dk);color:var(--parch)}
+.rcombo span{font:800 14px var(--f-display);color:var(--gold-hi);letter-spacing:.1em}
+.rcombo b{font:800 44px/1 var(--f-display);color:var(--gold-hi);text-shadow:0 2px 0 #3a2410,0 0 14px rgba(241,217,142,.4);font-variant-numeric:tabular-nums}
+.rcombo b::after{content:"連続";font-size:16px;margin-left:4px}
+.rcombo em{font-style:normal;font-size:12px;color:var(--muted);flex-basis:100%;text-align:center}
+.rcombo em.new{color:#ffd27a;font-weight:700}
 .result{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0}
 .result div{background:rgba(58,40,25,.08);border:1px solid rgba(58,40,25,.25);padding:6px 10px}
 .result span{display:block;font-size:11px;letter-spacing:.08em}
@@ -418,11 +424,14 @@ body{
         <div class="panel">
           <img class="kv" id="kvOver" alt="" hidden>
           <h2 id="rTitle">リリィは捕まってしまった…</h2>
+          <div class="rcombo"><span>最大連続</span><b id="rCombo">0</b><em id="rComboBest"></em></div>
           <div class="result">
             <div><span>たどり着いた夜</span><b id="rWave">1</b></div>
             <div><span>得点</span><b id="rScore">0</b></div>
-            <div><span>最大連続</span><b id="rCombo">0</b></div>
             <div><span>撃退した数</span><b id="rKills">0</b></div>
+            <div><span>追い打ち</span><b id="rOiuchi">0</b></div>
+            <div><span>ダブルヒット</span><b id="rMulti">0</b></div>
+            <div><span>玉突き</span><b id="rCrash">0</b></div>
             <div><span>プレイ時間</span><b id="rTime">0分</b></div>
           </div>
           <p class="sm" id="rBest"></p>
@@ -1072,7 +1081,7 @@ function startWave(n) {
   if (n === LAST_NIGHT) q.push('heavy', 'thief', 'thief');
   const a = Math.round(q.length * .3), b = Math.round(q.length * .6);
   G.phaseQ = [q.slice(0, a), q.slice(a, b), q.slice(b)];
-  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1;
+  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1; G.nightCombo = 0;
   G.nightLen = G.nightT = 50 + 3 * (n - 1); G.prepT = 25;
   G.state = 'play';
   if (moved || n === 1) startIntro(mi);
@@ -1099,11 +1108,11 @@ function clearNight(wiped) {
   if (wiped) {
     const bonus = 10 * G.wave, tb = Math.ceil(G.nightT) * 50;
     G.soul += bonus; G.score += 1000 * G.wave + tb;
-    banner('全滅させた！', `魂 +${bonus}・残り時間ボーナス ${tb.toLocaleString('ja-JP')}点`);
+    banner('全滅させた！', `今夜の最大 ${G.nightCombo || 0}連続・魂 +${bonus}・残り時間 ${tb.toLocaleString('ja-JP')}点`);
   } else {
     for (const f of G.foes) if (!f.dead) { f.dead = true; f.deadT = 0; burst(f.x, f.y, '#a99cb0', 8, 80); }
     G.score += 500 * G.wave;
-    banner('夜明け', '侵入者は朝日に逃げていった');
+    banner('夜明け', `侵入者は朝日に逃げていった・今夜の最大 ${G.nightCombo || 0}連続`);
   }
   G.spawnQueue = []; if (bgmBuf.dawn) playBgm('dawn'); else if (G.wave < LAST_NIGHT) sfx.dawn(); else sfx.kill();
 }
@@ -1127,7 +1136,7 @@ function burst(x, y, color, n, sp = 120) {
 // 罠が1回当たるごとに連続を1つ進める（何体に当たっても1回）
 function trapSuccess() {
   G.combo = (G.time - G.lastHit <= COMBO_WINDOW) ? G.combo + 1 : 1;
-  G.lastHit = G.time; G.bestCombo = Math.max(G.bestCombo, G.combo);
+  G.lastHit = G.time; G.bestCombo = Math.max(G.bestCombo, G.combo); G.nightCombo = Math.max(G.nightCombo || 0, G.combo);
   if (G.combo >= 3) G.mana = Math.min(stat.maxMana(), G.mana + 4);
   if (G.combo >= 2) { G.shake = Math.min(9, 2 + G.combo); sfx.combo(G.combo); }
 }
@@ -2526,6 +2535,12 @@ function gameOver(won) {
   $('#rTime').textContent = `${Math.floor(sec / 60)}分${sec % 60}秒`;
   $('#rScore').textContent = G.score.toLocaleString('ja-JP');
   $('#rCombo').textContent = G.bestCombo;
+  let bc = 0; try { bc = +localStorage.getItem('wanakan-bestcombo') || 0; } catch (e) {}
+  const newBc = G.bestCombo > bc;
+  if (newBc) try { localStorage.setItem('wanakan-bestcombo', String(G.bestCombo)); } catch (e) {}
+  $('#rComboBest').textContent = newBc ? (bc ? `最大連続の記録を更新！（これまで ${bc}連続）` : '最大連続の記録') : `これまでの記録 ${bc}連続`;
+  $('#rComboBest').className = newBc ? 'new' : '';
+  $('#rOiuchi').textContent = `${G.oiuchi || 0}回`; $('#rMulti').textContent = `${G.multiHits || 0}回`; $('#rCrash').textContent = `${G.crashes || 0}回`;
   $('#rKills').textContent = G.kills;
   $('#rBest').textContent = (won ? `体力ボーナス +${hpBonus.toLocaleString('ja-JP')}点。` : '') + (newBest ? 'ハイスコア更新！ ' : '') + bestText();
   if (bgmBuf[won ? 'dawn' : 'over']) { if (!won || bgmKey !== 'dawn') { bgmKey = null; playBgm(won ? 'dawn' : 'over'); } } else if (won) sfx.dawn(); else sfx.lose();
@@ -2594,7 +2609,7 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
 })();
 </script>
 
