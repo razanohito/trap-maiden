@@ -103,16 +103,16 @@ body{
 .selh{font:800 15px var(--f-display);margin:12px 0 6px;color:#5a1e2c;display:flex;gap:10px;align-items:baseline}
 .selh span{font:700 13px var(--f-body);color:var(--parch-ink)}
 .chargrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.cpick{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:0;min-width:0;padding:8px 4px 8px;cursor:pointer;overflow:hidden;color:var(--parch);font-family:var(--f-body);background:radial-gradient(ellipse at 50% 62%,#4d3e55 0%,#2a2130 62%,#1d1722 100%);border:1px solid var(--gold-dk);border-radius:2px}
-.cpick::before{content:"";position:absolute;left:12%;right:12%;bottom:44px;height:14px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(3px)}
-.cpick img{position:relative;height:clamp(118px,26vh,230px);width:auto;max-width:100%;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.6)) saturate(.55) brightness(.72);transition:filter .15s,transform .15s}
-.cpick:hover img{filter:drop-shadow(0 3px 4px rgba(0,0,0,.6)) saturate(.8) brightness(.9)}
+.cpick{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:0;min-width:0;padding:0 0 7px;cursor:pointer;overflow:hidden;color:var(--parch);font-family:var(--f-body);background:radial-gradient(ellipse at 50% 62%,#4d3e55 0%,#2a2130 62%,#1d1722 100%);border:1px solid var(--gold-dk);border-radius:2px}
+.cpick .ph{position:relative;width:100%;aspect-ratio:5/6;max-height:42vh;overflow:hidden;border-bottom:1px solid var(--gold-dk);background:radial-gradient(ellipse at 50% 45%,rgba(241,217,142,.14),transparent 70%)}
+.cpick .ph img{position:absolute;left:50%;top:1%;width:158%;max-width:none;height:auto;transform:translateX(-50%);filter:saturate(.55) brightness(.72);transition:filter .15s,transform .15s}
+.cpick:hover .ph img{filter:saturate(.8) brightness(.9)}
 .cpick.on{box-shadow:inset 0 0 0 2px var(--gold-hi),0 0 16px rgba(241,217,142,.35);background:radial-gradient(ellipse at 50% 58%,#6a5468 0%,#352a3a 62%,#221a26 100%)}
-.cpick.on img{filter:drop-shadow(0 0 10px rgba(241,217,142,.5)) drop-shadow(0 3px 4px rgba(0,0,0,.6));transform:translateY(-4px) scale(1.04)}
+.cpick.on .ph img{filter:none;transform:translateX(-50%) scale(1.04);transform-origin:50% 0}
 .cpick canvas.face{width:84px;height:84px;margin-bottom:30px}
-.cpick .n{position:relative;font:800 18px var(--f-display);color:var(--gold-hi);letter-spacing:.08em;text-shadow:0 2px 3px #000;margin-top:4px;white-space:nowrap}
+.cpick .n{position:relative;font:800 18px var(--f-display);color:var(--gold-hi);letter-spacing:.08em;text-shadow:0 2px 3px #000;margin-top:5px;white-space:nowrap}
 .cpick .t{position:relative;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.cpick .fv{position:absolute;top:5px;left:5px;display:flex;align-items:center;gap:2px;padding:1px 5px 1px 2px;background:rgba(14,10,16,.78);border:1px solid var(--gold-dk);border-radius:2px;font:700 10px var(--f-body);color:var(--gold-hi)}
+.cpick .fv{position:absolute;z-index:1;bottom:4px;left:4px;display:flex;align-items:center;gap:2px;padding:1px 5px 1px 2px;background:rgba(14,10,16,.78);border:1px solid var(--gold-dk);border-radius:2px;font:700 10px var(--f-body);color:var(--gold-hi)}
 .cpick .fv canvas{width:20px;height:20px}
 .cpick:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
 .chardetail{margin-top:8px;padding:12px 14px;background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;color:var(--parch);display:grid;gap:8px}
@@ -129,7 +129,11 @@ body{
 .chardetail .ln.fav .tag{background:var(--gold-hi);color:var(--ink)}
 .chardetail .ln.fav canvas{width:36px;height:36px;flex:none}
 .chardetail .ln.fav b{color:var(--gold-hi)}
-.chardetail .ln.fl .tag{background:#4a3f6e;color:#e4dcff}
+.chardetail .ln.fl{padding:8px 10px;background:rgba(106,88,170,.16);border:1px solid rgba(201,184,255,.5)}
+.chardetail .ln.fl .tag{background:#c9b8ff;color:#241c33}
+.chardetail .ln.fl b{color:#d9ccff}
+.cpick .wk{position:relative;margin-top:4px;padding:1px 6px;background:rgba(40,30,70,.85);border:1px solid rgba(201,184,255,.6);border-radius:2px;font:700 10px var(--f-body);color:#e4dcff;white-space:nowrap}
+.cpick .wk i{font-style:normal;color:#b3a3e6;margin-right:3px}
 .chardetail .warn{font-size:13px;color:#ffb3a0}
 .pick .fvb{position:absolute;top:-1px;left:-1px;font:700 9px var(--f-body);color:var(--ink);background:var(--gold-hi);padding:1px 6px;border-radius:2px}
 .pick.favt{border-color:var(--gold-hi)}
@@ -140,7 +144,8 @@ body{
 @media (max-height:520px) and (orientation:landscape){
   .charsel{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px;align-items:stretch}
   .charsel .chardetail{margin-top:0;align-content:start;padding:10px 12px;gap:6px}
-  .cpick img{height:min(230px,calc(var(--vh,100dvh) - 200px))}
+  .charsel .chargrid{align-self:start}
+  .cpick .ph{max-height:none;aspect-ratio:4/5}
   .chardetail .d,.chardetail .ln{font-size:13px;line-height:1.5}
 }
 .trapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
@@ -176,10 +181,16 @@ body{
   .chargrid{gap:5px}
   .cpick .n{font-size:15px;letter-spacing:.02em}
   .cpick .t{display:none}
+  .chargrid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cpick .fv span{display:none}
+  .cpick .ph{aspect-ratio:1/1}
+  .cpick .ph img{width:150%}
+  .cpick .wk{font-size:10px;padding:1px 4px;margin-top:2px}
+  .cpick .wk i{display:none}
+  .chardetail .ln.fl{flex-wrap:wrap;gap:6px 8px}
+  .chardetail .ln.fl>div{flex-basis:100%}
   .pick.on::after{content:"✓";font-size:11px;padding:0 5px}
   .pick .fvb b{display:none}
-  .cpick::before{bottom:26px}
   .chardetail{padding:10px}
   .chardetail .d,.chardetail .ln{font-size:13px}
   .chardetail .chips span{font-size:12px}
@@ -190,7 +201,7 @@ body{
   .pick .n{font-size:13px;letter-spacing:0}
   .chardetail .ln.fav{flex-wrap:wrap;gap:6px 8px}
   .chardetail .ln.fav>div{flex-basis:100%}
-  .cpick img{filter:drop-shadow(0 3px 4px rgba(0,0,0,.6)) saturate(.8) brightness(.88)}
+  .cpick .ph img{filter:saturate(.8) brightness(.88)}
   .slot canvas{width:30px;height:30px}
   .help .pc{display:none}
 }
@@ -438,19 +449,19 @@ const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
 // 逃げる子。数値は自動ボットで全員の到達夜・得点が近くなるように調整した
 const CHARS = {
   lily:  { name:'リリィ', title:'館の娘', art:'lily', hp:3, speed:3.4, regen:7.5, maxMana:110, power:1, smart:0,
-           profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的', flaw:'怖がり。侵入者が近いと混乱しやすい',
+           profile:'怖がりだけど負けず嫌い。体力・足・魔力はどれも平均的', flawName:'怖がり', flaw:'侵入者がすぐ近くに来ると、足がすくんで一瞬動けなくなる',
            fav:'warp', passive:{ name:'館の鍵番', cd:3, desc:'送り返しの陣の再装填が3秒、威力が約2倍になり、送り返した侵入者は扉の前で2秒半動けない' },
            look:{ hair:'#f4a9c6', hairD:'#d77aa0', dress:'#9b2f4a', ribbon:'#e0405e', eye:'#4b2a63' } },
   mina:  { name:'ミーナ', title:'見習い魔女', art:'mina', hp:3, speed:3.3, regen:9.5, maxMana:140, power:1, smart:0,
-           profile:'魔力が多く、溜まるのも速い。走るのは苦手', flaw:'寝坊すけ。暇だとうたた寝して、侵入者が近づくまで起きない',
+           profile:'魔力が多く、溜まるのも速い。走るのは苦手', flawName:'寝坊すけ', flaw:'暇だとうたた寝して、侵入者が近づくまで起きない',
            fav:'fire', passive:{ name:'炎の見習い', desc:'火柱の十字が2マスずつ伸び（9マス）、威力も1.5倍になる' },
            look:{ hair:'#8a74c4', hairD:'#5a4890', dress:'#43305f', ribbon:'#d9b44a', eye:'#2e6b5e' } },
   noel:  { name:'ノエル', title:'館のメイド', art:'noel', hp:4, speed:3.0, regen:6.8, maxMana:100, power:1, smart:0,
-           profile:'丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい', flaw:'ドジ。走っているとたまにつまずく',
+           profile:'丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい', flawName:'ドジ', flaw:'侵入者から逃げて走っていると、たまにつまずいて止まる',
            fav:'ice', passive:{ name:'磨き上げた床', cost:10, desc:'氷床の魔力が10になり、滑って壁にぶつかった侵入者は大ダメージを受けて1秒半目を回す' },
            look:{ hair:'#9a6a45', hairD:'#6e4a2e', dress:'#2f5a45', ribbon:'#f4efe6', eye:'#3a5a3a' } },
   cecil: { name:'セシル', title:'錬金術師の見習い', art:'cecil', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1, smart:0,
-           profile:'器用で、爆薬の扱いが得意。体力・足は平均的で、魔力は溜まりにくい', flaw:'好奇心が強すぎる。暇だと扉や仕掛けを覗きに行ってしまう',
+           profile:'器用で、爆薬の扱いが得意。体力・足は平均的で、魔力は溜まりにくい', flawName:'好奇心', flaw:'暇だと扉や仕掛けを覗きに行ってしまう（侵入者の来る扉に近づくことも）',
            fav:'rock', passive:{ name:'爆薬仕込み', cost:25, desc:'落石の魔力が25になり、爆薬入りで威力1.5倍。落ちた場所の周り3x3もまとめて吹き飛ばす' },
            look:{ hair:'#efcf7a', hairD:'#c9a24a', dress:'#7a4f2e', ribbon:'#3f8f8a', eye:'#2d5f8a' } },
 };
@@ -556,7 +567,7 @@ function makeRun(state, char = 'lily', loadout = DEFAULT_LOADOUT) {
   return {
     state, char, loadout: loadout.slice(), wave: 0, score: 0, soul: 0, up, mana: CHARS[char].maxMana, hp: CHARS[char].hp, time: 0,
     lure: null,
-    hero: { tx:MAPS[mapIdx].start[0], ty:MAPS[mapIdx].start[1], nx:MAPS[mapIdx].start[0], ny:MAPS[mapIdx].start[1], x:MAPS[mapIdx].start[0], y:MAPS[mapIdx].start[1], prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0, doze:0, trip:0, peek:null },
+    hero: { tx:MAPS[mapIdx].start[0], ty:MAPS[mapIdx].start[1], nx:MAPS[mapIdx].start[0], ny:MAPS[mapIdx].start[1], x:MAPS[mapIdx].start[0], y:MAPS[mapIdx].start[1], prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0, doze:0, trip:0, freeze:0, peek:null },
     foes: [], traps: new Map(), devices: makeDevices(), fx: [], texts: [], parts: [],
     combo: 0, lastHit: -99, bestCombo: 0, kills: 0, shake: 0,
     spawnQueue: [], spawnT: 0, clearT: -1, banner: 0, bannerTitle: '', bannerSub: '', hpScale: 1,
@@ -637,6 +648,7 @@ const sfx = {
   crash:   () => { pings(12, 2000, 6000, .03, .15); noise(.5, 5000, .15, .8); tone('sine', 90, 40, .3, .2, 0, false); }, // ガラスと金属が砕ける
   pit:     () => { tone('sine', 400, 60, .6, .1); noise(.5, 300, .15, .6); },  // 奈落へ
   bomb:    () => { pings(8, 2500, 5000, .03, .08); tone('sine', 120, 40, .35, .25, 0, false); noise(.4, 800, .3, .6); }, // びんが割れてはじける
+  flaw:    () => { tone('triangle', 660, 430, .2, .045); tone('triangle', 520, 330, .24, .04, .14); }, // あらら…（弱点が出た）
   hurt:    () => { noise(.08, 400, .2, 1, 0, 0, 'lowpass'); tone('sine', 1300, 950, .18, .06, .03); }, // ポフッと小さな笛
   kill:    () => { bell(880, .05); bell(1320, .035, .06); },  // 小さな鐘の和音
   combo:   n => pluck(MUSIC_BOX[Math.min(Math.max(n - 2, 0), MUSIC_BOX.length - 1)], .08),  // 連続ごとに上がるオルゴール
@@ -865,6 +877,7 @@ function placeTrap(x, y, type) {
 function banner(title, sub) { G.bannerTitle = title; G.bannerSub = sub; G.banner = 2.4; }
 // 夜 = 準備フェイズ → フェイズ1〜3。夜明け（時間切れ）か全滅でクリア
 function startWave(n) {
+  Object.assign(G.hero, { doze: 0, peek: null, trip: 0, freeze: 0, confused: 0, idle: 0 }); // 弱点や混乱を次の夜に持ち越さない
   G.wave = n; G.hpScale = 1 + .13 * (n - 1);
   const mi = Math.floor((n - 1) / 5) % MAPS.length;
   let moved = false;
@@ -872,7 +885,7 @@ function startWave(n) {
     setMap(mi); moved = true;
     G.devices = makeDevices(); G.traps.clear(); G.removedCd = {}; G.fx = []; G.lure = null;
     const [sx, sy] = MAPS[mi].start, h = G.hero;
-    Object.assign(h, { tx: sx, ty: sy, nx: sx, ny: sy, x: sx, y: sy, prog: 0, moving: false, goal: null, peek: null, doze: 0 });
+    Object.assign(h, { tx: sx, ty: sy, nx: sx, ny: sy, x: sx, y: sy, prog: 0, moving: false, goal: null, peek: null, doze: 0, trip: 0, freeze: 0 });
     G.mana = stat.maxMana();
   }
   const count = 4 + Math.floor(n * 1.2), q = [];
@@ -1107,6 +1120,11 @@ function triggerAt(x, y, f, chained) {
 // かしこさ Lv が上がるほど: 間違いと混乱が減り、袋小路を避け、逃げ道の広い方を選び、罠の向こうへ誘い、扉の前を避ける
 const PANIC_TALK = ['あわわ…', 'こっちかな？', 'えっと、えっと…', 'どっち！？'];
 function heroBubble(text, t = .9) { G.hero.bubble = text; G.hero.bubbleT = t; }
+function flawShow() {
+  const h = G.hero;
+  if (G.time - (G.flawShownT ?? -99) < 6) return;
+  G.flawShownT = G.time; addText(h.x, h.y - 1.9, `弱点「${CH().flawName}」`, '#c9b8ff', 15); sfx.flaw();
+}
 function fdist(x, y) { const v = G.foeField[x + y * COLS]; return v < 0 ? 99 : v; }
 function freedom(cx, cy, base) { // 3歩以内にある「今より侵入者に近づかないマス」の数
   let n = 0; const seen = new Set([cx + cy * COLS]); let frontier = [[cx, cy]];
@@ -1169,6 +1187,7 @@ function chooseHeroMove() {
   const cands = [[-1, h.tx, h.ty], ...DIRS.map(([dx, dy], d) => [d, h.tx + dx, h.ty + dy]).filter(([, x, y]) => isFloor(x, y))];
   const moves = cands.slice(1), here = fdist(h.tx, h.ty);
   if (h.confused > 0) return moves.length ? pick(moves)[0] : -1; // 混乱中はでたらめに走る
+  if (G.char === 'lily' && here <= 2 && Math.random() < Math.max(.03, .09 - .012 * L)) { h.freeze = .45; heroBubble('ひっ…', .8); flawShow(); return -1; } // リリィの怖がり
   if (h.doze > 0) { // ミーナのうたた寝: 侵入者が4マス以内に来るまで起きない
     if (here > 4) return -1;
     h.doze = 0; heroBubble('はっ！', .8);
@@ -1177,11 +1196,11 @@ function chooseHeroMove() {
     h.spotted = false;
     h.goalT -= .2;
     if (h.idle > 0) return -1;
-    if (G.char === 'mina' && Math.random() < .04) { h.doze = 12; heroBubble('すや…', 2); return -1; }
+    if (G.char === 'mina' && Math.random() < .04) { h.doze = 12; heroBubble('すや…', 2); flawShow(); return -1; }
     if (G.char === 'cecil' && !h.peek && Math.random() < .12) { // セシルの寄り道: 罠や仕掛けを覗きに行く
       const doorSide = DOORS.slice(0, Math.min(DOORS.length, G.wave)).map(([x, y]) => [x === 0 ? 1 : x === COLS - 1 ? COLS - 2 : x, y === 0 ? 1 : y]);
       const spots = [...doorSide, ...doorSide, ...G.devices.map(o => [o.x, o.y])]; // 扉の向こうが気になる
-      if (spots.length) { h.peek = pick(spots); heroBubble('なにこれ？', 1.2); }
+      if (spots.length) { h.peek = pick(spots); heroBubble('なにこれ？', 1.2); flawShow(); }
     }
     if (h.peek) {
       const pf = bfs(h.peek[0], h.peek[1], (x, y) => isFloor(x, y) || (x === h.peek[0] && y === h.peek[1])), cur = pf[h.tx + h.ty * COLS];
@@ -1200,8 +1219,8 @@ function chooseHeroMove() {
     return pick(cands)[0];
   }
   h.peek = null;
-  // リリィは怖がりで混乱しやすい
-  if (here <= 2 && Math.random() < Math.max(.03, .2 - .035 * L) * (G.char === 'lily' ? 1.15 : 1)) { h.confused = 1.3; heroBubble('？', 1.3); return moves.length ? pick(moves)[0] : -1; }
+  // 侵入者が近いと混乱することがある（全員。かしこいほど減る）
+  if (here <= 2 && Math.random() < Math.max(.03, .2 - .035 * L)) { h.confused = 1.3; heroBubble('？', 1.3); return moves.length ? pick(moves)[0] : -1; }
   if (here <= 3 && !h.spotted) { h.spotted = true; heroBubble('！', .7); }
   h.goal = null;
   if (Math.random() < Math.max(.04, .22 - .04 * L)) { // うっかり（侵入者のいるマスには踏み込まない）
@@ -1240,11 +1259,12 @@ function updateHero(dt) {
     h.prog += stepLen; h.walk = (h.walk || 0) + stepLen; h.stillT = 0;
     if (h.prog >= 1) {
       h.tx = h.nx; h.ty = h.ny; h.prog -= 1; h.moving = false;
-      if (G.char === 'noel' && fdist(h.tx, h.ty) <= 6 && Math.random() < .035) { h.trip = .7; h.prog = 0; heroBubble('わわっ', .9); } // ノエルのドジ
+      if (G.char === 'noel' && fdist(h.tx, h.ty) <= 6 && Math.random() < .035) { h.trip = .7; h.prog = 0; heroBubble('わわっ', .9); flawShow(); } // ノエルのドジ
     }
   }
   if (!h.moving) { h.stillT = (h.stillT || 0) + dt; if (h.stillT > .15) h.walk = 0; } // 止まったら次の歩き出しは1コマ目から
   if (h.trip > 0) { h.trip -= dt; h.x = h.tx; h.y = h.ty; return; }
+  if (h.freeze > 0) { h.freeze -= dt; return; }
   if (!h.moving) {
     h.think -= dt; let stepped = false;
     if (h.think <= 0) {
@@ -1362,7 +1382,7 @@ function update(dt) {
       if (Math.hypot(f.x - h.x, f.y - h.y) < .6) {
         G.hp--; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt();
         f.stun = Math.max(f.stun, 1.2); // 捕まえかけて一瞬止まる
-        if (Math.random() < Math.max(.08, .35 - .06 * smartL()) * (G.char === 'lily' ? 1.1 : 1)) { h.confused = 1.2; heroBubble('？', 1.2); }
+        if (Math.random() < Math.max(.08, .35 - .06 * smartL())) { h.confused = 1.2; heroBubble('？', 1.2); }
         addText(h.x, h.y - 1, 'きゃっ！', '#ffc0d3', 20);
         if (G.hp <= 0) { gameOver(); return; }
         break;
@@ -1572,13 +1592,15 @@ function drawHero() {
   if (h.inv > 0 && Math.floor(t * 18) % 2 === 0) ctx.globalAlpha = .35;
   const pk = CH().art;
   if (pk && imgReady(`${pk}_walk`) && imgReady(`${pk}_idle`)) { // ドット絵の歩行（4方向×4コマ、止まると待機姿勢）
-    const footY = Math.round(h.y * T + T / 2 + 18), left = Math.round(px - 24), top = footY - 46, row = PIX_ROW[h.facing];
+    const footY = Math.round(h.y * T + T / 2 + 18), row = PIX_ROW[h.facing];
+    const left = Math.round(px - 24) + (h.freeze > 0 ? Math.round(Math.sin(t * 70) * 1.5) : 0), top = footY - 46 + (h.doze > 0 ? Math.round(Math.sin(t * 2.4) + 1) : 0);
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 9, 3);
     const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
-    if (h.hurt > 0 && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[`${pk}_hit`], row * 48, 0, 48, 48, left, top, 48, 48); // 被弾してのけぞる
+    if ((h.hurt > 0 || h.trip > 0) && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[`${pk}_hit`], row * 48, 0, 48, 48, left, top, 48, 48); // 被弾してのけぞる
     else if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * 48, row * 48, 48, 48, left, top, 48, 48);
     else ctx.drawImage(IMG[`${pk}_idle`], row * 48, 0, 48, 48, left, top, 48, 48);
     ctx.imageSmoothingEnabled = sm; ctx.globalAlpha = 1;
+    drawFlawFx(px, top, footY);
     drawHeroBubble(px, top - 6 - 6 * (TS - 1));
     return;
   }
@@ -1656,6 +1678,41 @@ function drawHero() {
   }
   ctx.restore(); ctx.globalAlpha = 1;
   drawHeroBubble(px, py - (useArt ? 62 : 42) - 6 * (TS - 1));
+}
+// 弱点が出ているときの印（キャラの動きと一緒に見せる）
+function drawFlawFx(px, top, footY) {
+  const h = G.hero, t = G.time;
+  ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (h.peek) { // 覗きに行く先
+    const tx = h.peek[0] * T + T / 2, ty = h.peek[1] * T + T / 2;
+    ctx.setLineDash([3, 5]); ctx.lineDashOffset = -t * 20; ctx.strokeStyle = 'rgba(201,184,255,.55)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(px, footY - 4); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = `800 ${Math.round(16 * TS)}px serif`; ctx.fillStyle = '#c9b8ff'; ctx.fillText('?', tx, ty - 14 + Math.sin(t * 5) * 2);
+  }
+  if (h.doze > 0) for (let i = 0; i < 3; i++) { // うたた寝
+    const p = (t * .55 + i / 3) % 1;
+    ctx.globalAlpha = 1 - p * .8; ctx.font = `900 ${Math.round((12 + p * 10) * TS)}px serif`;
+    ctx.lineWidth = 3; ctx.strokeStyle = '#1a1220'; ctx.strokeText('Z', px + 12 + p * 16, top + 8 - p * 26);
+    ctx.fillStyle = '#e4dcff'; ctx.fillText('Z', px + 12 + p * 16, top + 8 - p * 26);
+  }
+  ctx.globalAlpha = 1;
+  if (h.confused > 0 && !(h.trip > 0)) for (let i = 0; i < 2; i++) { // 混乱は「?」がぐるぐる
+    const a = t * 5 + i * Math.PI, sx = px + Math.cos(a) * 13, sy = top + 6 + Math.sin(a) * 4;
+    ctx.font = `900 ${Math.round(14 * TS)}px serif`; ctx.lineWidth = 3; ctx.strokeStyle = '#1a1220'; ctx.strokeText('?', sx, sy); ctx.fillStyle = '#d9ccff'; ctx.fillText('?', sx, sy);
+  }
+  if (h.trip > 0) for (let i = 0; i < 3; i++) { // つまずいた星
+    const a = t * 7 + i * 2.09, sx = px + Math.cos(a) * 14, sy = top + 6 + Math.sin(a) * 4;
+    ctx.fillStyle = '#ffe27a'; ctx.strokeStyle = '#1a1220'; ctx.lineWidth = 1.5; ctx.beginPath();
+    for (let k = 0; k < 10; k++) { const r = k % 2 ? 2.2 : 5.5, b = k * Math.PI / 5 - Math.PI / 2; ctx.lineTo(sx + Math.cos(b) * r, sy + Math.sin(b) * r); }
+    ctx.closePath(); ctx.stroke(); ctx.fill();
+  }
+  if (h.freeze > 0) { // 足がすくむ
+    for (const [col, lw] of [['#1a1220', 4], ['#d6f3ff', 2]]) {
+      ctx.strokeStyle = col; ctx.lineWidth = lw;
+      for (const sgn of [-1, 1]) for (let k = 0; k < 3; k++) { const x0 = px + sgn * (14 + k * 4), y0 = top + 12 + k * 7; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + sgn * 4, y0 - 7); ctx.stroke(); }
+    }
+  }
+  ctx.restore();
 }
 function drawHeroBubble(px, by) {
   const h = G.hero;
@@ -2106,7 +2163,7 @@ function renderCharDetail() {
     <p class="d">${ch.profile}</p>
     <div class="chips"><span><i>体力</i>${'♥'.repeat(ch.hp)}</span><span><i>足</i>${Math.round(ch.speed / 3.4 * 100)}%</span><span><i>魔力</i>${ch.maxMana}</span><span><i>回復</i>毎秒 ${Math.round(ch.regen)}</span></div>
     <div class="ln fav"><span class="tag">得意</span><div><b>${fv.name}「${ch.passive.name}」</b><br>${ch.passive.desc}</div></div>
-    <div class="ln fl"><span class="tag">弱点</span><div>${ch.flaw}</div></div>
+    <div class="ln fl"><span class="tag">弱点</span><div><b>${ch.flawName}</b><br>${ch.flaw}</div></div>
     ${sel.traps.includes(ch.fav) ? '' : `<p class="warn">得意な罠（${fv.name}）を持っていかないと、この力は使えない</p>`}`;
   box.querySelector('.ln.fav').prepend(trapIconCanvas(ch.fav, 36));
 }
@@ -2117,11 +2174,12 @@ function renderSelect() {
     b.type = 'button'; b.className = 'cpick' + (sel.char === id ? ' on' : ''); b.id = 'pick-' + id;
     b.setAttribute('aria-pressed', sel.char === id); b.setAttribute('aria-label', `${ch.name}（${ch.title}）`);
     let ic;
-    if (ch.art && ART[`portrait_${ch.art}`]) { ic = document.createElement('img'); ic.alt = ''; ic.src = ART[`portrait_${ch.art}`]; }
+    if (ch.art && ART[`portrait_${ch.art}`]) { ic = document.createElement('div'); ic.className = 'ph'; ic.innerHTML = `<img alt="" src="${ART[`portrait_${ch.art}`]}">`; }
     else { ic = document.createElement('canvas'); ic.className = 'face'; ic.width = 84; ic.height = 84; const c = ic.getContext('2d'); c.scale(2, 2); drawCharIcon(c, ch.look, 21, 22, 1.3); }
     b.append(ic);
-    b.insertAdjacentHTML('beforeend', `<span class="fv"><span>得意</span></span><span class="n">${ch.name}</span><span class="t">${ch.title}</span>`);
+    b.insertAdjacentHTML('beforeend', `<span class="fv"><span>得意</span></span><span class="n">${ch.name}</span><span class="t">${ch.title}</span><span class="wk"><i>弱点</i>${ch.flawName}</span>`);
     b.querySelector('.fv').prepend(trapIconCanvas(ch.fav, 20));
+    if (ic.classList.contains('ph')) ic.append(b.querySelector('.fv'));
     b.addEventListener('click', () => { sel.char = id; renderSelect(); });
     cg.append(b);
   }
