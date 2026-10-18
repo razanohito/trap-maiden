@@ -249,7 +249,7 @@ body{
   .chardetail .ln.fav{flex-wrap:wrap;gap:6px 8px}
   .chardetail .ln.fav>div{flex-basis:100%}
   .cpick .ph img{filter:saturate(.8) brightness(.88)}
-  .slot canvas{width:30px;height:30px}
+  .slot canvas{width:34px;height:34px}
   .help .pc{display:none}
 }
 @media (min-width:641px){.help .sp{display:none}}
@@ -307,7 +307,7 @@ body{
   body.playing #btnGo{grid-column:2;grid-row:3;font-size:12px;padding:5px 6px;white-space:normal}
   body.playing .palette{grid-column:2;grid-row:4;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
   body.playing .slot{padding:2px 2px 3px}
-  body.playing .slot canvas{width:22px;height:22px}
+  body.playing .slot canvas{width:clamp(26px,calc(var(--vh,100dvh) * .09),40px);height:clamp(26px,calc(var(--vh,100dvh) * .09),40px)}
   body.playing .slot .n{font-size:10px}
   body.playing .slot .c{font-size:9px}
   body.playing .slot .k,body.playing .slot .ds{display:none}
@@ -537,6 +537,7 @@ const ART = { portrait_lily: '../art/portrait_lily.webp', portrait_mina: '../art
   lily_hit: '../art/sprites/lily_hit.png', mina_hit: '../art/sprites/mina_hit.png', noel_hit: '../art/sprites/noel_hit.png', cecil_hit: '../art/sprites/cecil_hit.png',
   lily_pinch: '../art/sprites/lily_pinch.png', mina_pinch: '../art/sprites/mina_pinch.png', noel_pinch: '../art/sprites/noel_pinch.png', cecil_pinch: '../art/sprites/cecil_pinch.png',
   fx_warp: '../art/fx/warp.png', fx_soul: '../art/fx/soul.png',
+  icon_bear: '../art/icons/bear.png', icon_spring: '../art/icons/spring.png', icon_rock: '../art/icons/rock.png', icon_fire: '../art/icons/fire.png', icon_ice: '../art/icons/ice.png', icon_warp: '../art/icons/warp.png', icon_blade: '../art/icons/blade.png', icon_bell: '../art/icons/bell.png', icon_caltrop: '../art/icons/caltrop.png', icon_vortex: '../art/icons/vortex.png',
   fx_bell: '../art/fx/bell.png', fx_caltrop: '../art/fx/caltrop.png', fx_vortex: '../art/fx/vortex.png', fx_slash: '../art/fx/slash.png', fx_spear: '../art/fx/spear.png', fx_spike: '../art/fx/spike.png', fx_pit: '../art/fx/pit.png', fx_chandelier: '../art/fx/chandelier.png', fx_bomb: '../art/fx/bomb.png', fx_hurt: '../art/fx/hurt.png', fx_keys: '../art/fx/keys.png', fx_mana: '../art/fx/mana.png',
   lily_jump: '../art/sprites/lily_jump.png', mina_jump: '../art/sprites/mina_jump.png', noel_jump: '../art/sprites/noel_jump.png', cecil_jump: '../art/sprites/cecil_jump.png',
   portrait_lily_happy: '../art/portrait_lily_happy.webp', portrait_mina_happy: '../art/portrait_mina_happy.webp', portrait_noel_happy: '../art/portrait_noel_happy.webp', portrait_cecil_happy: '../art/portrait_cecil_happy.webp',
@@ -1646,6 +1647,12 @@ function update(dt) {
 
 // ---------- 描画 ----------
 function ell(x, y, rx, ry) { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill(); }
+// ボタンや支度画面の罠アイコン（描いてもらった金枠の絵。無ければ盤面と同じ図形で描く）
+function drawTrapUI(c, type, cx, cy, size, dir = 1) {
+  if (!imgReady(`icon_${type}`)) { drawTrapIcon(c, type, cx, cy, size / 40, dir, 0, false); return; }
+  const sm = c.imageSmoothingEnabled; c.imageSmoothingEnabled = false;
+  c.drawImage(IMG[`icon_${type}`], cx - size / 2, cy - size / 2, size, size); c.imageSmoothingEnabled = sm;
+}
 function drawTrapIcon(c, type, cx, cy, s, dir, t, closed) {
   c.save(); c.translate(cx, cy); c.scale(s, s);
   if (type === 'bear') {
@@ -2276,7 +2283,7 @@ function makeSlot(type, i) {
   const ic = document.createElement('canvas'); ic.width = 76; ic.height = 76;
   const c = ic.getContext('2d'); c.scale(2, 2);
   const d = TRAPS[type];
-  drawTrapIcon(c, type, 19, 19, .95, d.dir ? G.springDir : 0, 0, false);
+  drawTrapUI(c, type, 19, 19, 36, d.dir ? G.springDir : 0);
   b.innerHTML = `<span class="k">${i + 1}</span>${d.dir ? '<span class="dir">→</span>' : ''}`;
   b.append(ic);
   b.insertAdjacentHTML('beforeend', `<span class="n">${d.name}</span><span class="c">魔力 ${d.cost}</span><span class="ds">${d.desc}</span>`);
@@ -2311,7 +2318,7 @@ function selectTrap(type, fromKey) {
 }
 function rotateSpring(d) {
   G.springDir = (G.springDir + d + 4) % 4;
-  for (const s of slots) if (TRAPS[s.dataset.type].dir) { s._icon.c.clearRect(0, 0, 38, 38); drawTrapIcon(s._icon.c, s.dataset.type, 19, 19, .95, G.springDir, 0, false); }
+  for (const s of slots) if (TRAPS[s.dataset.type].dir) { s._icon.c.clearRect(0, 0, 38, 38); drawTrapUI(s._icon.c, s.dataset.type, 19, 19, 36, G.springDir); }
 }
 buildPalette();
 
@@ -2429,7 +2436,7 @@ try {
   if (sv && Array.isArray(sv.traps)) sv.traps = sv.traps.map(t => t === 'poison' ? 'warp' : t); // 毒の壺は送り返しの陣に変わった
   if (sv && CHARS[sv.char] && Array.isArray(sv.traps) && sv.traps.length === 4 && sv.traps.every(t => TRAPS[t])) sel = sv;
 } catch (e) {}
-function trapIconCanvas(id, px) { const ic = document.createElement('canvas'); ic.width = ic.height = px * 2; const c = ic.getContext('2d'); c.scale(2 * px / 34, 2 * px / 34); drawTrapIcon(c, id, 17, 17, .85, 1, 0, false); return ic; }
+function trapIconCanvas(id, px) { const ic = document.createElement('canvas'); ic.width = ic.height = px * 2; const c = ic.getContext('2d'); c.scale(2 * px / 34, 2 * px / 34); drawTrapUI(c, id, 17, 17, 34); return ic; }
 function renderCharDetail() {
   const ch = CHARS[sel.char], fv = TRAPS[ch.fav], box = $('#charDetail');
   box.innerHTML = `<div class="hd"><b>${ch.name}</b><span>${ch.title}</span></div>
@@ -2462,7 +2469,7 @@ function renderSelect() {
     const fvc = CHARS[sel.char].fav === id;
     b.type = 'button'; b.className = 'pick' + (on ? ' on' : '') + (fvc ? ' favt' : ''); b.id = 'pickt-' + id;
     b.setAttribute('aria-pressed', on);
-    const ic = document.createElement('canvas'); ic.width = 68; ic.height = 68; const c = ic.getContext('2d'); c.scale(2, 2); drawTrapIcon(c, id, 17, 17, .85, 1, 0, false);
+    const ic = document.createElement('canvas'); ic.width = 68; ic.height = 68; const c = ic.getContext('2d'); c.scale(2, 2); drawTrapUI(c, id, 17, 17, 34);
     const row = document.createElement('div'); row.className = 'row'; row.append(ic);
     row.insertAdjacentHTML('beforeend', `<div><div class="n">${d.name}</div><div class="t"><span>魔力 ${fvc && CHARS[sel.char].passive.cost || d.cost}</span>・<span>再装填 ${fvc && CHARS[sel.char].passive.cd || d.cd}秒</span></div></div>`);
     b.append(row);
