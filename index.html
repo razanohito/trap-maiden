@@ -2397,7 +2397,7 @@ const HELP = [
       for (const [x, y] of [[5, 0], [4, 1], [6, 1], [5, 2]]) miniTile(g, x, y, 'glow');
       const [sx, sy] = g.at(5, 1); hc.fillStyle = '#857e8c'; hc.fillRect(sx - 14, sy - 10, 28, 34); hc.fillStyle = '#9b94a2'; hc.beginPath(); hc.arc(sx, sy - 20, 13, 0, 7); hc.fill(); hc.fillStyle = '#ff463c'; hc.fillRect(sx - 7, sy - 22, 4, 3); hc.fillRect(sx + 3, sy - 22, 4, 3);
       miniTile(g, 8, 1, 'spike'); miniLabel(g, 1, 2, '押すと落ちる'); miniLabel(g, 5, 2, '押すと槍'); miniLabel(g, 8, 2, 'トゲ床', '#fff4e0'); } },
-  { t: '夜の流れとクリア', d: '夜は「準備」（25秒。罠を置いたら「侵入者を迎える」で早く始められる）のあと、フェイズ1〜3と進む。フェイズが進むたびに置ける罠が1つ増え、魔力も補充される。夜明けまで守るか、全滅させればクリア。夜明けには集めた魂で強くなれる。第6夜からは別の部屋（東の書庫）に移り、罠は置き直しになる。',
+  { t: '夜の流れとクリア', d: '夜は「準備」（25秒。罠を置いたら「侵入者を迎える」で早く始められる）のあと、フェイズ1〜3と進む。フェイズが進むたびに置ける罠が1つ増え、魔力も補充される。フェイズで増えた枠はその夜だけ。夜明けには通常の上限に戻り、超過分は追加枠で置いた罠から片づけられる。上限内で残った罠は翌夜も使える。夜明けまで守るか、全滅させればクリア。夜明けには集めた魂で強くなれる。第6夜からは別の部屋（東の書庫）に移り、罠は置き直しになる。',
     draw() { miniGrid(1, 1); hc.fillStyle = '#1c1720'; hc.fillRect(0, 0, 880, 440);
       const steps = ['準備', 'フェイズ1', 'フェイズ2', 'フェイズ3', '夜明け']; hc.font = '800 30px "Shippori Mincho B1", serif'; hc.textAlign = 'center'; hc.textBaseline = 'middle';
       steps.forEach((st, i) => { const x = 100 + i * 170; hc.fillStyle = i === 4 ? '#c9a24a' : '#3e3546'; hc.fillRect(x - 70, 180, 140, 70); hc.fillStyle = i === 4 ? '#2a1a0c' : '#f1d98e'; hc.fillText(st, x, 215); if (i < 4) { hc.fillStyle = '#f1d98e'; hc.fillText('→', x + 85, 215); } if (i >= 2 && i <= 3) { hc.fillStyle = '#ffc0d3'; hc.font = '700 22px "Zen Maru Gothic", sans-serif'; hc.fillText('罠 +1', x, 290); hc.font = '800 30px "Shippori Mincho B1", serif'; } }); } },
@@ -2531,7 +2531,8 @@ function openShop() {
   G.phaseBonus = 0;
   const extra = [...G.traps.entries()].sort((a, b) => (b[1].bonus - a[1].bonus) || (b[1].at - a[1].at)).slice(0, Math.max(0, G.traps.size - stat.limit()));
   extra.forEach(([k]) => G.traps.delete(k));
-  for (const tr of G.traps.values()) { tr.cd = 0; tr.snap = 0; }
+  // 基本上限内で残った罠は通常枠に繰り上げ、前夜の追加枠の印を持ち越さない。
+  for (const tr of G.traps.values()) { tr.cd = 0; tr.snap = 0; tr.bonus = false; }
   for (const dv of G.devices) dv.cd = 0;
   $('#shopNote').textContent = '体力が1つ回復し、魔力は満タンになった。罠はそのまま残る。' + (extra.length ? `フェイズで増やした罠のうち${extra.length}個は夜明けに崩れた。` : '');
   $('#shopTitle').textContent = `第${G.wave}夜を越えた`;
