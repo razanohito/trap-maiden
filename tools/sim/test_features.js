@@ -43,7 +43,7 @@ const path = require('path');
     G.mana = 999; A.placeTrap(9, 8, 'keg'); G.traps.get('9,8').cd = 0; const t1 = foe('thief', 9, 8); G.foes.push(t1); A.triggerAt(9, 8, t1, false);
     res.樽_直後 = 300 - t1.hp; for (let i = 0; i < 40; i++) A.update(1 / 30); res.樽_1秒後 = 300 - t1.hp; G.foes.length = 0;
     // 宝物: 逃げる子の足もと（拾う）と、罠のマス（罠で取る）
-    const h = G.hero; G.items.push({ x: h.tx, y: h.ty, kind: 'gem', t: 0, life: 9 }); const s0 = G.score; A.update(1 / 30); res.宝物_拾う = G.score - s0;
+    const h = G.hero; Object.assign(h, { moving: false, x: h.tx, y: h.ty, idle: 9, think: 9 }); G.items.push({ x: h.tx, y: h.ty, kind: 'gem', t: 0, life: 9 }); const s0 = G.score; A.update(1 / 30); res.宝物_拾う = G.score - s0;
     G.mana = 999; A.placeTrap(12, 7, 'bear'); if (!G.traps.get('12,7')) return { 失敗: G.msg, foes: G.foes.map(f => [f.type, Math.round(f.x), Math.round(f.y)]).join(' '), hero: [G.hero.tx, G.hero.ty].join(',') }; G.traps.get('12,7').cd = 0; G.items.push({ x: 12, y: 7, kind: 'coin', t: 0, life: 9 }); const k1 = foe('knight', 12, 7); G.foes.push(k1); A.triggerAt(12, 7, k1, false); res.宝物_罠 = G.itemsGot;
     // 倒れた敵: 歩かない・約1.5秒で消える
     let sx = 0, sy = 0; for (let y = 1; y < 9 && !sx; y++) for (let x = 1; x < 14; x++) if (A.canPlace(x, y) && !G.traps.has(x + ',' + y) && Math.abs(x - G.hero.tx) + Math.abs(y - G.hero.ty) > 2 && x > 3 && x < 8) { sx = x; sy = y; break; }

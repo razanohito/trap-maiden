@@ -188,7 +188,7 @@ body.pboard #cv{aspect-ratio:9/14}
 .selnav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .selnav .btn{margin-top:0}
 /* スマホ横は次へのボタンを下に固定する */
-@media (max-height:520px) and (orientation:landscape){body.playing.pboard .frame{width:calc((var(--vh,100dvh) - 26px) * 9 / 14 + 12px)}#ovSelect .selnav{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:8px max(14px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(20,14,22,0),rgba(20,14,22,.92) 35%)}#ovSelect .panel{padding-bottom:64px}}
+@media (max-height:520px) and (orientation:landscape){body.playing.pboard .frame{width:calc((var(--vh,100dvh) - 34px) * 9 / 14 + 12px)}#ovSelect .selnav{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:8px max(14px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(20,14,22,0),rgba(20,14,22,.92) 35%)}#ovSelect .panel{padding-bottom:64px}}
 .selhint{margin:0 0 6px;font-size:13px;color:var(--parch-ink)}
 .selhint b{color:#5a1e2c}
 .confirm{display:grid;grid-template-columns:minmax(120px,210px) 1fr;gap:14px;padding:12px;background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;color:var(--parch)}
@@ -320,6 +320,7 @@ body.pboard #cv{aspect-ratio:9/14}
   body.playing #btnGo{margin-inline:4px;width:auto}
   /* 縦長の盤面: 高さに収まる幅にして、罠ボタンまで1画面に入れる */
   body.playing.pboard .frame{width:min(100%,calc((var(--vh,100dvh) - var(--chromeH,262px)) * 9 / 14 + 8px));margin-inline:auto}
+  @media (orientation:landscape){body.playing.pboard .frame{width:calc((var(--vh,100dvh) - 34px) * 9 / 14 + 12px)}} /* 縦長の盤面のまま横にした */
   body.playing.pboard .rotate{display:none}
   body.playing.pboard .head h1{display:none}
   body.playing.pboard .head{padding:0;justify-content:flex-end}
@@ -787,7 +788,7 @@ function setViewportVars() {
   if (pal) r.setProperty('--palH', (pal.offsetHeight || 94) + 'px');
   if (document.body.classList.contains('pboard')) { // 縦長の盤面: 盤面以外（見出し・状態・ボタン）の高さを測り、盤面をその残りに収める
     const hh = ['.head', '.hud', '#btnGo', '#palette'].reduce((a, q) => { const e = document.querySelector(q); return a + (e && !e.hidden ? e.offsetHeight : 0); }, 0);
-    r.setProperty('--chromeH', (hh + 34 + (document.querySelector('#btnGo').hidden ? 46 : 0)) + 'px');
+    r.setProperty('--chromeH', (hh + 58 + (document.querySelector('#btnGo').hidden ? 46 : 0)) + 'px');
   }
   resize();
 }
@@ -1343,7 +1344,7 @@ function advancePhase() {
   banner(`フェイズ${G.phase}`, '置ける罠 +1・魔力 +25'); sfx.wave();
 }
 function clearNight(wiped) {
-  achieve('night1'); if (!G.nightHurt && (runMode === 'challenge' ? G.wave : runStage) >= 3) achieve('nohit');
+  achieve('night1'); if (!G.nightHurt && (runMode === 'stage' ? runStage : G.wave) >= 3) achieve('nohit');
   G.clearT = 3.2; // 帯が消えたあと、喜ぶ姿を少し見せてからショップへ
   Object.assign(G.hero, { joy: 3.2, facing: 2, confused: 0, freeze: 0, doze: 0, trip: 0 }); heroBubble(pick(CH().joy), 3); // 笑顔で喜ぶ
   if (wiped) {
@@ -1436,7 +1437,7 @@ const ACH = [
   { id: 'weak', name: '弱点を知る者', desc: '「効いた！」を合計50回' },
   { id: 'items', name: '宝物集め', desc: 'スコアアイテムを合計30個拾う' },
   { id: 'crown', name: '王冠', desc: '王冠を拾う' },
-  { id: 'nohit', name: '無傷の夜', desc: '体力を減らさずに夜を越える（第3夜以降・ステージ3以降）' },
+  { id: 'nohit', name: '無傷の夜', desc: '体力を減らさずに夜を越える（第3夜以降・ステージ3以降・自作の部屋は強さ3以上）' },
   { id: 'editor', name: '館の設計士', desc: '自分で作ったステージをクリア' },
   { id: 'all4', name: '4人の守り', desc: '4人全員で、いずれかのステージかチャレンジをクリア' },
 ];
