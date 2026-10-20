@@ -2,7 +2,7 @@
 // 使い方: python -m http.server 8766 --bind 127.0.0.1（リポジトリ直下）→ node tools/sim/shot_ui.js
 const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
 const path = require('path');
-const VPS = [['p', 393, 852, true], ['l', 852, 393, true], ['pc', 1366, 768, false], ['fhd', 1920, 1080, false]];
+const VPS = [['p', 393, 852, true], ['s', 320, 568, true], ['l', 852, 393, true], ['ls', 667, 375, true], ['pc', 1366, 768, false], ['fhd', 1920, 1080, false]];
 (async () => {
   const b = await chromium.launch({ channel: 'chrome', headless: true });
   const errs = [], rows = [];
@@ -17,8 +17,11 @@ const VPS = [['p', 393, 852, true], ['l', 852, 393, true], ['pc', 1366, 768, fal
       const r = await p.evaluate(() => {
         const ov = [...document.querySelectorAll('.overlay')].find(o => !o.hidden);
         const panel = ov && ov.querySelector('.panel, .title');
-        const over = [];
-        if (panel) for (const el of panel.querySelectorAll('*')) { const rc = el.getBoundingClientRect(); const pr = panel.getBoundingClientRect(); if (rc.height && (rc.bottom > pr.bottom + 1 || rc.right > pr.right + 1)) over.push(el.id || el.className || el.tagName); }
+        const over = [], W = innerWidth, H = innerHeight;
+        const skip = el => el.tagName === 'IMG' || el.closest('.ph, .cf-ph, .tart, .kv');
+        const outside = el => { const rc = el.getBoundingClientRect(); return rc.width && rc.height && (rc.left < -1 || rc.top < -1 || rc.right > W + 1 || rc.bottom > H + 1); };
+        if (panel) for (const el of panel.querySelectorAll('*')) { if (skip(el)) continue; const rc = el.getBoundingClientRect(); const pr = panel.getBoundingClientRect(); if (rc.height && el.offsetParent && (rc.bottom > pr.bottom + 1 || rc.right > pr.right + 1)) over.push(el.id || el.className || el.tagName); }
+        if (!ov) for (const el of document.querySelectorAll('#app .hud > .hrow *, #cv, .slot, .go, #editBar *, .dockhead')) { if (el.offsetParent && outside(el)) over.push(el.id || el.className || el.tagName); }
         return { docScroll: document.documentElement.scrollHeight > innerHeight + 1, panelScroll: panel ? panel.scrollHeight > panel.clientHeight + 1 : false, over: [...new Set(over)].slice(0, 4).join(' ') };
       });
       rows.push(`${nm} ${tag.padEnd(8)} ${r.docScroll || r.panelScroll || r.over ? 'はみ出し ' + JSON.stringify(r) : 'OK'}`);
@@ -32,6 +35,7 @@ const VPS = [['p', 393, 852, true], ['l', 852, 393, true], ['pc', 1366, 768, fal
     await click('#btnNext2'); await shot('sel3');
     await click('#btnBegin'); await p.waitForTimeout(600);
     await p.evaluate(() => { window.__wanakan.G.intro = null; }); await shot('play');
+    await p.evaluate(() => { const W = window.__wanakan; W.api.beginDefense(); W.G.banner = 0; }); await shot('defense');
     await click('#btnPause'); await shot('pause');
     await click('#btnResume');
     await p.evaluate(() => { const W = window.__wanakan, G = W.G; W.api.beginDefense(); G.phase = 3; G.spawnQueue = []; G.foes.length = 0; });
