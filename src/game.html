@@ -2,10 +2,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>トラップオブリリー</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap">
 <style>
+/* フォントは埋め込み（ストア版はオフラインでも動かすため）。art/fonts は tools/make_fonts.py で作る。どちらも SIL OFL */
+@font-face{font-family:"Shippori Mincho B1";font-weight:700;font-display:swap;src:url('../art/fonts/shippori-700.woff2') format("woff2")}
+@font-face{font-family:"Shippori Mincho B1";font-weight:800;font-display:swap;src:url('../art/fonts/shippori-800.woff2') format("woff2")}
+@font-face{font-family:"Zen Maru Gothic";font-weight:500;font-display:swap;src:url('../art/fonts/zenmaru-500.woff2') format("woff2")}
+@font-face{font-family:"Zen Maru Gothic";font-weight:700 800;font-display:swap;src:url('../art/fonts/zenmaru-700.woff2') format("woff2")}
 /* レイアウト: 金の装飾枠に収めた館（キャンバス）を中央に、上に羊皮紙の状態帯、下に石板の罠パレット。夜の館として暗色一本で通す */
 :root{
   --ink:#151017; --stone:#2a2430; --stone-hi:#3e3546; --parch:#eadbbd; --parch-dk:#cbb58b; --parch-ink:#3a2819;

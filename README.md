@@ -26,7 +26,7 @@
 
 | パス | 内容 |
 |---|---|
-| `src/game.html` | ゲーム本体（HTML 1 枚。外部スクリプトなし、フォントだけ Google Fonts） |
+| `src/game.html` | ゲーム本体（HTML 1 枚。外部スクリプト・外部フォントなし。オフラインで動く） |
 | `tools/build.py` | `src/game.html` から `index.html`（GitHub Pages 用）と `dist-artifact/trap-maiden.html`（claude.ai Artifact 用）を作る |
 | `docs/art-brief.html` | ChatGPT に頼むグラフィックと演出の提案 |
 | `art-src/` | ChatGPT に描いてもらった原画（4人の設定画 `<名前>_sheet.webp`、参考の絵は `reference/`） |
@@ -36,6 +36,7 @@
 | `tools/import_icons.py` | 罠のアイコン（`art-src/icons/icon_*.png`、金枠つき）のマゼンタを消し、64x64 にそろえて `art/icons/` に入れる（罠ボタン・支度画面・確認画面で使う） |
 | `tools/import_bgm.py` | BGM（`art-src/bgm/` の mp3）を音量 -18 LUFS・モノラル 64kbps にそろえて `art/bgm/` に入れる（ffmpeg を使う）。場面ごとの曲はタイトル・準備・第1〜5夜・書庫（第6〜9夜）・フェイズ3・最後の夜・ショップ、ジングルは夜明けと終わり |
 | `docs/sound-fx-brief.html` | BGM・エフェクト・効果音の提案（Gemini 用プロンプト） |
+| `tools/make_fonts.py` | フォント（Shippori Mincho B1・Zen Maru Gothic、SIL OFL）を `src/game.html` に出てくる文字だけに絞って `art/fonts/*.woff2` にする。文言を増やしたら動かし直す（`pip install fonttools brotli`）。ライセンス文は `art/fonts/OFL-*.txt` |
 | `tools/make_sprites.py` | 手で組み立てたドット絵の予備（`art/sprites_gen/`） |
 | `tools/cut_sheet.py` | 設定画から3方向を切り出して背景を抜き、`art/*.webp`（盤面用と立ち絵）を作る。ビルドで HTML に埋め込む |
 | `tools/sim/` | ヘッドレスブラウザでの動作確認（罠を活かす AI の比較、地形と仕掛けの確認） |
