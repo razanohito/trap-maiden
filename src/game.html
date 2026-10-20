@@ -186,7 +186,7 @@ body.pboard #cv{aspect-ratio:9/14}
 .selnav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .selnav .btn{margin-top:0}
 /* スマホ横は次へのボタンを下に固定する */
-@media (max-height:520px) and (orientation:landscape){#ovSelect .selnav{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:8px max(14px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(20,14,22,0),rgba(20,14,22,.92) 35%)}#ovSelect .panel{padding-bottom:64px}}
+@media (max-height:520px) and (orientation:landscape){body.playing.pboard .frame{width:calc((var(--vh,100dvh) - 26px) * 9 / 14 + 12px)}#ovSelect .selnav{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:8px max(14px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(20,14,22,0),rgba(20,14,22,.92) 35%)}#ovSelect .panel{padding-bottom:64px}}
 .selhint{margin:0 0 6px;font-size:13px;color:var(--parch-ink)}
 .selhint b{color:#5a1e2c}
 .confirm{display:grid;grid-template-columns:minmax(120px,210px) 1fr;gap:14px;padding:12px;background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;color:var(--parch)}
@@ -493,7 +493,7 @@ body.pboard #cv{aspect-ratio:9/14}
           <p class="rsay" id="rSay"></p>
           <div class="rcombo"><span>最大連続</span><b id="rCombo">0</b><em id="rComboBest"></em></div>
           <div class="result">
-            <div><span>たどり着いた夜</span><b id="rWave">1</b></div>
+            <div><span id="rWaveL">たどり着いた夜</span><b id="rWave">1</b></div>
             <div><span>得点</span><b id="rScore">0</b></div>
             <div><span>撃退した数</span><b id="rKills">0</b></div>
             <div><span>追い打ち</span><b id="rOiuchi">0</b></div>
@@ -1332,14 +1332,16 @@ function advancePhase() {
   G.phase++;
   G.spawnQueue = G.spawnQueue.concat(G.phaseQ[G.phase - 1]);
   G.spawnT = Math.min(G.spawnT > 0 ? G.spawnT : 1.2, 1.2);
-  const doorNote = G.wave === 1 ? '左の扉から侵入者が来る' : G.wave === 2 ? '右の扉も破られた' : G.wave === 3 ? '上の扉からも来る' : G.wave === 6 ? '書庫の3つの扉から来る' : `侵入者 ${G.phaseQ.flat().length}人`;
+  const side = ([x, y]) => x === 0 ? '左' : x === COLS - 1 ? '右' : y === 0 ? '上' : '下';
+  const open = DOORS.slice(0, Math.min(DOORS.length, G.wave)), total = G.phaseQ.flat().length;
+  const doorNote = open.length === 1 ? `${side(open[0])}の扉から侵入者が来る（${total}人）` : runMode === 'challenge' && G.wave <= 3 ? `${side(open[open.length - 1])}の扉からも来る（${total}人）` : `${open.map(side).join('・')}の扉から来る（${total}人）`;
   if (G.phase === 1) { banner('フェイズ1', doorNote); sfx.door(); return; }
   G.phaseBonus = G.phase - 1;
   G.mana = Math.min(stat.maxMana(), G.mana + 25); spr('mana', G.hero.x, G.hero.y, .8, 1.3, -18);
   banner(`フェイズ${G.phase}`, '置ける罠 +1・魔力 +25'); sfx.wave();
 }
 function clearNight(wiped) {
-  achieve('night1'); if (!G.nightHurt && G.wave >= 3) achieve('nohit');
+  achieve('night1'); if (!G.nightHurt && (runMode === 'challenge' ? G.wave : runStage) >= 3) achieve('nohit');
   G.clearT = 3.2; // 帯が消えたあと、喜ぶ姿を少し見せてからショップへ
   Object.assign(G.hero, { joy: 3.2, facing: 2, confused: 0, freeze: 0, doze: 0, trip: 0 }); heroBubble(pick(CH().joy), 3); // 笑顔で喜ぶ
   if (wiped) {
@@ -1552,7 +1554,7 @@ function foeCrash(f, g, fl) {
 }
 // 罠に当たった侵入者をよろけさせて n マス動かす。着地したマスの罠も連鎖で発動し、奈落なら落ちる
 function shove(f, dir, n = 1) {
-  if (f.dead || f.fly || dir == null) return;
+  if (f.dead || f.down > 0 || f.fly || dir == null) return; // 倒れた侵入者はその場から動かない
   const [dx, dy] = DIRS[dir]; let cx = Math.round(f.x), cy = Math.round(f.y), k = 0, fall = false;
   while (k < n) {
     if (tileAt(cx + dx, cy + dy) === 'O') { cx += dx; cy += dy; k++; fall = true; break; }
@@ -1608,7 +1610,7 @@ function fireTrapBody(tr, ty, x, y, f) {
     if (!f.dead) { f.stun = Math.max(f.stun, 2.2 * FOES[f.type].stunMul); tr.snap = f.stun; f.lurch = f.lastDir; }
   } else if (ty === 'spring') {
     sfx.spring(); spr('spring', x, y, .5, 1, -8); trapSuccess(); hitFoe(f, 6);
-    if (f.dead) return;
+    if (f.dead || f.down > 0) return;
     const [dx, dy] = DIRS[tr.dir]; let cx = x, cy = y, steps = 0, slam = false;
     let fall = false;
     while (steps < FOES[f.type].push) {
@@ -1637,7 +1639,7 @@ function fireTrapBody(tr, ty, x, y, f) {
   } else if (ty === 'ice') { // 進んでいた向きのまま、壁か奈落まで滑る
     sfx.ice(); spr('ice', x, y, .6);
     trapSuccess(); hitFoe(f, 8); burst(x, y, '#bfe6f2', 14, 110);
-    if (f.dead) return;
+    if (f.dead || f.down > 0) return;
     const d = f.lastDir ?? 1, [dx, dy] = DIRS[d];
     let cx = x, cy = y, steps = 0, slam = false, fall = false;
     while (steps < COLS) {
@@ -1650,7 +1652,7 @@ function fireTrapBody(tr, ty, x, y, f) {
   } else if (ty === 'warp') { // 入ってきた扉まで送り返す
     sfx.warp();
     trapSuccess(); hitFoe(f, fav ? 14 : 8);
-    if (f.dead) return;
+    if (f.dead || f.down > 0) return;
     const [ddx, ddy] = f.door || DOORS[0];
     G.fx.push({ type: 'warp', x, y, t: 0, dur: .5 }, { type: 'warp', x: ddx, y: ddy, t: 0, dur: .5 });
     spr('warp', x, y, .6); spr('warp', ddx, ddy, .6);
@@ -1683,7 +1685,7 @@ function fireTrapBody(tr, ty, x, y, f) {
     G.fx.push({ type: 'vortex', x, y, t: 0, dur: .7 });
     const field = bfs(x, y, foeWalk), pulled = [f];
     for (const g of G.foes) {
-      if (g === f || g.dead || g.fly) continue;
+      if (g === f || g.dead || g.down > 0 || g.fly) continue;
       const gx = Math.round(g.x), gy = Math.round(g.y), d = field[gx + gy * COLS];
       if (d < 1 || d > 4) continue;
       let cx = gx, cy = gy, k = 0, last = -1;
@@ -1694,7 +1696,7 @@ function fireTrapBody(tr, ty, x, y, f) {
       }
       if (!k) continue;
       hitFoe(g, 6); pulled.push(g);
-      if (g.dead) continue;
+      if (g.dead || g.down > 0) continue;
       g.moving = false; g.stun = 0; if (last >= 0) g.lastDir = last;
       g.fly = { fx: g.x, fy: g.y, tx: cx, ty: cy, t: 0, dur: .3, slam: false, fall: false, slide: true };
     }
@@ -1954,7 +1956,7 @@ function update(dt) {
       for (const f of hits) { hitFoe(f, 35); if (!f.dead) f.stun = Math.max(f.stun, 1 * FOES[f.type].stunMul); }
     }
     if (fx.type === 'rock' && !fx.done && fx.t >= fx.dur) {
-      G.hitSrc = 'rock'; G.hitMul = fx.mul || 1; later(0, () => { G.hitSrc = null; G.hitMul = 1; });
+      G.hitSrc = 'rock'; G.hitMul = fx.mul || 1;
       fx.done = true; sfx.rock(); spr('rock', fx.x, fx.y, .6, 1.4); G.shake = Math.max(G.shake, 6); burst(fx.x, fx.y, '#8c8478', 16, 140);
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.hypot(f.x - fx.x, f.y - fx.y) < .75);
       const near = fx.boom ? G.foes.filter(f => !f.dead && f.z <= 6 && !hits.includes(f) && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.4) : [];
@@ -1962,6 +1964,7 @@ function update(dt) {
       if (hits.length || near.length) { trapSuccess(); multiHit(hits.concat(near)); } else addText(fx.x, fx.y - .5, '外れた', '#a99cb0', 15);
       for (const f of hits) { hitFoe(f, fx.boom ? 45 : 30); if (!f.dead) { f.stun = Math.max(f.stun, .8 * FOES[f.type].stunMul); f.lurch = ((f.lastDir ?? 1) + 2) % 4; } }
       for (const f of near) { hitFoe(f, 22); if (!f.dead) f.stun = Math.max(f.stun, .5 * FOES[f.type].stunMul); }
+      G.hitSrc = null; G.hitMul = 1;
     }
   }
   G.fx = G.fx.filter(fx => fx.t < fx.dur + .4);
@@ -2940,6 +2943,7 @@ function renderShop() {
 function gameOver(won) {
   if (runMode !== 'challenge') { stageResult(won); return; }
   G.state = 'over'; $('#btnGo').hidden = true; $('#btnRetry2').hidden = true;
+  $('#btnRetry').textContent = '支度をして、もう一度'; $('#rWaveL').textContent = 'たどり着いた夜';
   if (won) { achieve('challenge'); clearedBy(); }
   const hpBonus = won ? G.hp * 2000 : 0;
   G.score += hpBonus;
@@ -2984,7 +2988,7 @@ function stageResult(won) {
   $('#rSay').textContent = won ? pick(CH().joy) : CH().lose;
   const label = runMode === 'edit' ? '自作の部屋' : `ステージ${n}`;
   $('#rTitle').textContent = won ? `${label} クリア！` : `${label} 失敗…`;
-  $('#rWave').textContent = won ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '—';
+  $('#rWaveL').textContent = '評価'; $('#rWave').textContent = won ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '—';
   const sec = Math.floor(G.time);
   $('#rTime').textContent = `${Math.floor(sec / 60)}分${sec % 60}秒`;
   $('#rScore').textContent = G.score.toLocaleString('ja-JP');

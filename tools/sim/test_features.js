@@ -48,7 +48,7 @@ const path = require('path');
     // 倒れた敵: 歩かない・約1.5秒で消える
     let sx = 0, sy = 0; for (let y = 1; y < 9 && !sx; y++) for (let x = 1; x < 14; x++) if (A.canPlace(x, y) && !G.traps.has(x + ',' + y) && Math.abs(x - G.hero.tx) + Math.abs(y - G.hero.ty) > 2 && x > 3 && x < 8) { sx = x; sy = y; break; }
     G.mana = 999; A.placeTrap(sx, sy, 'fire'); G.traps.get(sx + ',' + sy).cd = 0; const d = foe('knight', sx, sy, 3); d.stun = 0; G.foes.push(d); A.triggerAt(sx, sy, d, false);
-    const x0 = d.x; for (let i = 0; i < 30; i++) A.update(1 / 30); res.倒れ_1秒後 = `動いた=${Math.abs(d.x - x0) > .5} 残り=${d.down > 0}`;
+    const x0 = Math.round(d.x); for (let i = 0; i < 30; i++) A.update(1 / 30); res.倒れ_1秒後 = `動いた=${Math.abs(d.x - x0) > .5}（false が正しい） 残り=${d.down > 0}`;
     for (let i = 0; i < 45; i++) A.update(1 / 30); res.倒れ_2秒半後 = `消えた=${d.dead}`;
     return res;
   });
