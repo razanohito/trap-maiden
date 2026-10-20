@@ -4,6 +4,7 @@
 
 ## 遊び方
 
+- 日本語と英語で遊べる（端末の言語で始まり、タイトルの言語ボタンか「設定」で切り替え）。設定では音楽と効果音の音量も変えられ、クレジットも見られる。
 - モードは3つ。**ステージ**（全40。1ステージ＝1夜で、クリアすると次が開く。5ステージごとに部屋が変わり、部屋は大広間・回廊・温室・東の書庫・地下牢・礼拝堂・屋根裏・大時計の間の8つ。クリアの評価は星3つ）、**チャレンジ**（全10夜を続けて守り、ハイスコアを競う）、**エディット**（床・壁・奈落・トゲ床・シャンデリア・槍の石像・扉・開始位置を置いて自分の部屋を作り、強さ1〜10で試せる）。記録・実績・自作の部屋はこの端末に保存される。
 - スマホを縦に持って始めると、盤面が縦長（横10×縦15）になる。横持ち・PCは横長のまま。
 - 始める前の「支度」で、逃げる子を4人（リリィ・ミーナ・ノエル・セシル）から1人、罠を11種類から4つ選びます。逃げる子はそれぞれ能力が違い、得意な罠を1つ持ちます（リリィ＝送り返しの陣、ミーナ＝火柱、ノエル＝氷床、セシル＝落石）。得意な罠を持っていくと、その罠がとても強くなります（罠ボタンの★）。
@@ -37,6 +38,10 @@
 | `tools/import_bgm.py` | BGM（`art-src/bgm/` の mp3）を音量 -18 LUFS・モノラル 64kbps にそろえて `art/bgm/` に入れる（ffmpeg を使う）。場面ごとの曲はタイトル・準備・第1〜5夜・書庫（第6〜9夜）・フェイズ3・最後の夜・ショップ、ジングルは夜明けと終わり |
 | `docs/sound-fx-brief.html` | BGM・エフェクト・効果音の提案（Gemini 用プロンプト） |
 | `tools/make_fonts.py` | フォント（Shippori Mincho B1・Zen Maru Gothic、SIL OFL）を `src/game.html` に出てくる文字だけに絞って `art/fonts/*.woff2` にする。文言を増やしたら動かし直す（`pip install fonttools brotli`）。ライセンス文は `art/fonts/OFL-*.txt` |
+| `src/lang/en.js` | 英語の訳。ゲームの文言は日本語のまま `$t\`…\`` で書き（`${}` は訳では `{0}` `{1}` …）、ページの HTML は起動時に訳す。端末の言語（ストア版は Steam の言語）で決まり、タイトルの言語ボタンか設定で切り替え |
+| `tools/i18n_check.py` | 訳の抜けを表示する（`--add` で訳のない文言を `null` で足す）。字句の読み取りは `tools/i18n_lib.py` |
+| `desktop/` | Windows 版（Electron）。`npm install` → `npm run dist` で `desktop/dist/win-unpacked/`（Steam に上げる中身）と zip を作る。セーブは `%APPDATA%\TrapOfLily\save.json` にも書く（Steam クラウド用）。`steam.json` に App ID を入れると Steam の実績・言語・オーバーレイを使う |
+| `steam/` | Steam で出すための文章・画像・手順（`steam/README.md`）。画像は `tools/make_capsules.py`・`tools/make_ach_icons.py`・`tools/sim/shot_store.js` で作る |
 | `tools/make_sprites.py` | 手で組み立てたドット絵の予備（`art/sprites_gen/`） |
 | `tools/cut_sheet.py` | 設定画から3方向を切り出して背景を抜き、`art/*.webp`（盤面用と立ち絵）を作る。ビルドで HTML に埋め込む |
 | `tools/sim/` | ヘッドレスブラウザでの動作確認（罠を活かす AI の比較、地形と仕掛けの確認） |
@@ -68,6 +73,9 @@ node tools/sim/shot_help.js       # 遊び方の全ページ
 node tools/sim/test_flick.js      # スマホのフリックで矢印のある罠の向きを決められるか
 node tools/sim/rec_walk.js lily   # 盤面で歩く様子を連続で撮る（止まったときにマスの中心にいるかも確認）
 node tools/sim/test_fx_sound.js   # 効果音をすべて鳴らし、絵のエフェクトが出るか
+node tools/sim/test_english.js    # 英語で全画面を開き、日本語の残り・文字のはみ出しを調べる（index を付けると index.html で）
+python tools/i18n_check.py         # 訳の抜け
+(cd desktop && node prepare.js && node test/test_desktop.js)  # ストア版のセーブ・復元・言語・終了（Linux は Xvfb が要る）
 ```
 
 127.0.0.1 で開いたときだけ、デバッグ用に `window.__wanakan.G` でゲーム状態を読めます。
