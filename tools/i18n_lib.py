@@ -133,7 +133,7 @@ def cook(raw: str) -> str:
 
 # ページの HTML（<body> の中、<script> より前）で訳すところ。実行時の translateStatic と同じ規則:
 # 子要素が「id のない b・small・em・i・br・span」だけの要素は innerHTML まるごと、
-# それ以外は直下のテキストを1つずつ。属性は aria-label・title・placeholder。
+# それ以外は直下のテキストを1つずつ。属性は aria-label・title・placeholder。translate="no" の要素は訳さない。
 INLINE = {"b", "small", "em", "i", "br", "span", "strong"}
 VOID = {"br", "img", "input", "meta", "link", "hr"}
 
@@ -209,7 +209,7 @@ def html_keys(html: str):
             v = n.attrs.get(k)
             if v and JP.search(v):
                 keys.append(v.strip())
-        if n.tag in ("script", "style"):
+        if n.tag in ("script", "style") or n.attrs.get("translate") == "no":
             return
         if n.tag != "#root" and JP.search(_text(n)) and _all_inline(n) and any(not isinstance(c, str) for c in n.children):
             keys.append(" ".join(_inner(n).split()))

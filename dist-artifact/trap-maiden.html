@@ -161,6 +161,16 @@ body.pboard #cv{aspect-ratio:9/14}
 .stg.lock{opacity:.45;cursor:not-allowed}
 .stg.lock span{color:var(--muted)}
 .stg:not(.lock):hover{border-color:var(--gold-hi)}
+.setrow{display:grid;grid-template-columns:minmax(7em,auto) 1fr auto;align-items:center;gap:6px 12px;padding:10px 0;border-bottom:1px solid rgba(125,95,34,.35)}
+.setrow label,.setrow>span{font:800 14px var(--f-display);color:#5a1e2c}
+.setrow input[type=range]{width:100%;accent-color:#7d5f22}
+.setrow b{min-width:2em;text-align:right;font:800 16px var(--f-display);font-variant-numeric:tabular-nums}
+.setbtns{grid-column:2 / 4;display:flex;flex-wrap:wrap;gap:6px}
+.setbtns .btn[aria-pressed="true"]{outline:2px solid #5a1e2c;outline-offset:1px}
+.credits{margin:8px 0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+.credits dt{font:800 13px var(--f-display);color:#5a1e2c}
+.credits dd{margin:0}
+@media (max-width:480px){.setrow{grid-template-columns:1fr auto}.setrow input[type=range]{grid-column:1 / 3;grid-row:2}.setrow b{grid-column:2;grid-row:1}.setbtns{grid-column:1 / 3}.credits{grid-template-columns:1fr}.credits dd{margin-bottom:6px}}
 .achlist{list-style:none;margin:8px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
 .achlist li{padding:8px 10px;background:var(--stone);border:1px solid rgba(125,95,34,.5);border-radius:2px;color:var(--muted);display:grid;gap:2px}
 .achlist li b{font:800 14px var(--f-display);color:var(--muted)}
@@ -419,7 +429,7 @@ body.pboard #cv{aspect-ratio:9/14}
           <img class="kv" id="kvTitle" alt="" hidden>
           <h2>トラップオブリリー</h2>
           <p>夜になると、古い館に侵入者がやって来る。館に暮らす少女たちは剣を持てず、逃げ回ることしかできない。あなたは館の罠を操って、彼女たちを守ろう。</p>          <div class="modes"><button class="btn" id="btnStage" type="button">ステージ（全40）</button> <button class="btn" id="btnStart" type="button">チャレンジ（全10夜）</button></div>
-          <div class="modes"><button class="btn sub" id="btnEdit" type="button">エディット（部屋を作る）</button> <button class="btn sub" id="btnAch" type="button">実績</button> <button class="btn sub" id="btnHowto" type="button">遊び方を見る</button> <button class="btn sub" id="btnLang" type="button" lang="en">English</button></div>
+          <div class="modes"><button class="btn sub" id="btnEdit" type="button">エディット（部屋を作る）</button> <button class="btn sub" id="btnAch" type="button">実績</button> <button class="btn sub" id="btnHowto" type="button">遊び方を見る</button> <button class="btn sub" id="btnSettings" type="button">設定</button> <button class="btn sub" id="btnLang" type="button" lang="en">English</button></div>
           <ul>
             <li><b>ステージ</b>は1つが1夜。クリアすると次が開き、全40ステージ・8つの部屋。<b>チャレンジ</b>は全10夜を続けて守り、ハイスコアを競う。<b>エディット</b>では自分で部屋を作って試せる</li>
             <li>始める前に、逃げる子を4人から1人、持っていく罠を11種類から4つ選ぶ。逃げる子はそれぞれ得意な罠を1つ持ち、その罠がとても強くなる（罠ボタンの★）</li>
@@ -531,8 +541,35 @@ body.pboard #cv{aspect-ratio:9/14}
         </div>
       </div>
 
+      <div class="overlay" id="ovSettings" hidden>
+        <div class="panel">
+          <h2>設定</h2>
+          <div class="setrow"><label for="volBgm">音楽の音量</label><input type="range" id="volBgm" min="0" max="10" step="1"><b id="volBgmV"></b></div>
+          <div class="setrow"><label for="volSfx">効果音の音量</label><input type="range" id="volSfx" min="0" max="10" step="1"><b id="volSfxV"></b></div>
+          <div class="setrow"><span>言語</span><div class="setbtns"><button class="btn sub" id="btnLangJa" type="button" lang="ja" translate="no">日本語</button><button class="btn sub" id="btnLangEn" type="button" lang="en">English</button></div></div>
+          <div class="setrow" id="setFullRow" hidden><span>画面</span><div class="setbtns"><button class="btn sub" id="btnSetFull" type="button">全画面の切り替え</button></div></div>
+          <div class="setrow" id="setQuitRow" hidden><span>ゲーム</span><div class="setbtns"><button class="btn sub" id="btnQuit" type="button">ゲームを終了する</button></div></div>
+          <div class="selnav"><button class="btn sub" id="btnSetBack" type="button">◀ 戻る</button><button class="btn sub" id="btnCredits" type="button">クレジット</button></div>
+        </div>
+      </div>
+
+      <div class="overlay" id="ovCredits" hidden>
+        <div class="panel">
+          <h2>クレジット</h2>
+          <dl class="credits">
+            <dt>企画・制作</dt><dd id="crAuthor" translate="no">峻</dd>
+            <dt>イラスト・ドット絵・エフェクト</dt><dd>ChatGPT（OpenAI）で生成し、手で調整</dd>
+            <dt>音楽</dt><dd>Gemini（Google）で生成</dd>
+            <dt>効果音</dt><dd>ゲームの中で合成（Web Audio）</dd>
+            <dt>プログラム</dt><dd>Claude（Anthropic）と制作</dd>
+            <dt>フォント</dt><dd>Shippori Mincho B1 — Copyright 2021 The Shippori Mincho Project Authors<br>Zen Maru Gothic — Copyright 2021 The Zen Maru Gothic Project Authors<br>どちらも SIL Open Font License 1.1（openfontlicense.org）</dd>
+          </dl>
+          <div class="selnav"><button class="btn sub" id="btnCreditsBack" type="button">◀ 戻る</button><span></span></div>
+        </div>
+      </div>
+
       <div class="overlay" id="ovPause" hidden>
-        <div class="panel"><h2>一時停止中</h2><p>侵入者も足を止めている。</p><button class="btn" id="btnResume" type="button">再開する</button></div>
+        <div class="panel"><h2>一時停止中</h2><p>侵入者も足を止めている。</p><button class="btn" id="btnResume" type="button">再開する</button> <button class="btn sub" id="btnPauseSet" type="button">設定</button></div>
       </div>
     </div>
   </div>
@@ -1014,14 +1051,36 @@ window.TRAP_EN = {
  "扉（{0},{1}）から開始位置へ歩けません": "Can't walk from the door ({0},{1}) to the start",
  "この画面では全画面にできない。スマホを横にすると盤面が大きくなる": "Fullscreen isn't available here. Turn your phone sideways for a bigger board",
  "全画面を終了": "Exit fullscreen",
- "音: 切": "Sound: Off"
+ "音: 切": "Sound: Off",
+ "設定": "Settings",
+ "音楽の音量": "Music volume",
+ "効果音の音量": "Sound effects",
+ "言語": "Language",
+ "画面": "Display",
+ "全画面の切り替え": "Toggle fullscreen",
+ "ゲーム": "Game",
+ "ゲームを終了する": "Quit game",
+ "クレジット": "Credits",
+ "企画・制作": "Created by",
+ "イラスト・ドット絵・エフェクト": "Illustrations, pixel art & effects",
+ "ChatGPT（OpenAI）で生成し、手で調整": "Generated with ChatGPT (OpenAI), then adjusted by hand",
+ "音楽": "Music",
+ "Gemini（Google）で生成": "Generated with Gemini (Google)",
+ "効果音": "Sound effects",
+ "ゲームの中で合成（Web Audio）": "Synthesized in the game (Web Audio)",
+ "プログラム": "Programming",
+ "Claude（Anthropic）と制作": "Made with Claude (Anthropic)",
+ "フォント": "Fonts",
+ "Shippori Mincho B1 — Copyright 2021 The Shippori Mincho Project Authors<br>Zen Maru Gothic — Copyright 2021 The Zen Maru Gothic Project Authors<br>どちらも SIL Open Font License 1.1（openfontlicense.org）": "Shippori Mincho B1 — Copyright 2021 The Shippori Mincho Project Authors<br>Zen Maru Gothic — Copyright 2021 The Zen Maru Gothic Project Authors<br>Both under the SIL Open Font License 1.1 (openfontlicense.org)"
 };
 </script>
 <script>
 (() => {
 // 言語: 日本語（元の文言）と英語。端末の設定で決め、タイトルの切り替えボタンで変えられる（端末に保存）。
 // ゲームの文言は $t`…` で書き、英語のときは src/lang/en.js の訳に置き換える。${} の値は訳では {0} {1} … で入る
-const LANG = (() => { try { const v = localStorage.getItem('trapoflily-lang'); if (v === 'ja' || v === 'en') return v; } catch (e) {} return /^ja\b/i.test(navigator.language || 'ja') ? 'ja' : 'en'; })();
+// host はストア版（Electron。desktop/preload.js）が渡す窓口。ブラウザでは null
+const host = window.trapHost || null;
+const LANG = (() => { try { const v = localStorage.getItem('trapoflily-lang'); if (v === 'ja' || v === 'en') return v; } catch (e) {} const l = (host && host.lang) || navigator.language || 'ja'; return /^ja\b|^japanese$/i.test(l) ? 'ja' : 'en'; })();
 const EN = window.TRAP_EN || {};
 const missing = new Set();
 function $t(parts, ...vals) {
@@ -1041,7 +1100,7 @@ function translateStatic() {
   const tr = k => { k = k.replace(/\s+/g, ' ').trim(); if (EN[k] != null) return EN[k]; missing.add(k); return null; };
   const walk = el => {
     for (const a of ['aria-label', 'title', 'placeholder']) { const v = el.getAttribute(a); if (v && JP.test(v)) { const e = tr(v); if (e != null) el.setAttribute(a, e); } }
-    if (/^(SCRIPT|STYLE)$/.test(el.tagName)) return;
+    if (/^(SCRIPT|STYLE)$/.test(el.tagName) || el.getAttribute('translate') === 'no') return; // translate="no" は訳さない（言語名・人名）
     if (el.children.length && JP.test(el.textContent) && inlineOnly(el)) { const e = tr(el.innerHTML); if (e != null) el.innerHTML = e; return; }
     for (const n of [...el.childNodes]) {
       if (n.nodeType === 3 && JP.test(n.nodeValue)) { const e = tr(n.nodeValue); if (e != null) n.nodeValue = (/^\s/.test(n.nodeValue) ? ' ' : '') + e + (/\s$/.test(n.nodeValue) ? ' ' : ''); }
@@ -1353,6 +1412,8 @@ G = makeRun('title');
 
 // ---------- 音 ----------
 let AC = null, soundOn = true, noiseBuf = null;
+// 音量の設定（0〜10、端末に保存）
+const vol = (() => { try { const v = JSON.parse(localStorage.getItem('trapoflily-vol') || 'null'); if (v && v.bgm >= 0 && v.sfx >= 0) return { bgm: Math.min(10, v.bgm), sfx: Math.min(10, v.sfx) }; } catch (e) {} return { bgm: 10, sfx: 10 }; })();
 function audio() {
   if (!AC) {
     try {
@@ -1365,20 +1426,21 @@ function audio() {
   return AC;
 }
 // すべての音はここを通す（少しだけ館の残響を足す）
-let master = null, verb = null;
+let master = null, verb = null, sfxBus = null;
 function bus() {
   const a = audio(); if (!a || !soundOn) return null;
   if (!master) {
-    master = a.createGain(); master.gain.value = .9; master.connect(a.destination);
+    master = a.createGain(); master.gain.value = soundOn ? .9 : 0; master.connect(a.destination);
+    sfxBus = a.createGain(); sfxBus.gain.value = vol.sfx / 10; sfxBus.connect(master); // 効果音の音量（設定）
     verb = a.createConvolver();
     const len = Math.floor(a.sampleRate * 1.4), ir = a.createBuffer(2, len, a.sampleRate);
     for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
     verb.buffer = ir;
-    const wet = a.createGain(); wet.gain.value = .22; verb.connect(wet).connect(master);
+    const wet = a.createGain(); wet.gain.value = .22; verb.connect(wet).connect(sfxBus);
   }
   return a;
 }
-function send(node, wet) { node.connect(master); if (wet) node.connect(verb); }
+function send(node, wet) { node.connect(sfxBus); if (wet) node.connect(verb); }
 
 // ---------- BGM（Gemini に作ってもらった曲。ビルドで data URI に埋め込む） ----------
 const BGM = {
@@ -1392,7 +1454,7 @@ let bgmBus = null, bgmKey = null, bgmVoice = null, bgmTimer = 0;
 function bgmOut() {
   const a = audio(); if (!a) return null;
   if (!master) { const on = soundOn; soundOn = true; bus(); soundOn = on; if (!on) master.gain.value = 0; }
-  if (!bgmBus) { bgmBus = a.createGain(); bgmBus.gain.value = BGM_VOL; bgmBus.connect(master); }
+  if (!bgmBus) { bgmBus = a.createGain(); bgmBus.gain.value = BGM_VOL * vol.bgm / 10; bgmBus.connect(master); }
   return a;
 }
 function bgmLoad(key) { // data URI を自前でほどいて decodeAudioData（fetch を使わない）
@@ -1950,6 +2012,7 @@ function achieve(id) {
   const a = ACH.find(x => x.id === id); if (!a) return;
   achSaved[id] = new Date().toISOString().slice(0, 10);
   try { localStorage.setItem('trapoflily-ach', JSON.stringify(achSaved)); } catch (e) {}
+  host && host.achieve && host.achieve(id);
   toast($t`実績「${a.name}」`, a.desc); sfx.dawn();
 }
 function addStat(k, n = 1) { // 何回も遊んで積み上がる数（実績用）
@@ -3203,7 +3266,7 @@ buildPalette();
 
 // ---------- 画面切り替え ----------
 const stage = $('#stage');
-const OVS = ['ovTitle', 'ovSelect', 'ovHelp', 'ovShop', 'ovOver', 'ovPause', 'ovStages', 'ovAch'];
+const OVS = ['ovTitle', 'ovSelect', 'ovHelp', 'ovShop', 'ovOver', 'ovPause', 'ovStages', 'ovAch', 'ovSettings', 'ovCredits'];
 function showOv(id) {
   OVS.forEach(o => $('#' + o).hidden = o !== id);
   stage.classList.toggle('has-ov', !!id);
@@ -3639,6 +3702,34 @@ $('#btnFull').addEventListener('click', async () => {
   } catch (e) { say($t`この画面では全画面にできない。スマホを横にすると盤面が大きくなる`); }
 });
 document.addEventListener('fullscreenchange', () => { $('#btnFull').textContent = document.fullscreenElement ? $t`全画面を終了` : $t`全画面`; });
+// 設定（音量・言語・全画面・終了）とクレジット。開いた画面（タイトルか一時停止）へ戻る
+let setBack = 'ovTitle';
+function openSettings(from) {
+  setBack = from;
+  for (const k of ['bgm', 'sfx']) { const K = k[0].toUpperCase() + k.slice(1); $('#vol' + K).value = vol[k]; $('#vol' + K + 'V').textContent = vol[k]; }
+  $('#btnLangJa').setAttribute('aria-pressed', LANG === 'ja'); $('#btnLangEn').setAttribute('aria-pressed', LANG === 'en');
+  $('#setQuitRow').hidden = !(host && host.quit); $('#setFullRow').hidden = !(host && host.toggleFullscreen);
+  showOv('ovSettings');
+}
+for (const k of ['bgm', 'sfx']) {
+  const K = k[0].toUpperCase() + k.slice(1);
+  $('#vol' + K).addEventListener('input', e => {
+    vol[k] = +e.target.value; $('#vol' + K + 'V').textContent = vol[k];
+    try { localStorage.setItem('trapoflily-vol', JSON.stringify(vol)); } catch (err) {}
+    if (k === 'bgm' && bgmBus) bgmBus.gain.value = BGM_VOL * vol.bgm / 10;
+    if (k === 'sfx') { if (sfxBus) sfxBus.gain.value = vol.sfx / 10; sfx.place(); }
+  });
+}
+const setLang = l => { if (l === LANG) return; try { localStorage.setItem('trapoflily-lang', l); } catch (e) {} location.reload(); };
+$('#btnLangJa').addEventListener('click', () => setLang('ja'));
+$('#btnLangEn').addEventListener('click', () => setLang('en'));
+$('#btnSettings').addEventListener('click', () => { audio(); openSettings('ovTitle'); });
+$('#btnPauseSet').addEventListener('click', () => openSettings('ovPause'));
+$('#btnSetBack').addEventListener('click', () => showOv(setBack));
+$('#btnCredits').addEventListener('click', () => showOv('ovCredits'));
+$('#btnCreditsBack').addEventListener('click', () => showOv('ovSettings'));
+$('#btnSetFull').addEventListener('click', () => host.toggleFullscreen());
+$('#btnQuit').addEventListener('click', () => host.quit());
 // 言語の切り替え: 保存して読み込み直す（文言は起動時に決まるため）
 $('#btnLang').textContent = LANG === 'en' ? '日本語' : 'English'; $('#btnLang').lang = LANG === 'en' ? 'ja' : 'en';
 $('#btnLang').addEventListener('click', () => { try { localStorage.setItem('trapoflily-lang', LANG === 'en' ? 'ja' : 'en'); } catch (e) {} location.reload(); });

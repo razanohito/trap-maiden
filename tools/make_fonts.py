@@ -26,7 +26,7 @@ LICENSES = {"OFL-ShipporiMinchoB1.txt": "shipporiminchob1/OFL.txt", "OFL-ZenMaru
 
 
 def fetch(rel: str) -> Path:
-    p = SRC_DIR / Path(rel).name
+    p = SRC_DIR / rel.replace("/", "_")  # OFL.txt は書体ごとに同じ名前なのでフォルダ名を付ける
     if not p.exists():
         SRC_DIR.mkdir(parents=True, exist_ok=True)
         print("取得:", rel)

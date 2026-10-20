@@ -22,7 +22,7 @@ const JP = /[぀-ヿ㐀-鿿ｦ-ﾟ]/;
         const vis = el => { for (let e = el; e && e !== document.body; e = e.parentElement) { const s = getComputedStyle(e); if (e.hidden || s.display === 'none' || s.visibility === 'hidden') return false; } return true; };
         const jp = [], over = [];
         const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        for (let n; (n = tw.nextNode());) if (JP.test(n.nodeValue) && n.parentElement.id !== 'btnLang' && vis(n.parentElement)) jp.push(n.nodeValue.trim().slice(0, 60));
+        for (let n; (n = tw.nextNode());) if (JP.test(n.nodeValue) && n.parentElement.id !== 'btnLang' && !n.parentElement.closest('[translate=no]') && vis(n.parentElement)) jp.push(n.nodeValue.trim().slice(0, 60));
         for (const el of document.querySelectorAll('button, .slot, .chips span, .stats span, h2, h3, .n, .t, .tag, .lv, .c, .d')) if (vis(el) && el.getBoundingClientRect().width > 0 && el.scrollWidth > el.clientWidth + 2 && getComputedStyle(el).overflowX !== 'visible') over.push((el.id || el.className) + ': ' + el.textContent.trim().slice(0, 40));
         for (const el of document.querySelectorAll('body *')) for (const ps of ['::before', '::after']) { const c = getComputedStyle(el, ps).content; if (c && JP.test(c) && vis(el)) jp.push(ps + ' ' + (el.className || el.tagName) + ' ' + c); }
         if (document.documentElement.scrollWidth > innerWidth + 1) over.push('ページの横幅 ' + document.documentElement.scrollWidth);
@@ -39,6 +39,10 @@ const JP = /[぀-ヿ㐀-鿿ｦ-ﾟ]/;
     // ステージ選択・実績
     await p.click('#btnStage'); await shot('stages'); await p.click('#btnStagesBack');
     await p.click('#btnAch'); await shot('ach'); await p.click('#btnAchBack');
+    // 設定・クレジット（音量を変えると保存される）
+    await p.click('#btnSettings'); await p.fill('#volBgm', '4'); await p.dispatchEvent('#volBgm', 'input'); await shot('settings');
+    result.音量の保存 = await p.evaluate(() => localStorage.getItem('trapoflily-vol'));
+    await p.click('#btnCredits'); await shot('credits'); await p.click('#btnCreditsBack'); await p.click('#btnSetBack');
     // 支度（チャレンジ）
     await p.click('#btnStart'); await shot('select1');
     await p.click('#btnNext1'); await shot('select2');
@@ -63,6 +67,7 @@ const JP = /[぀-ヿ㐀-鿿ｦ-ﾟ]/;
     await p.goto('http://127.0.0.1:8766/' + page);
     await p.evaluate(() => { const A = window.__wanakan.api; A.setRun('challenge', 1); A.startRun('noel', ['ice', 'spring', 'blade', 'bell']); window.__wanakan.G.intro = null; });
     await p.keyboard.press('p'); await shot('pause');
+    await p.click('#btnPauseSet'); await shot('pausesettings'); await p.click('#btnSetBack'); result.一時停止へ戻る = await p.evaluate(() => !document.getElementById('ovPause').hidden);
     result.訳のない文言 = [...new Set([...(result.訳のない文言 || []), ...await p.evaluate(() => window.__wanakan.missing())])];
     result.言語 = await p.evaluate(() => window.__wanakan.lang + ' / html lang=' + document.documentElement.lang + ' / title=' + document.title);
     await p.context().close();
