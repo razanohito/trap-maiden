@@ -1,0 +1,75 @@
+{
+  "name": "trap-of-lily",
+  "productName": "Trap of Lily",
+  "version": "1.0.0",
+  "description": "Trap of Lily - protect the girls of the manor with traps",
+  "author": "razanohito",
+  "license": "UNLICENSED",
+  "private": true,
+  "repository": "github:razanohito/trap-maiden",
+  "main": "main.js",
+  "scripts": {
+    "prepare-game": "node prepare.js",
+    "start": "node prepare.js && electron .",
+    "dist": "node prepare.js && electron-builder --win --x64",
+    "dist:dir": "node prepare.js && electron-builder --win --x64 --dir"
+  },
+  "dependencies": {
+    "steamworks.js": "0.4.0"
+  },
+  "devDependencies": {
+    "electron": "44.9.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.razanohito.trapoflily",
+    "productName": "Trap of Lily",
+    "copyright": "Copyright (C) 2026 razanohito",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "steam.json",
+      "game/**/*",
+      "package.json",
+      "!node_modules/steamworks.js/dist/linux64/**",
+      "!node_modules/steamworks.js/dist/osx/**",
+      "!node_modules/steamworks.js/dist/win64/*.lib"
+    ],
+    "extraFiles": [
+      {
+        "from": "licenses",
+        "to": "licenses"
+      },
+      {
+        "from": "node_modules/steamworks.js/dist/win64/steam_api64.dll",
+        "to": "steam_api64.dll"
+      }
+    ],
+    "asarUnpack": [
+      "node_modules/steamworks.js/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "signExecutable": false,
+      "executableName": "TrapOfLily"
+    }
+  }
+}

@@ -163,6 +163,10 @@ body.pboard #cv{aspect-ratio:9/14}
 .stg.lock{opacity:.45;cursor:not-allowed}
 .stg.lock span{color:var(--muted)}
 .stg:not(.lock):hover{border-color:var(--gold-hi)}
+/* スクロールバーを館の色に（PC・ストア版で灰色のバーが浮かないように） */
+html{scrollbar-color:#7d5f22 #1d1722;scrollbar-width:thin}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#1d1722}::-webkit-scrollbar-thumb{background:#7d5f22;border-radius:5px;border:2px solid #1d1722}::-webkit-scrollbar-thumb:hover{background:#c9a24a}
+.panel::-webkit-scrollbar-track{background:rgba(58,40,25,.15)}.panel::-webkit-scrollbar-thumb{border-color:transparent;background-clip:padding-box}
 .setrow{display:grid;grid-template-columns:minmax(7em,auto) 1fr auto;align-items:center;gap:6px 12px;padding:10px 0;border-bottom:1px solid rgba(125,95,34,.35)}
 .setrow label,.setrow>span{font:800 14px var(--f-display);color:#5a1e2c}
 .setrow input[type=range]{width:100%;accent-color:#7d5f22}
@@ -2009,6 +2013,7 @@ const ACH = [
 ];
 let achSaved = {}, stats = {};
 try { achSaved = JSON.parse(localStorage.getItem('trapoflily-ach') || '{}') || {}; stats = JSON.parse(localStorage.getItem('trapoflily-stats') || '{}') || {}; } catch (e) {}
+if (host && host.achieve) for (const id in achSaved) host.achieve(id); // ストア版: 取った実績を Steam にも（取り済みなら何もしない）
 function achieve(id) {
   if (achSaved[id]) return;
   const a = ACH.find(x => x.id === id); if (!a) return;
