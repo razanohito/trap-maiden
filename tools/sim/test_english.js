@@ -45,8 +45,9 @@ const JP = /[぀-ヿ㐀-鿿ｦ-ﾟ]/;
     await p.click('#btnCredits'); await shot('credits'); await p.click('#btnCreditsBack'); await p.click('#btnSetBack');
     // 支度（チャレンジ）
     await p.click('#btnStart'); await shot('select1');
+    await p.click('.cpick.on'); await shot('select1sheet');
     await p.click('#btnNext1'); await shot('select2');
-    await p.click('#btnNext2'); await shot('select3');
+    await p.click('#pickt-ice'); await shot('select2sheet'); await p.click('#tsClose');
     await p.click('#btnBegin'); await p.waitForTimeout(600); await shot('intro');
     await p.evaluate(() => { const W = window.__wanakan; W.G.intro = null; }); await p.waitForTimeout(300); await shot('prep');
     // 罠を置いて、文言を出す
