@@ -21,6 +21,10 @@ def embed(m: re.Match) -> str:
     return f"'data:{mime};base64," + base64.b64encode(data).decode() + "'"
 
 
+# 英語の訳（src/lang/en.js）を中に書き込む
+en_js = (ROOT / "src" / "lang" / "en.js").read_text(encoding="utf-8")
+src = src.replace('<script src="lang/en.js"></script>', "<script>\n" + en_js.strip() + "\n</script>")
+
 src = re.sub(r"'\.\./art/([\w/-]+\.(?:webp|png|mp3|woff2))'", embed, src)
 
 (ROOT / "index.html").write_text('<!doctype html>\n<html lang="ja">\n' + src + "\n</html>\n", encoding="utf-8")

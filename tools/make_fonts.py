@@ -1,8 +1,8 @@
 """ゲームで使うフォント（Shippori Mincho B1・Zen Maru Gothic、どちらも SIL OFL）を、
-src/game.html に出てくる文字だけに絞って art/fonts/*.woff2 にする。
+src/game.html と src/lang/*.js（訳）に出てくる文字だけに絞って art/fonts/*.woff2 にする。
 
 ストアに出すアプリはオフラインでも動く必要があるので、Google Fonts から読み込まずに埋め込む。
-src/game.html の文言を増やしたら、このスクリプトをもう一度動かす（新しい漢字が入るように）。
+文言や訳を増やしたら、このスクリプトをもう一度動かす（新しい漢字が入るように）。
 
 元の TTF（1つ 4〜15MB）は art-src/fonts/ に置く。無ければ google/fonts から取ってくる。
 必要なもの: pip install fonttools brotli
@@ -35,6 +35,7 @@ def fetch(rel: str) -> Path:
 
 
 text = (ROOT / "src" / "game.html").read_text(encoding="utf-8")
+text += "".join(f.read_text(encoding="utf-8") for f in sorted((ROOT / "src" / "lang").glob("*.js")))  # 英語などの訳
 chars = set(text)
 chars |= {chr(c) for c in range(0x20, 0x7F)}      # 英数字・記号
 chars |= {chr(c) for c in range(0x3000, 0x3100)}  # 和文の記号・ひらがな・カタカナ
