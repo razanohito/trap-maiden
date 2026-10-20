@@ -21,6 +21,7 @@ const VPS = [['p', 393, 852, true], ['s', 320, 568, true], ['l', 852, 393, true]
         const skip = el => el.tagName === 'IMG' || el.closest('.ph, .cf-ph, .tart, .kv');
         const outside = el => { const rc = el.getBoundingClientRect(); return rc.width && rc.height && (rc.left < -1 || rc.top < -1 || rc.right > W + 1 || rc.bottom > H + 1); };
         if (panel) for (const el of panel.querySelectorAll('*')) { if (skip(el)) continue; const rc = el.getBoundingClientRect(); const pr = panel.getBoundingClientRect(); if (rc.height && el.offsetParent && (rc.bottom > pr.bottom + 1 || rc.right > pr.right + 1)) over.push(el.id || el.className || el.tagName); }
+        for (const el of document.querySelectorAll('#trapInfo, #charDetail, #helpText, .up, .confirm, .rbig, .result, .medals, .achlist')) { if (el.offsetParent && el.scrollHeight > el.clientHeight + 2 && getComputedStyle(el).overflowY !== 'visible') over.push('切れ:' + (el.id || el.className)); else if (el.offsetParent) for (const c of el.children) { if (c.classList.contains('cf-ph')) continue; if (c.offsetParent && c.scrollHeight > c.clientHeight + 2 && getComputedStyle(c).overflow === 'hidden') over.push('切れ:' + (c.id || c.className)); } }
         if (!ov) for (const el of document.querySelectorAll('#app .hud > .hrow *, #cv, .slot, .go, #editBar *, .dockhead')) { if (el.offsetParent && outside(el)) over.push(el.id || el.className || el.tagName); }
         return { docScroll: document.documentElement.scrollHeight > innerHeight + 1, panelScroll: panel ? panel.scrollHeight > panel.clientHeight + 1 : false, over: [...new Set(over)].slice(0, 4).join(' ') };
       });
@@ -45,6 +46,7 @@ const VPS = [['p', 393, 852, true], ['s', 320, 568, true], ['l', 852, 393, true]
     await p.evaluate(() => { window.__wanakan.G.state = 'title'; window.__wanakan.api.showAch(); }); await shot('ach');
     await p.evaluate(() => document.querySelector('#btnAchBack').click()); await click('#btnEdit'); await shot('edit');
     await p.evaluate(() => document.querySelector('#editBack').click()); await click('#btnHowto'); await shot('help');
+    for (let i = 1; i < 11; i++) { await click('#helpNext'); await shot('help' + (i + 1)); }
   }
   console.log(rows.join('\n'));
   console.log('pageerror:', errs.length ? errs : 'なし');

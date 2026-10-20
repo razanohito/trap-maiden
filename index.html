@@ -72,8 +72,8 @@ body.editing .editonly{display:flex}
 .back.light{color:var(--parch-dk)}
 .back.light:hover{color:var(--gold-hi)}
 .erow.acts #editClear{margin-right:auto}
-@media (orientation:landscape){body .etools{grid-template-columns:repeat(4,minmax(0,1fr))}body .etool{font-size:0;justify-content:center}body .etool::before{width:20px;height:20px}.erow{font-size:11px}}
-@media (orientation:landscape) and (max-height:420px){body .etool{min-height:34px}#editMsg{display:none}.editbar{gap:4px}}
+@media (orientation:landscape){body .etools{grid-template-columns:repeat(4,minmax(0,1fr))}body .etool{flex-direction:column;gap:2px;font-size:10px;justify-content:center;padding:4px 2px;min-height:44px}body .etool::before{width:18px;height:18px}.erow{font-size:11px}}
+@media (orientation:landscape) and (max-height:420px){body .etool{min-height:40px}#editMsg{display:none}.editbar{gap:4px}}
 /* 縦持ちの状態帯は 1 行に詰める（狭いときは魔力の数字を隠す） */
 /* PC の大きな画面: 帯と罠タイルを大きく */
 @media (orientation:landscape) and (min-width:1100px) and (min-height:650px){
@@ -168,10 +168,10 @@ body.editing .editonly{display:flex}
 .phead{display:flex;align-items:center;gap:10px;min-height:44px;flex:none;padding-left:16px}
 .phead:has(> .back:not([hidden])){padding-left:12px}
 @media (orientation:portrait) and (max-width:480px){#ovSelect .phead .meta{display:none}}
-@media (max-height:450px){.chardetail .chips{display:none}.chardetail .d{display:none}}
+@media (max-height:450px){#charDetail .chips,#charDetail .d,#charDetail .ln.fav canvas{display:none}#ovSelect .charsel{grid-template-columns:minmax(0,.8fr) minmax(0,1fr)}#charDetail{padding:6px 10px;gap:4px}#charDetail .hd b{font-size:16px}#charDetail .ln{font-size:11.5px;line-height:1.35}}
 @media (orientation:portrait){.charsel{grid-template-rows:minmax(150px,1fr) minmax(0,auto)}}
 @media (orientation:portrait) and (max-width:360px){#charGrid{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}#ovSelect .charsel{grid-template-rows:minmax(0,.8fr) minmax(0,1fr)}#ovSelect .cpick{min-height:0}#ovSelect .cpick .fv span{display:none}#ovSelect .chardetail .d,#ovSelect .chardetail .chips{display:none}#ovSelect .cpick .n{font-size:12px}}
-@media (max-width:360px){.cpick .fv{display:none}.pick .n{font-size:11px}.trapinfo p{font-size:12px}}
+@media (max-width:360px){#ovHelp #helpText{font-size:12px;line-height:1.5}#ovHelp canvas{max-height:calc(100% - 230px)}.cpick .fv{display:none}.pick .n{font-size:11px}.pick .t{display:none}.pick canvas{width:26px;height:26px}.pick{padding:4px 2px}.trapinfo{padding:6px 8px;gap:3px}.trapinfo canvas{width:30px;height:30px}.trapinfo p{font-size:12px;line-height:1.45}#favHint{display:none}}
 .phead h2{margin:0;font:800 clamp(18px,3.4vmin,26px) var(--f-display);color:#5a1e2c;letter-spacing:.06em}
 .phead .meta{margin-left:auto;font:700 12px var(--f-body);color:var(--ink-soft);white-space:nowrap}
 .pbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
@@ -226,7 +226,7 @@ body.editing .editonly{display:flex}
 .stg{position:relative;aspect-ratio:1;max-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;cursor:pointer;border-radius:50%;
   background:radial-gradient(circle at 40% 30%,#4f4258,#231b29 70%);border:2px solid var(--gold);box-shadow:0 0 0 3px rgba(0,0,0,.35),inset 0 0 0 3px rgba(0,0,0,.35),0 4px 0 #000;color:var(--parch)}
 .stg b{font:800 clamp(18px,4vmin,28px)/1 var(--f-display);color:var(--gold-hi)}
-.stg span{font-size:clamp(12px,1.9vmin,14px);color:#ffd27a;letter-spacing:.04em;line-height:1.2}
+.stg span{white-space:nowrap;font-size:clamp(11px,1.9vmin,14px);color:#ffd27a;letter-spacing:.04em;line-height:1.2}
 .stg.boss{border-color:#d0503f}
 .stg.boss::after{content:"手ごわい";position:absolute;bottom:-6px;font:700 10px var(--f-body);color:#fff;background:var(--wax);padding:0 6px;border-radius:6px}
 .stg.lock{opacity:.4;cursor:not-allowed;border-color:var(--ink-soft)}
@@ -350,7 +350,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 /* ---------- ショップ・実績 ---------- */
 .soulpill{font:800 15px var(--f-display);color:#4a3f6e;margin-left:auto}
 .shopgrid{flex:1;min-height:0;max-height:380px;width:100%;align-self:center;margin:auto 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:10px}
-@media (orientation:portrait){.shopgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (orientation:portrait){.shopgrid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;max-height:none;align-content:center}.up{max-height:none}}
 .up{display:flex;flex-direction:column;justify-content:center;gap:4px;max-height:180px;min-height:0;padding:8px 10px;cursor:pointer;text-align:left;border-radius:6px;color:var(--parch);
   background:linear-gradient(180deg,var(--iron-hi),var(--iron));border:1px solid rgba(201,162,74,.45)}
 .up:hover:not(:disabled){border-color:var(--gold-hi)}
@@ -374,6 +374,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 /* ---------- 遊び方・一時停止 ---------- */
 .howto canvas{display:block;width:100%;max-width:560px;max-height:calc(100% - 150px);height:auto;aspect-ratio:2/1;object-fit:contain;margin:0 auto;background:#1c1720;border:1px solid var(--gold-dk)}
 .howto #helpText{margin:0;font-size:13.5px;line-height:1.65;flex:1;min-height:0;overflow:hidden}
+@media (orientation:landscape) and (max-height:620px){.panel.howto{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;gap:8px 14px}.howto .phead,.howto .nav{grid-column:1/-1}.howto canvas{max-height:100%;align-self:center}#helpText{align-self:center}}
 .howto .nav{flex:none;display:flex;gap:8px;align-items:center;justify-content:space-between}
 .howto .dots{display:flex;gap:5px}
 .howto .dots i{width:8px;height:8px;transform:rotate(45deg);background:rgba(58,40,25,.25)}
@@ -3155,7 +3156,7 @@ $('#btnResume').addEventListener('click', () => setPause(false));
 $('#btnGo').addEventListener('click', beginDefense);
 $('#btnPause').addEventListener('click', () => setPause(!paused));
 $('#btnQuit').addEventListener('click', () => {
-  const bt = $('#btnQuit'); if (!bt.dataset.sure) { bt.dataset.sure = 1; bt.textContent = 'もう一度押すとやめる（記録は残らない）'; setTimeout(() => { delete bt.dataset.sure; bt.textContent = 'やめてタイトルへ'; }, 2500); return; }
+  const bt = $('#btnQuit'); if (!bt.dataset.sure) { bt.dataset.sure = 1; bt.textContent = 'もう一度押すとやめる'; setTimeout(() => { delete bt.dataset.sure; bt.textContent = 'やめてタイトルへ'; }, 2500); return; }
   delete bt.dataset.sure; bt.textContent = 'やめてタイトルへ'; paused = false; closeEditor(); G = makeRun('title'); showOv('ovTitle'); });
 // 全画面（Android などでは横向きに固定する。できない環境ではボタンを出さない）
 if (document.fullscreenEnabled) $('#btnFull').hidden = false;
