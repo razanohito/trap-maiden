@@ -2,7 +2,7 @@
 <html lang="ja">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>罠館のリリィ</title>
+<title>トラップオブリリー</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,6 +56,7 @@ body{
 .frame::after{top:auto;bottom:-6px}
 .stage{position:relative;border:2px solid #000;background:#000;overflow:hidden}
 #cv{display:block;width:100%;height:auto;aspect-ratio:14/9;touch-action:none;cursor:pointer}
+body.pboard #cv{aspect-ratio:9/14}
 .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(14,10,16,.78);backdrop-filter:blur(2px);overflow-y:auto}
 .panel{position:relative;width:min(560px,100%);max-height:100%;overflow-y:auto;color:var(--parch-ink);padding:18px 22px;
   background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.35),transparent 60%),linear-gradient(180deg,var(--parch),var(--parch-dk));
@@ -146,6 +147,39 @@ body{
 .chardetail .ln.fl .tag{background:#c9b8ff;color:#241c33}
 .chardetail .ln.fl b{color:#d9ccff}
 .chardetail .warn{font-size:13px;color:#ffb3a0}
+.modes{display:flex;flex-wrap:wrap;gap:6px 8px;margin:6px 0}
+.modes .btn{margin-top:0}
+.selmode{font:700 13px var(--f-body);color:#7d5f22;margin-left:8px;letter-spacing:0}
+.stagegrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.stageh{grid-column:1/-1;margin:8px 0 0;font:800 15px var(--f-display);color:#5a1e2c;display:flex;gap:10px;align-items:baseline;border-bottom:1px solid rgba(125,95,34,.4)}
+.stageh span{font:700 12px var(--f-body);color:var(--parch-ink)}
+.stg{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;cursor:pointer;background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;color:var(--parch);font-family:var(--f-body)}
+.stg b{font:800 20px var(--f-display);color:var(--gold-hi)}
+.stg span{font-size:12px;color:#ffd27a;letter-spacing:.05em}
+.stg.boss{box-shadow:inset 0 0 0 1px rgba(208,80,63,.7)}
+.stg.done{background:linear-gradient(180deg,#4a3c2a,#2f2620)}
+.stg.lock{opacity:.45;cursor:not-allowed}
+.stg.lock span{color:var(--muted)}
+.stg:not(.lock):hover{border-color:var(--gold-hi)}
+.achlist{list-style:none;margin:8px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.achlist li{padding:8px 10px;background:var(--stone);border:1px solid rgba(125,95,34,.5);border-radius:2px;color:var(--muted);display:grid;gap:2px}
+.achlist li b{font:800 14px var(--f-display);color:var(--muted)}
+.achlist li span{font-size:12px}
+.achlist li i{font-style:normal;font-size:11px;color:#c9b8ff}
+.achlist li.on{border-color:var(--gold-hi);color:var(--parch)}
+.achlist li.on b{color:var(--gold-hi)}
+.toast{position:fixed;left:50%;top:10px;z-index:60;transform:translate(-50%,-140%);transition:transform .35s;display:grid;gap:2px;min-width:220px;max-width:92vw;padding:10px 16px;background:linear-gradient(180deg,#3a2c1e,#241a12);border:1px solid var(--gold-hi);box-shadow:0 6px 20px rgba(0,0,0,.5);color:var(--parch);text-align:center;pointer-events:none}
+.toast.on{transform:translate(-50%,0)}
+.toast b{font:800 15px var(--f-display);color:var(--gold-hi)}
+.toast span{font-size:12px}
+.editbar{margin:8px 0 0;display:grid;gap:6px}
+.etools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.etool{padding:7px 4px;cursor:pointer;background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;color:var(--parch);font:700 13px var(--f-body)}
+.etool.on{box-shadow:inset 0 0 0 2px var(--gold-hi);background:var(--stone-hi);color:var(--gold-hi)}
+.erow{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.erow .btn{margin-top:0}
+.erow label{font-size:13px;color:var(--parch)}
+.erow select{font:700 13px var(--f-body);padding:3px 6px}
 .selsteps{display:flex;gap:4px;list-style:none;margin:0 0 4px;padding:0;counter-reset:st}
 .selsteps li{counter-increment:st;flex:1;text-align:center;font:700 12px var(--f-body);color:rgba(58,40,25,.55);padding:4px 2px;border-bottom:3px solid rgba(58,40,25,.18)}
 .selsteps li::before{content:counter(st) " ";font-family:var(--f-display)}
@@ -173,6 +207,7 @@ body{
 .confirm .fvline{margin:8px 0 0;font-size:13px;line-height:1.6}
 .confirm .fvline b{color:var(--gold-hi)}
 .confirm .fvline.warn{color:#ffb3a0}
+.pick .aff{font-size:11px;color:#ffb38a;line-height:1.4}
 .pick .fvb{position:absolute;top:-1px;left:-1px;font:700 9px var(--f-body);color:var(--ink);background:var(--gold-hi);padding:1px 6px;border-radius:2px}
 .pick.favt{border-color:var(--gold-hi)}
 .pick .row>div{min-width:0}
@@ -222,6 +257,10 @@ body{
   .slot .n{font-size:11px}
   .slot .k,.slot .ds{display:none}
   .trapgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stagegrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+  .stg{padding:6px 2px}
+  .stg b{font-size:16px}
+  .stg span{font-size:10px}
   .confirm{grid-template-columns:1fr;padding:10px}
   .confirm .cf-ph{width:min(200px,70%);margin:0 auto}
   .confirm li b{font-size:13px}
@@ -279,6 +318,22 @@ body{
   body.playing .palette{margin-inline:2px}
   body.playing .rotate{order:9}
   body.playing #btnGo{margin-inline:4px;width:auto}
+  /* 縦長の盤面: 高さに収まる幅にして、罠ボタンまで1画面に入れる */
+  body.playing.pboard .frame{width:min(100%,calc((var(--vh,100dvh) - var(--chromeH,262px)) * 9 / 14 + 8px));margin-inline:auto}
+  body.playing.pboard .rotate{display:none}
+  body.playing.pboard .head h1{display:none}
+  body.playing.pboard .head{padding:0;justify-content:flex-end}
+  body.playing.pboard .tool{padding:3px 8px;font-size:12px}
+  body.playing.pboard .hud{padding:3px 8px;gap:0 8px}
+  body.playing.pboard .hearts{font-size:13px}
+  body.playing.pboard .mana .lbl{display:none}
+  body.playing.pboard .stats{font-size:10px;gap:0 6px}
+  body.playing.pboard .stats b{font-size:12px}
+  body.playing.pboard #btnGo{font-size:13px;padding:6px 8px}
+  body.playing.pboard .slot{padding:2px 2px 3px}
+  body.playing.pboard .slot canvas{width:30px;height:30px}
+  body.playing.pboard .slot .c{font-size:10px}
+  body.playing.pboard .head{margin-bottom:0}
   body.playing #ovHelp,body.playing #ovPause{position:fixed;inset:0;z-index:20;background:rgba(14,10,16,.94);overflow-y:auto;align-items:flex-start;padding:12px max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
   body.playing #ovHelp .panel,body.playing #ovPause .panel{max-height:none}
 }
@@ -307,6 +362,10 @@ body{
   body.playing .stats{font-size:9px;gap:0 6px}
   body.playing .stats b{font-size:11px}
   body.playing #btnGo{grid-column:2;grid-row:3;font-size:12px;padding:5px 6px;white-space:normal}
+  body.playing .editbar{grid-column:2;grid-row:3/5;align-content:start;margin:0}
+  body.playing .etools{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.playing .etool{padding:4px 2px;font-size:11px}
+  body.playing .erow .btn{font-size:11px;padding:5px 8px}
   body.playing .palette{grid-column:2;grid-row:4;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
   body.playing .slot{padding:2px 2px 3px}
   body.playing .slot canvas{width:clamp(26px,calc(var(--vh,100dvh) * .09),40px);height:clamp(26px,calc(var(--vh,100dvh) * .09),40px)}
@@ -320,9 +379,10 @@ body{
 }
 </style>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <main class="wrap">
   <header class="head">
-    <h1><small>TRAP MAIDEN</small>罠館のリリィ</h1>
+    <h1><small>TRAP OF LILY</small>トラップオブリリー</h1>
     <div class="tools">
       <button class="tool" id="btnHelp" type="button">遊び方</button>
       <button class="tool" id="btnFull" type="button" hidden>全画面</button>
@@ -335,7 +395,7 @@ body{
     <div class="hearts" id="hearts" aria-label="体力"></div>
     <div class="mana"><span class="lbl">魔力</span><div class="bar" id="manaBar"><i id="manaFill"></i></div><b id="manaText">100/100</b></div>
     <div class="stats">
-      <span>第<b id="sWave">1</b>夜<small>／全10夜</small></span>
+      <span id="sWaveBox">第<b id="sWave">1</b>夜<small>／全10夜</small></span>
       <span><b id="sPhase">準備</b></span>
       <span>夜明けまで <b id="sTime">–</b></span>
       <span>得点 <b id="sScore">0</b></span>
@@ -352,10 +412,12 @@ body{
       <div class="overlay" id="ovTitle">
         <div class="panel">
           <img class="kv" id="kvTitle" alt="" hidden>
-          <h2>罠館のリリィ</h2>
-          <p>夜になると、古い館に侵入者がやって来る。館に暮らす少女たちは剣を持てず、逃げ回ることしかできない。あなたは館の罠を操って、彼女たちを守ろう。</p>          <button class="btn" id="btnStart" type="button">扉に鍵をかける（開始）</button> <button class="btn sub" id="btnHowto" type="button">遊び方を見る</button>
+          <h2>トラップオブリリー</h2>
+          <p>夜になると、古い館に侵入者がやって来る。館に暮らす少女たちは剣を持てず、逃げ回ることしかできない。あなたは館の罠を操って、彼女たちを守ろう。</p>          <div class="modes"><button class="btn" id="btnStage" type="button">ステージ（全40）</button> <button class="btn" id="btnStart" type="button">チャレンジ（全10夜）</button></div>
+          <div class="modes"><button class="btn sub" id="btnEdit" type="button">エディット（部屋を作る）</button> <button class="btn sub" id="btnAch" type="button">実績</button> <button class="btn sub" id="btnHowto" type="button">遊び方を見る</button></div>
           <ul>
-            <li>始める前に、逃げる子を4人から1人、持っていく罠を10種類から4つ選ぶ。逃げる子はそれぞれ得意な罠を1つ持ち、その罠がとても強くなる（罠ボタンの★）</li>
+            <li><b>ステージ</b>は1つが1夜。クリアすると次が開き、全40ステージ・8つの部屋。<b>チャレンジ</b>は全10夜を続けて守り、ハイスコアを競う。<b>エディット</b>では自分で部屋を作って試せる</li>
+            <li>始める前に、逃げる子を4人から1人、持っていく罠を11種類から4つ選ぶ。逃げる子はそれぞれ得意な罠を1つ持ち、その罠がとても強くなる（罠ボタンの★）</li>
             <li>逃げる子は自分で動く。あなたは罠を置くだけ</li>
             <li>かしこさが上がるほど上手に逃げ、罠の奥で待ち、侵入者を罠の上へ誘うようになる。慌てると混乱して走り回ることも</li>
             <li>魔力は時間で溜まる。罠を置くと減る</li>
@@ -365,6 +427,7 @@ body{
             <li>全10夜（約15分）。10夜目の夜明けを迎えたら、残りの体力をボーナスに足して得点が決まる。途中で捕まったら、その時点の得点で終わり</li>
             <li>館にはもともと仕掛けがある。トゲ床は踏んだ侵入者を傷つけ、奈落へ跳ね床で落とせば一撃。シャンデリアと槍の石像は押すと発動（魔力不要、使うと少し待つ）</li>
             <li>同じ罠をもう一度押すと撤去（魔力が半分戻る）。矢印のある罠は、置いた罠の上でフリック（ドラッグ）すると向きだけ変わる</li>
+            <li>置いてある罠の上に別の罠を置くと<b>合成</b>。2つの罠が1マスで続けて作動する。侵入者には罠ごとに<b>相性</b>があり、「効いた！」なら大ダメージ。床に出る<b>宝物</b>は逃げる子が拾うか、罠で取ると2倍</li>
             <li>1回で2体以上に当てると<b>ダブルヒット</b>、飛ばした侵入者を他の侵入者にぶつけると<b>玉突き</b>で得点アップ</li>
             <li>罠を3秒半以内に続けて当てると<b>連続</b>。続くほど得点と魂が増える。当たった侵入者はよろけて動くので、その先に罠を置くとつながる</li>
             <li>跳ね床で飛ばした先に罠があれば<b>連鎖</b>ボーナス</li>
@@ -377,7 +440,7 @@ body{
 
       <div class="overlay" id="ovSelect" hidden>
         <div class="panel wide">
-          <h2>今夜の支度</h2>
+          <h2>今夜の支度 <small class="selmode" id="selMode"></small></h2>
           <ol class="selsteps" id="selSteps"><li>逃げる子</li><li>罠を4つ</li><li>確かめる</li></ol>
           <section id="selStep1">
             <h3 class="selh">逃げる子を選ぶ</h3>
@@ -438,10 +501,28 @@ body{
             <div><span>追い打ち</span><b id="rOiuchi">0</b></div>
             <div><span>ダブルヒット</span><b id="rMulti">0</b></div>
             <div><span>玉突き</span><b id="rCrash">0</b></div>
+            <div><span>拾った宝物</span><b id="rItems">0</b></div>
             <div><span>プレイ時間</span><b id="rTime">0分</b></div>
           </div>
           <p class="sm" id="rBest"></p>
-          <button class="btn" id="btnRetry" type="button">もう一度館を守る</button>
+          <button class="btn" id="btnRetry" type="button">もう一度館を守る</button> <button class="btn sub" id="btnRetry2" type="button" hidden>ステージ選択へ</button>
+        </div>
+      </div>
+
+      <div class="overlay" id="ovStages" hidden>
+        <div class="panel wide">
+          <h2>ステージを選ぶ</h2>
+          <p class="sm" id="stageInfo"></p>
+          <div class="stagegrid" id="stageGrid"></div>
+          <div class="selnav"><button class="btn sub" id="btnStagesBack" type="button">◀ タイトルへ</button><span></span></div>
+        </div>
+      </div>
+
+      <div class="overlay" id="ovAch" hidden>
+        <div class="panel wide">
+          <h2>実績 <small class="selmode" id="achCount"></small></h2>
+          <ul class="achlist" id="achList"></ul>
+          <div class="selnav"><button class="btn sub" id="btnAchBack" type="button">◀ タイトルへ</button><span></span></div>
         </div>
       </div>
 
@@ -454,6 +535,11 @@ body{
   <p class="rotate" aria-hidden="true"><span><b>スマホを横にすると</b>盤面が大きくなって置きやすい</span></p>
   <button class="btn go" id="btnGo" type="button" hidden>侵入者を迎える</button>
   <nav class="palette" id="palette" aria-label="罠の選択"></nav>
+  <div class="editbar" id="editBar" hidden>
+    <div class="etools" id="editTools"></div>
+    <div class="erow"><label>侵入者の強さ <select id="editLv"></select></label><span class="sm" id="editMsg">マスを押して置く。扉は外周の壁に3つまで</span></div>
+    <div class="erow"><button class="btn sub" id="editBack" type="button">◀ タイトルへ</button><button class="btn sub" id="editClear" type="button">まっさらにする</button><button class="btn" id="editTest" type="button">保存して試す ▶</button></div>
+  </div>
   <p class="help">
     <span class="pc"><b>罠</b> 1〜4 かボタンで選び、マスをクリックして設置（同じ罠を押すと撤去）　<b>矢印のある罠の向き</b> 置くときにドラッグ、または Q / E　<b>館の仕掛け</b> シャンデリア・石像をクリック　<b>準備を終える</b> Enter　<b>遊び方</b> 右上のボタン　<b>一時停止</b> P　逃げる子の移動は CPU まかせ</span>
     <span class="sp"><b>罠</b> 下の罠を選んでマスをタップ（同じ罠をタップで撤去）。矢印のある罠は、置きたいマスから向けたい方向へフリック（置いた罠の上でフリックすると向きだけ変わる）。★の付いた罠は、逃げる子の得意な罠。シャンデリアと石像はタップで発動。逃げる子の移動は CPU まかせ</span>
@@ -462,8 +548,10 @@ body{
 
 <script>
 (() => {
-const COLS = 15, ROWS = 10, T = 48, W = COLS * T, H = ROWS * T;
-const VX = T / 2, VY = T / 2, VW = W - T, VH = H - T; // 画面に見せる範囲（外周の壁は半マスだけ見せて、盤面を大きく）
+// 盤面の大きさ。地図は横長（横15×縦10）で書き、スマホ縦持ちのときは縦長（横10×縦15）に置き換えて使う
+const T = 48, VX = T / 2, VY = T / 2;
+let COLS = 15, ROWS = 10, W = COLS * T, H = ROWS * T, VW = W - T, VH = H - T; // VW/VH は画面に見せる範囲（外周の壁は半マスだけ見せる）
+let portraitBoard = false;
 // 部屋は5夜ごとに変わる（第1〜5夜は大広間、第6〜10夜は東の書庫）
 // 記号: # 壁・柱（書庫では本棚） D 扉 . 床 ^ トゲ床 O 奈落 c シャンデリアの真下 S 槍の石像
 const MAPS = [
@@ -491,13 +579,111 @@ const MAPS = [
     '#.............#',
     '#######D#######',
   ], doors: [[0, 1], [14, 5], [7, 9]], start: [10, 8], shelves: true, wood: true },
+  { name: '回廊', rows: [
+    '###############',
+    '#.............#',
+    '#.##.##.##.##.#',
+    '#.^...........D',
+    '#....S...S....#',
+    '#.....c.......#',
+    'D.............#',
+    '#.##.##.##.##.#',
+    '#.....O.......#',
+    '#######D#######',
+  ], doors: [[0, 6], [14, 3], [7, 9]], start: [7, 4] },
+  { name: '温室', rows: [
+    '#######D#######',
+    '#.....^.^.....#',
+    '#..O.......O..#',
+    '#......#......#',
+    'D..^..###..^..D',
+    '#......#......#',
+    '#..O.......O..#',
+    '#.....c.c.....#',
+    '#.............#',
+    '###############',
+  ], doors: [[0, 4], [14, 4], [7, 0]], start: [7, 8] },
+  { name: '地下牢', rows: [
+    '###############',
+    '#...#.....#...#',
+    '#.^.#..O..#.^.#',
+    '#...##.#.##...#',
+    'D.............D',
+    '#.^.........^.#',
+    '#...##S.S##...#',
+    '#...#.....#...#',
+    '#...#..c..#...#',
+    '#######D#######',
+  ], doors: [[0, 4], [14, 4], [7, 9]], start: [7, 7] },
+  { name: '礼拝堂', rows: [
+    '#######D#######',
+    '#.S.........S.#',
+    '#.............#',
+    '#.##.......##.#',
+    '#.##..c.c..##.#',
+    'D......O......D',
+    '#.##.......##.#',
+    '#.##.......##.#',
+    '#......^......#',
+    '###############',
+  ], doors: [[0, 5], [14, 5], [7, 0]], start: [5, 8], carpet: true },
+  { name: '屋根裏', rows: [
+    '###############',
+    '#..#......#...#',
+    '#..#.^....#.O.#',
+    '#.....##......D',
+    '#.c...##...c..#',
+    'D.....##......#',
+    '#..O..........#',
+    '#...#....^#...#',
+    '#...#.....#...#',
+    '#######D#######',
+  ], doors: [[0, 5], [14, 3], [7, 9]], start: [8, 1], wood: true },
+  { name: '大時計の間', rows: [
+    '#######D#######',
+    '#.............#',
+    '#..O...S...O..#',
+    '#.....^.^.....#',
+    'D...c.....c...D',
+    '#.....^.^.....#',
+    '#..O...S...O..#',
+    '#.............#',
+    '#.............#',
+    '###############',
+  ], doors: [[0, 4], [14, 4], [7, 0]], start: [7, 8], carpet: true },
 ];
+// 自作の部屋（エディットで作る。この端末に保存）
+const CUSTOM_MAP = MAPS.length;
+function blankRoom() {
+  const rows = Array.from({ length: 10 }, (_, y) => Array.from({ length: 15 }, (_, x) => (x === 0 || y === 0 || x === 14 || y === 9) ? '#' : '.').join(''));
+  const doors = [[0, 4], [14, 5], [7, 0]];
+  for (const [x, y] of doors) rows[y] = rows[y].slice(0, x) + 'D' + rows[y].slice(x + 1);
+  return { name: '自作の部屋', rows, doors, start: [7, 6], lv: 3 };
+}
+let editLv = 3;
+try { const v = JSON.parse(localStorage.getItem('trapoflily-custom') || 'null'); MAPS.push(v && v.rows && v.rows.length === 10 ? Object.assign(v, { name: '自作の部屋' }) : blankRoom()); } catch (e) { MAPS.push(blankRoom()); }
+editLv = MAPS[CUSTOM_MAP].lv || 3;
 let mapIdx = 0, MAP = MAPS[0].rows;
 const DIRS = [[0,-1],[1,0],[0,1],[-1,0]];
 const ARROW = ['↑','→','↓','←'];
-const DOORS = MAPS[0].doors.map(d => d.slice()); // 夜ごとに開く扉の順番
-const TORCHES = [[3,0],[11,0],[3,9],[11,9]];
+const DOORS = MAPS[0].doors.map(d => d.slice()); // 夜ごとに開く扉の順番（今の向きの座標）
+let TORCHES = [[3,0],[11,0],[3,9],[11,9]];
 
+// 敵と罠の相性（ダメージの倍率）。書いていない組み合わせは 1 倍
+const AFF = {
+  knight: { fire: 1.4, blade: .7, caltrop: .5 },             // 鎧が熱くなる／刃とまきびしは鎧が防ぐ
+  thief:  { caltrop: 1.6, bear: 1.4, keg: 1.3, rock: .7 },   // 身軽で足が弱い／落石はよけやすい
+  heavy:  { fire: 1.5, keg: 1.4, rock: .6, blade: .5, caltrop: .4 }, // 分厚い鎧は熱と爆発に弱く、打撃と刃に強い
+};
+const FOE_NAME = { knight: '騎士', thief: '盗賊', heavy: '重装兵' };
+function affText(type) { // 罠カード用: 「効く: 盗賊／効きにくい: 重装兵」
+  const good = [], bad = [];
+  for (const [fo, t] of Object.entries(AFF)) { if ((t[type] || 1) >= 1.3) good.push(FOE_NAME[fo]); else if ((t[type] || 1) <= .7) bad.push(FOE_NAME[fo]); }
+  return [good.length ? `効く: ${good.join('・')}` : '', bad.length ? `効きにくい: ${bad.join('・')}` : ''].filter(Boolean).join('　');
+}
+// 罠の合成（置いてある罠の上に別の罠を置くと合成）。名前のある組み合わせ以外は「Ａ＋Ｂ」
+const FUSION_NAMES = { 'fire+rock': '溶岩落とし', 'bear+caltrop': '鉄の茨', 'ice+spring': '氷のばね', 'blade+vortex': '刃の竜巻', 'bell+warp': '呼び戻しの鐘', 'fire+ice': '霧の陣', 'bear+rock': '押し潰し', 'fire+keg': '大爆発', 'caltrop+vortex': '針の嵐', 'spring+warp': '空の門', 'bear+blade': '断頭台', 'bell+fire': '灯籠', 'keg+rock': '爆岩', 'bell+keg': '鳴る火薬' };
+const fusionName = (a, b) => FUSION_NAMES[[a, b].sort().join('+')] || `${TRAPS[a].name}＋${TRAPS[b].name}`;
 const TRAPS = {
   bear:   { name:'トラバサミ', cost:20, cd:4, desc:'挟んで2秒ほど足止め。抜け出すと前へ1歩よろける' },
   spring: { name:'跳ね床',     cost:20, cd:3, desc:'矢印の向きへ3マス飛ばす（重装兵は2マス）', dir:true },
@@ -509,8 +695,9 @@ const TRAPS = {
   bell:   { name:'誘いの鈴',   cost:20, cd:10, desc:'鳴ると侵入者がしばらく鈴へ向かう' },
   caltrop: { name:'まきびし', cost:10, cd:2, desc:'侵入者の足もとにも直接置ける。置いた瞬間に刺さり、痛くて1歩前へ跳ねる。威力は弱い', direct:true },
   vortex: { name:'つむじ風の陣', cost:30, cd:8, desc:'踏まれると周り4マスの侵入者を2マス吸い寄せる。威力は弱い' },
+  keg:    { name:'火薬樽', cost:30, cd:7, desc:'踏まれて1秒あとに爆発し、周り3x3を吹き飛ばす。爆発までに侵入者が進むので、先を読んで置く', delay:1.1 },
 };
-const TRAP_ORDER = ['bear','spring','rock','fire','ice','warp','blade','bell','caltrop','vortex'];
+const TRAP_ORDER = ['bear','spring','rock','fire','ice','warp','blade','bell','caltrop','vortex','keg'];
 const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
 // 逃げる子。数値は自動ボットで全員の到達夜・得点が近くなるように調整した
 const CHARS = {
@@ -598,6 +785,10 @@ function setViewportVars() {
   r.setProperty('--vh', h + 'px'); r.setProperty('--vw', w + 'px');
   const pal = document.getElementById('palette');
   if (pal) r.setProperty('--palH', (pal.offsetHeight || 94) + 'px');
+  if (document.body.classList.contains('pboard')) { // 縦長の盤面: 盤面以外（見出し・状態・ボタン）の高さを測り、盤面をその残りに収める
+    const hh = ['.head', '.hud', '#btnGo', '#palette'].reduce((a, q) => { const e = document.querySelector(q); return a + (e && !e.hidden ? e.offsetHeight : 0); }, 0);
+    r.setProperty('--chromeH', (hh + 34 + (document.querySelector('#btnGo').hidden ? 46 : 0)) + 'px');
+  }
   resize();
 }
 setViewportVars();
@@ -619,6 +810,14 @@ try { best = +localStorage.getItem('wanakan-best') || 0; } catch (e) {}
 let G, paused = false;
 const baseLimit = () => 5 + G.up.limit;
 const CH = () => CHARS[G.char] || CHARS.lily;
+// ステージは 5 つごとに部屋が変わる（大広間・回廊・温室・東の書庫・地下牢・礼拝堂・屋根裏・大時計の間）
+const STAGE_COUNT = 40, STAGE_MAPS = [0, 2, 3, 1, 4, 5, 6, 7];
+let runMode = 'challenge', runStage = 1;
+const stageMap = n => STAGE_MAPS[Math.floor((n - 1) / 5)];
+const stageWave = n => Math.min(10, 1 + Math.floor((n - 1) * 9 / 39)); // 侵入者の強さ（チャレンジの第何夜に当たるか）
+let stageRec = { open: 1, rec: {} };
+try { const v = JSON.parse(localStorage.getItem('trapoflily-stages') || 'null'); if (v && v.open) stageRec = v; } catch (e) {}
+function saveStages() { try { localStorage.setItem('trapoflily-stages', JSON.stringify(stageRec)); } catch (e) {} }
 const smartL = () => Math.min(5, G.up.smart + CH().smart);
 // 得意な罠（逃げる子ごとのパッシブ）。魔力・再装填が変わるものは passive.cost / passive.cd に書く
 const isFav = type => CH().fav === type;
@@ -639,9 +838,9 @@ function makeRun(state, char = 'lily', loadout = DEFAULT_LOADOUT) {
   return {
     state, char, loadout: loadout.slice(), wave: 0, score: 0, soul: 0, up, mana: CHARS[char].maxMana, hp: CHARS[char].hp, time: 0,
     lure: null,
-    hero: { tx:MAPS[mapIdx].start[0], ty:MAPS[mapIdx].start[1], nx:MAPS[mapIdx].start[0], ny:MAPS[mapIdx].start[1], x:MAPS[mapIdx].start[0], y:MAPS[mapIdx].start[1], prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0, doze:0, trip:0, freeze:0, joy:0, peek:null },
+    hero: { tx:mapStart()[0], ty:mapStart()[1], nx:mapStart()[0], ny:mapStart()[1], x:mapStart()[0], y:mapStart()[1], prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0, doze:0, trip:0, freeze:0, joy:0, peek:null },
     foes: [], traps: new Map(), devices: makeDevices(), fx: [], texts: [], parts: [],
-    combo: 0, lastHit: -99, bestCombo: 0, kills: 0, shake: 0,
+    combo: 0, lastHit: -99, bestCombo: 0, kills: 0, shake: 0, later: [], items: [], itemT: 8,
     spawnQueue: [], spawnT: 0, clearT: -1, banner: 0, bannerTitle: '', bannerSub: '', hpScale: 1,
     phase: 0, phaseQ: [[], [], []], phaseBonus: 0, nightLen: 60, nightT: 60,
     selected: loadout[0], springDir: 1, msg: '', msgT: 0, hover: null, field: null, foeField: null, removedCd: {},
@@ -737,6 +936,7 @@ function sceneBgm() {
   for (const k of ['title', 'prep', 'night']) bgmLoad(k); // よく使う曲は先にほどいておく
   let want = null;
   if (G.state === 'title') want = 'title';
+  else if (G.state === 'edit') want = 'prep';
   else if (G.state === 'shop') want = 'shop';
   else if (G.state === 'over') want = bgmKey === 'dawn' || bgmKey === 'over' ? bgmKey : null;
   else if (G.state === 'play') {
@@ -792,6 +992,7 @@ const sfx = {
   pit:     () => { tone('sine', 400, 60, .6, .1); noise(.5, 300, .15, .6); },  // 奈落へ
   bomb:    () => { pings(8, 2500, 5000, .03, .08); tone('sine', 120, 40, .35, .25, 0, false); noise(.4, 800, .3, .6); }, // びんが割れてはじける
   introStep: () => bell(1320, .025, 0, .8), // 紹介で次のマスを光らせる
+  coin:    () => { bell(1568, .04, 0, .5); bell(2093, .03, .07, .6); }, // 宝物を拾う
   flaw:    () => { tone('triangle', 660, 430, .2, .045); tone('triangle', 520, 330, .24, .04, .14); }, // あらら…（弱点が出た）
   hurt:    () => { noise(.08, 400, .2, 1, 0, 0, 'lowpass'); tone('sine', 1300, 950, .18, .06, .03); }, // ポフッと小さな笛
   kill:    () => { bell(880, .05); bell(1320, .035, .06); },  // 小さな鐘の和音
@@ -804,9 +1005,20 @@ const sfx = {
 
 // ---------- 背景（一度だけ描く） ----------
 const bg = document.createElement('canvas');
-function setMap(i) { // 部屋を切り替える（背景・扉・仕掛けの元になる地図）
-  mapIdx = i; MAP = MAPS[i].rows;
-  DOORS.length = 0; MAPS[i].doors.forEach(d => DOORS.push(d.slice()));
+// スマホを縦に持っているか（そのときは盤面を縦長にする）
+function wantPortrait() { return matchMedia('(max-width: 640px) and (orientation: portrait)').matches; }
+function tp([x, y]) { return portraitBoard ? [y, x] : [x, y]; } // 地図の座標（横長）→ 今の向きの座標
+function mapStart(i = mapIdx) { return tp(MAPS[i].start); }
+function setMap(i, allowPortrait = true) { // 部屋を切り替える（背景・扉・仕掛けの元になる地図）
+  const pb = allowPortrait && wantPortrait();
+  if (pb !== portraitBoard) {
+    portraitBoard = pb; COLS = pb ? 10 : 15; ROWS = pb ? 15 : 10; W = COLS * T; H = ROWS * T; VW = W - T; VH = H - T;
+    try { vignette = null; } catch (e) {} document.body.classList.toggle('pboard', pb); resize();
+  }
+  mapIdx = i; const src = MAPS[i].rows;
+  MAP = pb ? Array.from({ length: 15 }, (_, y) => Array.from({ length: 10 }, (_, x) => src[x][y]).join('')) : src;
+  DOORS.length = 0; MAPS[i].doors.forEach(d => DOORS.push(tp(d)));
+  TORCHES = pb ? [[3, 0], [6, 0], [3, 14], [6, 14]] : [[3, 0], [11, 0], [3, 9], [11, 9]];
   buildBg();
 }
 function buildBg() {
@@ -824,7 +1036,7 @@ function buildBg() {
       b.fillStyle = 'rgba(255,240,220,.06)'; b.fillRect(px, py, T, 2); b.fillRect(px, py, 2, T);
       b.fillStyle = 'rgba(0,0,0,.4)'; b.fillRect(px, py + T - 2, T, 2); b.fillRect(px + T - 2, py, 2, T);
       if (r() < .35) { b.strokeStyle = 'rgba(0,0,0,.35)'; b.lineWidth = 1; b.beginPath(); let cx = px + 8 + r() * 30, cy = py + 8 + r() * 30; b.moveTo(cx, cy); for (let i = 0; i < 3; i++) { cx += r() * 12 - 6; cy += r() * 12 - 6; b.lineTo(cx, cy); } b.stroke(); }
-      if (MAPS[mapIdx].carpet && x === 7) { // 赤い絨毯
+      if (MAPS[mapIdx].carpet && (portraitBoard ? y : x) === 7) { // 赤い絨毯（縦長の盤面では横向き）
         b.fillStyle = '#5c1c2a'; b.fillRect(px + 5, py, T - 10, T);
         b.fillStyle = '#b08a3e'; b.fillRect(px + 8, py, 2, T); b.fillRect(px + T - 10, py, 2, T);
         b.fillStyle = 'rgba(176,138,62,.55)'; b.beginPath(); b.moveTo(px + T / 2, py + 12); b.lineTo(px + T / 2 + 8, py + T / 2); b.lineTo(px + T / 2, py + T - 12); b.lineTo(px + T / 2 - 8, py + T / 2); b.closePath(); b.fill();
@@ -892,7 +1104,7 @@ function buildBg() {
     }
   }
   for (const [x, y] of TORCHES) { // 燭台の台
-    const px = x * T + T / 2, py = y === 0 ? T - 18 : y * T + 16;
+    const px = x * T + T / 2, py = y === 0 ? T - 18 : (ROWS - 1) * T + 16;
     b.fillStyle = '#6b5a3a'; b.fillRect(px - 2, py - 2, 4, 12); b.fillStyle = '#c9a24a'; b.fillRect(px - 6, py - 4, 12, 4);
   }
 }
@@ -947,6 +1159,7 @@ function pointerTile(e) {
   return { x: Math.floor(((e.clientX - r.left) / r.width * VW + VX) / T), y: Math.floor(((e.clientY - r.top) / r.height * VH + VY) / T) };
 }
 cv.addEventListener('pointerdown', e => {
+  if (G.state === 'edit') { editAt(pointerTile(e)); return; }
   if (G.state !== 'play' || paused) return;
   if (G.intro) { endIntro(); return; } // 紹介を飛ばす
   const p = pointerTile(e); G.hover = p;
@@ -994,10 +1207,22 @@ function placeTrap(x, y, type) {
   const def = TRAPS[type];
   if (!canPlace(x, y)) { say('そこには置けない'); sfx.bad(); return; }
   const key = x + ',' + y, old = G.traps.get(key);
-  if (old && old.type === type) {
+  if (old && (old.type === type || (old.type === 'fusion' && old.parts.includes(type)))) {
     const back = Math.floor(old.paid / 2);
     G.traps.delete(key); G.removedCd[key] = { cd: old.cd, at: G.time }; G.mana = Math.min(stat.maxMana(), G.mana + back);
-    say(`${def.name}を撤去した（魔力 +${back}）`); sfx.bad(); return;
+    say(`${old.type === 'fusion' ? old.name : def.name}を撤去した（魔力 +${back}）`); sfx.bad(); return;
+  }
+  if (old && old.type === 'fusion') { say('合成した罠には、もう重ねられない（入っている罠のボタンで撤去）'); sfx.bad(); return; }
+  if (old) { // 合成: 2つの罠が1マスで続けて作動する（少し強くなり、罠の数は1つのまま）
+    const cost = trapCost(type);
+    if (G.mana < cost) { say('魔力が足りない'); sfx.bad(); return; }
+    G.mana -= cost;
+    const a = old.type, name = fusionName(a, type);
+    Object.assign(old, { type: 'fusion', parts: [a, type], name, paid: old.paid + cost, cd: Math.max(old.cd, .6), cdMax: Math.max(old.cd, .6), anim: .45 });
+    if (TRAPS[type].dir) old.dir = G.springDir;
+    G.fusions = (G.fusions || 0) + 1; achieve('fusion');
+    say(`合成！ ${TRAPS[a].name}＋${TRAPS[type].name} ＝「${name}」`, 3); sfx.place(); burst(x, y, '#ffd27a', 18, 140);
+    return;
   }
   const under = G.foes.find(f => !f.dead && !(f.down > 0) && !f.fly && Math.round(f.x) === x && Math.round(f.y) === y);
   if (under && !def.direct) { say(G.loadout.includes('caltrop') ? '侵入者の足もとには置けない（まきびしなら置ける）' : '侵入者の足もとには置けない'); sfx.bad(); return; }
@@ -1026,12 +1251,12 @@ function startIntro(mi) {
   const tiles = ch => { const out = []; MAP.forEach((row, y) => [...row].forEach((c, x) => { if (c === ch) out.push([x, y]); })); return out; };
   const steps = [{ title: MAPS[mi].name, text: 'この部屋の仕掛け', tiles: [], dur: .9 }];
   const add = (t, text) => { if (t.length) steps.push({ text, tiles: t, dur: INTRO_STEP }); };
-  add(MAPS[mi].doors.map(d => d.slice()), '侵入者はこの扉から入ってくる');
+  add(DOORS.map(d => d.slice()), '侵入者はこの扉から入ってくる');
   add(tiles('O'), '奈落：跳ね床や氷床で落とせば一撃');
   add(tiles('^'), 'トゲ床：踏んだ侵入者が傷つく');
   add(tiles('c'), 'シャンデリア：押すと周り3x3に落ちる');
   add(tiles('S'), '槍の石像：押すと上下左右を突く');
-  add([MAPS[mi].start.slice()], `${CH().name}はここから`);
+  add([mapStart(mi)], `${CH().name}はここから`);
   G.intro = { t: 0, steps, idx: 0 }; sfx.introStep();
 }
 function endIntro() { if (!G.intro) return; G.intro = null; G.banner = 2.4; }
@@ -1070,15 +1295,15 @@ function drawIntro() {
 }
 function banner(title, sub) { G.bannerTitle = title; G.bannerSub = sub; G.banner = 2.4; }
 // 夜 = 準備フェイズ → フェイズ1〜3。夜明け（時間切れ）か全滅でクリア
-function startWave(n) {
+function startWave(n, opt = {}) {
   Object.assign(G.hero, { doze: 0, peek: null, trip: 0, freeze: 0, confused: 0, idle: 0 }); // 弱点や混乱を次の夜に持ち越さない
   G.wave = n; G.hpScale = 1 + .13 * (n - 1);
-  const mi = Math.floor((n - 1) / 5) % MAPS.length;
+  const mi = opt.map ?? Math.floor((n - 1) / 5) % 2; // チャレンジは大広間と東の書庫
   let moved = false;
   if (mi !== mapIdx) { // 部屋を移る: 罠は置き直し
     setMap(mi); moved = true;
     G.devices = makeDevices(); G.traps.clear(); G.removedCd = {}; G.fx = []; G.lure = null;
-    const [sx, sy] = MAPS[mi].start, h = G.hero;
+    const [sx, sy] = mapStart(mi), h = G.hero;
     Object.assign(h, { tx: sx, ty: sy, nx: sx, ny: sy, x: sx, y: sy, prog: 0, moving: false, goal: null, peek: null, doze: 0, trip: 0, freeze: 0 });
     G.mana = stat.maxMana();
   }
@@ -1087,15 +1312,17 @@ function startWave(n) {
     const r = Math.random();
     q.push(n >= 4 && r < .2 ? 'heavy' : n >= 2 && r < .5 ? 'thief' : 'knight');
   }
-  if (n % 5 === 0) q.push('heavy', 'heavy');
-  if (n === LAST_NIGHT) q.push('heavy', 'thief', 'thief');
+  if (n % 5 === 0 && !opt.stage) q.push('heavy', 'heavy'); // チャレンジの第5・10夜（ステージは部屋の最後で手ごわくする）
+  if (n === LAST_NIGHT && !opt.stage) q.push('heavy', 'thief', 'thief');
+  if (opt.stage && opt.stage % 5 === 0) q.push('heavy', 'thief'); // 部屋の最後のステージは手ごわい
   const a = Math.round(q.length * .3), b = Math.round(q.length * .6);
   G.phaseQ = [q.slice(0, a), q.slice(a, b), q.slice(b)];
-  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1; G.nightCombo = 0;
+  G.phase = 0; G.phaseBonus = 0; G.spawnQueue = []; G.clearT = -1; G.nightCombo = 0; G.nightCrash = 0; G.nightPit = 0; G.nightHurt = false; G.items = []; G.itemT = 8;
   G.nightLen = G.nightT = 50 + 3 * (n - 1); G.prepT = 25;
   G.state = 'play';
-  if (moved || n === 1) startIntro(mi);
-  banner(n === LAST_NIGHT ? '最後の夜' : `第${n}夜`, moved ? `${MAPS[mi].name}へ移った。罠は置き直し（魔力は満タン）` : n === LAST_NIGHT ? '10夜目の夜明けまで守り抜けばクリア' : '準備フェイズ：罠を置いたら「侵入者を迎える」');
+  if (moved || n === 1 || opt.intro) startIntro(mi);
+  if (runMode !== 'challenge') banner(runMode === 'edit' ? '自作の部屋' : `ステージ${runStage}`, `${MAPS[mi].name}・準備フェイズ：罠を置いたら「侵入者を迎える」`);
+  else banner(n === LAST_NIGHT ? '最後の夜' : `第${n}夜`, moved ? `${MAPS[mi].name}へ移った。罠は置き直し（魔力は満タン）` : n === LAST_NIGHT ? '10夜目の夜明けまで守り抜けばクリア' : '準備フェイズ：罠を置いたら「侵入者を迎える」');
   $('#btnGo').hidden = false;
 }
 function beginDefense() {
@@ -1114,6 +1341,7 @@ function advancePhase() {
   banner(`フェイズ${G.phase}`, '置ける罠 +1・魔力 +25'); sfx.wave();
 }
 function clearNight(wiped) {
+  achieve('night1'); if (!G.nightHurt && G.wave >= 3) achieve('nohit');
   G.clearT = 3.2; // 帯が消えたあと、喜ぶ姿を少し見せてからショップへ
   Object.assign(G.hero, { joy: 3.2, facing: 2, confused: 0, freeze: 0, doze: 0, trip: 0 }); heroBubble(pick(CH().joy), 3); // 笑顔で喜ぶ
   if (wiped) {
@@ -1132,7 +1360,7 @@ function spawn(type) {
   const [x, y] = open[(Math.random() * open.length) | 0];
   const def = FOES[type], hp = Math.round(def.hp * G.hpScale);
   G.foes.push({ type, hp, maxhp: hp, tx:x, ty:y, nx:x, ny:y, x, y, z:0, prog:0, moving:false,
-    speed: def.speed * (1 + .03 * (G.wave - 1)), stun:0, slow:0, poison:0, ptick:1, fly:null, face:x === 0 ? 1 : -1, flash:0, dead:false, deadT:0, seed: Math.random() * 9, door: [x, y], lastDir: x === 0 ? 1 : x === COLS - 1 ? 3 : 2 });
+    speed: def.speed * (1 + .03 * (G.wave - 1)), stun:0, slow:0, poison:0, ptick:1, fly:null, face:x === 0 ? 1 : -1, flash:0, dead:false, deadT:0, seed: Math.random() * 9, door: [x, y], lastDir: x === 0 ? 1 : x === COLS - 1 ? 3 : y === ROWS - 1 ? 0 : 2 });
 }
 
 // ---------- 罠の効果 ----------
@@ -1145,22 +1373,115 @@ function burst(x, y, color, n, sp = 120) {
   for (let i = 0; i < n; i++) { const a = rnd(0, 6.28), v = rnd(sp * .3, sp); G.parts.push({ x: x * T + T / 2, y: y * T + T / 2, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, life: rnd(.4, .8), t: 0, color, size: rnd(2, 4) }); }
 }
 // 罠が1回当たるごとに連続を1つ進める（何体に当たっても1回）
+// ---------- スコアアイテム（夜のあいだに床に出る。逃げる子が拾うか、その場所の罠が作動すると取れる） ----------
+const ITEMS = { coin: { name: '金貨', pts: 150, color: '#f1d98e' }, gem: { name: '宝石', pts: 400, color: '#7fd6e8' }, crown: { name: '王冠', pts: 1200, color: '#ffd27a' } };
+function spawnItem() {
+  const h = G.hero, cand = [];
+  for (let y = 1; y < ROWS - 1; y++) for (let x = 1; x < COLS - 1; x++) {
+    if (!isFloor(x, y) || G.traps.has(x + ',' + y) || G.items.some(i => i.x === x && i.y === y)) continue;
+    if (Math.abs(x - h.tx) + Math.abs(y - h.ty) < 3) continue;
+    cand.push([x, y]);
+  }
+  if (!cand.length) return;
+  const [x, y] = pick(cand), r = Math.random();
+  G.items.push({ x, y, kind: r < .07 ? 'crown' : r < .35 ? 'gem' : 'coin', t: 0, life: 11 });
+}
+function takeItem(it, byTrap) {
+  G.items = G.items.filter(i => i !== it);
+  const def = ITEMS[it.kind], pts = def.pts * (byTrap ? 2 : 1) * Math.max(1, Math.min(5, G.combo));
+  G.score += pts; G.itemsGot = (G.itemsGot || 0) + 1;
+  addText(it.x, it.y - .8, `${def.name} +${pts}${byTrap ? '（罠で取った！）' : ''}`, def.color, 16);
+  burst(it.x, it.y, def.color, 14, 120); sfx.coin();
+  if (addStat('items') >= 30) achieve('items'); if (it.kind === 'crown') achieve('crown');
+}
+function updateItems(dt) {
+  if (G.phase > 0 && G.clearT < 0) { G.itemT -= dt; if (G.itemT <= 0) { G.itemT = rnd(9, 14); spawnItem(); } }
+  for (const it of G.items) it.t += dt;
+  G.items = G.items.filter(it => it.t < it.life);
+  const h = G.hero, got = G.items.find(it => it.x === Math.round(h.x) && it.y === Math.round(h.y));
+  if (got) takeItem(got, false);
+}
+function drawItems() {
+  for (const it of G.items) {
+    const cx = it.x * T + T / 2, cy = it.y * T + T / 2 - 4 + Math.sin(G.time * 4 + it.x) * 2, left = it.life - it.t;
+    if (left < 2 && Math.floor(G.time * 10) % 2) continue; // 消える前に点滅
+    ctx.save(); ctx.translate(cx, cy);
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ell(0, 12, 8, 3);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 16); g.addColorStop(0, 'rgba(255,240,180,.45)'); g.addColorStop(1, 'rgba(255,240,180,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#3a2412'; ctx.lineWidth = 1.5;
+    if (it.kind === 'coin') { ctx.fillStyle = '#e8c45a'; ctx.beginPath(); ctx.ellipse(0, 0, 7 * Math.abs(Math.cos(G.time * 3)) + 1, 8, 0, 0, 7); ctx.fill(); ctx.stroke(); }
+    else if (it.kind === 'gem') { ctx.fillStyle = '#7fd6e8'; ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(8, -2); ctx.lineTo(0, 9); ctx.lineTo(-8, -2); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fillRect(-3, -5, 3, 3); }
+    else { ctx.fillStyle = '#ffd27a'; ctx.beginPath(); ctx.moveTo(-10, 6); ctx.lineTo(-10, -5); ctx.lineTo(-5, 0); ctx.lineTo(0, -8); ctx.lineTo(5, 0); ctx.lineTo(10, -5); ctx.lineTo(10, 6); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#d0503f'; ctx.fillRect(-2, 1, 4, 3); }
+    ctx.restore();
+  }
+}
+// ---------- 実績（この端末に保存） ----------
+const ACH = [
+  { id: 'night1', name: '最初の夜明け', desc: '夜を1つ越える' },
+  { id: 'stage10', name: '館の見習い', desc: 'ステージ10をクリア' },
+  { id: 'stage20', name: '罠の名手', desc: 'ステージ20をクリア' },
+  { id: 'stage40', name: 'トラップオブリリー', desc: 'ステージ40をクリア' },
+  { id: 'challenge', name: '十夜の守り手', desc: 'チャレンジ（全10夜）をクリア' },
+  { id: 'combo10', name: '連続10', desc: '罠を10連続で当てる' },
+  { id: 'combo20', name: '連続20', desc: '罠を20連続で当てる' },
+  { id: 'combo30', name: '止まらない罠', desc: '罠を30連続で当てる' },
+  { id: 'fusion', name: '合成の手ほどき', desc: '罠を初めて合成する' },
+  { id: 'fusion20', name: '合成の達人', desc: '合成した罠を合計20回作動させる' },
+  { id: 'triple', name: 'まとめて三つ', desc: '1回の罠で3体以上に当てる' },
+  { id: 'crash', name: '玉突き名人', desc: '1回の夜で玉突きを5回' },
+  { id: 'pit', name: '奈落の番人', desc: '1回の夜で奈落に5体落とす' },
+  { id: 'oiuchi', name: '追い打ち', desc: '追い打ちを合計50回' },
+  { id: 'weak', name: '弱点を知る者', desc: '「効いた！」を合計50回' },
+  { id: 'items', name: '宝物集め', desc: 'スコアアイテムを合計30個拾う' },
+  { id: 'crown', name: '王冠', desc: '王冠を拾う' },
+  { id: 'nohit', name: '無傷の夜', desc: '体力を減らさずに夜を越える（第3夜以降・ステージ3以降）' },
+  { id: 'editor', name: '館の設計士', desc: '自分で作ったステージをクリア' },
+  { id: 'all4', name: '4人の守り', desc: '4人全員で、いずれかのステージかチャレンジをクリア' },
+];
+let achSaved = {}, stats = {};
+try { achSaved = JSON.parse(localStorage.getItem('trapoflily-ach') || '{}') || {}; stats = JSON.parse(localStorage.getItem('trapoflily-stats') || '{}') || {}; } catch (e) {}
+function achieve(id) {
+  if (achSaved[id]) return;
+  const a = ACH.find(x => x.id === id); if (!a) return;
+  achSaved[id] = new Date().toISOString().slice(0, 10);
+  try { localStorage.setItem('trapoflily-ach', JSON.stringify(achSaved)); } catch (e) {}
+  toast(`実績「${a.name}」`, a.desc); sfx.dawn();
+}
+function addStat(k, n = 1) { // 何回も遊んで積み上がる数（実績用）
+  stats[k] = (stats[k] || 0) + n;
+  try { localStorage.setItem('trapoflily-stats', JSON.stringify(stats)); } catch (e) {}
+  return stats[k];
+}
+let toastT = 0;
+function toast(title, sub) {
+  const el = $('#toast'); if (!el) return;
+  el.innerHTML = `<b>${title}</b><span>${sub}</span>`; el.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 3200);
+}
+function renderAch() {
+  const n = ACH.filter(a => achSaved[a.id]).length;
+  $('#achCount').textContent = `${n} / ${ACH.length}`;
+  $('#achList').innerHTML = ACH.map(a => `<li class="${achSaved[a.id] ? 'on' : ''}"><b>${achSaved[a.id] ? '★' : '☆'} ${a.name}</b><span>${a.desc}</span>${achSaved[a.id] ? `<i>${achSaved[a.id]}</i>` : ''}</li>`).join('');
+}
 function trapSuccess() {
   G.combo = (G.time - G.lastHit <= COMBO_WINDOW) ? G.combo + 1 : 1;
   G.lastHit = G.time; G.bestCombo = Math.max(G.bestCombo, G.combo); G.nightCombo = Math.max(G.nightCombo || 0, G.combo);
   if (G.combo >= 3) { G.mana = Math.min(stat.maxMana(), G.mana + 4); if (G.time - (G.manaFxT ?? -9) > 1.5) { G.manaFxT = G.time; spr('mana', G.hero.x, G.hero.y, .7, 1, -18); } } // 連続で魔力が戻る
   if (G.combo >= 2) { G.shake = Math.min(9, 2 + G.combo); sfx.combo(G.combo); }
+  if (G.combo >= 10) achieve('combo10'); if (G.combo >= 20) achieve('combo20'); if (G.combo >= 30) achieve('combo30');
 }
 function hitFoe(f, base) {
   if (f.dead) return;
-  if (f.down > 0) { // HP0 の侵入者への追い打ち: ダメージは無いが得点が入る（連続は罠の側で伸びる）
+  const aff = (G.hitSrc && AFF[f.type] && AFF[f.type][G.hitSrc]) || 1;
+  if (f.down > 0) { // 倒れている侵入者への追い打ち: ダメージは無いが得点が入り、倒れている時間が少し延びる
     const pts = 80 * Math.min(10, Math.max(1, G.combo));
-    G.score += pts; G.oiuchi = (G.oiuchi || 0) + 1; f.flash = .15;
+    G.score += pts; G.oiuchi = (G.oiuchi || 0) + 1; f.flash = .15; f.down = Math.max(f.down, .8); if (addStat('oiuchi') >= 50) achieve('oiuchi');
     addText(f.x, f.y - .6, `追い打ち +${pts}`, '#ffd27a', 15); burst(f.x, f.y, '#ffd27a', 6, 90);
     return;
   }
-  const dmg = Math.round(base * stat.power());
+  const dmg = Math.round(base * stat.power() * aff * (G.hitMul || 1));
   f.hp -= dmg; f.flash = .15;
+  if (aff !== 1 && G.time - (f.affT ?? -9) > .6) { f.affT = G.time; addText(f.x + .5, f.y - .9, aff > 1 ? '効いた！' : 'いまひとつ', aff > 1 ? '#ff9b5a' : '#a99cb0', 13); if (aff > 1) { G.weakHits = (G.weakHits || 0) + 1; if (addStat('weak') >= 50) achieve('weak'); } }
   const mult = comboMult();
   G.score += Math.round(dmg * 10 * mult);
   addText(f.x, f.y - .5, String(dmg), '#fff4e0');
@@ -1170,13 +1491,14 @@ function hitFoe(f, base) {
 function killFoe(f) {
   if (f.dead || f.down > 0) return;
   const mult = comboMult();
-  f.down = 1; f.downT = 0; f.hp = 0; G.kills++; // HP0 でも連続が切れるまでは歩き続け、罠に当たる
+  f.down = DOWN_TIME; f.downT = 0; f.hp = 0; f.moving = false; f.stun = 0; f.lurch = null; G.kills++; // その場に倒れて少し残る（罠に当たる）
+  if (!f.fly) { f.tx = f.nx = Math.round(f.x); f.ty = f.ny = Math.round(f.y); }
   const def = FOES[f.type], s = Math.round(def.soul * mult);
   G.soul += s; G.score += Math.round(def.score * mult);
   addText(f.x, f.y - 1, `魂 +${s}`, '#c9b8ff', 16); spr('soul', f.x, f.y, .8, 1, -12);
   burst(f.x, f.y, '#b9a5ff', 18, 160); sfx.kill();
 }
-const DOWN_MAX = 8; // HP0 の侵入者が残る最長の秒数（連続が切れたらその前に消える）
+const DOWN_TIME = 1.5, DOWN_MAX = 3; // 倒れたまま残る秒数（追い打ちで延びるが最大3秒）
 function finishFoe(f) { f.dead = true; f.deadT = 0; f.down = 0; }
 // 絵のエフェクト（8 コマの横長画像）を出す。dy はマスの中心からのずれ（上が負）
 function spr(key, x, y, dur, s = 1, dy = 0, rot = 0) { if (imgReady(`fx_${key}`)) G.fx.push({ type: 'spr', key, x, y, t: 0, dur, s, dy, rot }); }
@@ -1189,7 +1511,7 @@ function poisonTick(f) { // 毒は1秒ごと（連続には数えない）
 const inBox = (f, x, y, r) => !f.dead && !f.fly && Math.max(Math.abs(f.x - x), Math.abs(f.y - y)) <= r;
 function terrainAt(x, y, f) { // 地形のダメージ（連続には数えない）
   if (f.dead || tileAt(x, y) !== '^') return;
-  hitFoe(f, 6); f.stun = Math.max(f.stun, .25); sfx.spike(); spr('spike', x, y, .4);
+  G.hitSrc = 'spike'; hitFoe(f, 6); G.hitSrc = null; f.stun = Math.max(f.stun, .25); sfx.spike(); spr('spike', x, y, .4);
   addText(x, y - .9, 'トゲ', '#d8d0c4', 14);
 }
 function activateDevice(dv) {
@@ -1215,7 +1537,7 @@ function multiHit(list) {
   const n = list.length; if (n < 2) return;
   for (let i = 1; i < n; i++) trapSuccess();
   const bonus = 150 * n * (n - 1) * Math.min(10, Math.max(1, G.combo)); // 連続の掛け算は10まで
-  G.score += bonus; G.multiHits = (G.multiHits || 0) + 1;
+  G.score += bonus; G.multiHits = (G.multiHits || 0) + 1; if (n >= 3) achieve('triple');
   const f = list[0];
   addText(f.x, f.y - 1.6, n === 2 ? 'ダブルヒット！' : n === 3 ? 'トリプルヒット！' : `${n}体まとめて！`, '#ffd27a', 20 + Math.min(8, n * 2));
   sfx.combo(Math.min(8, G.combo));
@@ -1224,7 +1546,7 @@ function multiHit(list) {
 function foeCrash(f, g, fl) {
   const dir = DIRS.findIndex(([dx, dy]) => dx === Math.sign(Math.round(fl.tx - fl.fx)) && dy === Math.sign(Math.round(fl.ty - fl.fy)));
   if (dir < 0) return;
-  trapSuccess(); G.score += 200 * Math.min(10, Math.max(1, G.combo)); G.crashes = (G.crashes || 0) + 1;
+  trapSuccess(); G.score += 200 * Math.min(10, Math.max(1, G.combo)); G.crashes = (G.crashes || 0) + 1; G.nightCrash = (G.nightCrash || 0) + 1; if (G.nightCrash >= 5) achieve('crash');
   addText(g.x, g.y - 1.3, '玉突き！', '#ffb38a', 20); G.shake = Math.max(G.shake, 5); sfx.crash();
   burst(g.x, g.y, '#ffd9a0', 12, 140);
   hitFoe(g, 12); hitFoe(f, 6);
@@ -1243,17 +1565,50 @@ function shove(f, dir, n = 1) {
   f.moving = false; f.stun = 0; f.lurch = null; f.lastDir = dir;
   f.fly = { fx: f.x, fy: f.y, tx: cx, ty: cy, t: 0, dur: .14 + .06 * k, slam: false, fall, hop: true };
 }
+// 少しあとに実行する（盤面の時間で数えるので、一時停止中は止まる）
+function later(t, fn) { G.later.push({ t, fn }); }
 function triggerAt(x, y, f, chained) {
   const tr = G.traps.get(x + ',' + y);
   if (!tr || tr.cd > 0 || f.dead) return;
-  tr.cdMax = tr.cd = trapCd(tr.type); tr.anim = .35;
-  const fav = isFav(tr.type);
-  if (fav && G.time - (tr.favT ?? -99) > 6) { tr.favT = G.time; favText(x, y); }
+  tr.cdMax = tr.cd = tr.type === 'fusion' ? Math.max(trapCd(tr.parts[0]), trapCd(tr.parts[1])) * 1.15 : trapCd(tr.type); tr.anim = .35;
   if (chained) { G.score += 50 * Math.max(1, G.combo); addText(x, y - 1.1, '連鎖！', '#f1d98e', 22); }
-  if (tr.type === 'bear') {
+  const it = G.items.find(i => i.x === x && i.y === y); if (it) takeItem(it, true); // 罠でアイテムを取ると2倍
+  if (tr.type !== 'fusion') { fireTrap(tr, tr.type, x, y, f); return; }
+  addText(x, y - 1.7, tr.name, '#ffd27a', 16); G.fusionFired = (G.fusionFired || 0) + 1; if (addStat('fusionFired') >= 20) achieve('fusion20');
+  fireTrap(tr, tr.parts[0], x, y, f, 1.3);
+  const second = (n = 0) => { // 2つ目は少し遅れて。飛ばされている途中なら着地を待つ
+    if (f.dead) return;
+    if (f.fly && n < 6) { later(.15, () => second(n + 1)); return; }
+    fireTrap(tr, tr.parts[1], Math.round(f.x), Math.round(f.y), f, 1.3);
+  };
+  later(.3, second);
+}
+// 罠1つ分の効果。mul は合成のときのダメージ倍率
+function fireTrap(tr, ty, x, y, f, mul = 1) {
+  G.hitSrc = ty; G.hitMul = mul;
+  try { fireTrapBody(tr, ty, x, y, f); } finally { G.hitSrc = null; G.hitMul = 1; }
+}
+function fireTrapBody(tr, ty, x, y, f) {
+  const fav = isFav(ty);
+  if (fav && G.time - (tr.favT ?? -99) > 6) { tr.favT = G.time; favText(x, y); }
+  if (ty === 'keg') { // 火薬樽: 導火線が燃えてから爆発
+    sfx.place(); G.fx.push({ type: 'fuse', x, y, t: 0, dur: TRAPS.keg.delay }); addText(x, y - 1, 'ジジ…', '#ffb35a', 14);
+    const mul = G.hitMul;
+    later(TRAPS.keg.delay, () => {
+      G.hitSrc = 'keg'; G.hitMul = mul;
+      try {
+        sfx.bomb(); spr('bomb', x, y, .7, 2.4); G.shake = Math.max(G.shake, 8); burst(x, y, '#ffb35a', 22, 180);
+        const hits = G.foes.filter(g => !g.dead && g.z <= 6 && Math.max(Math.abs(g.x - x), Math.abs(g.y - y)) <= 1.4);
+        if (hits.length) { trapSuccess(); multiHit(hits); } else addText(x, y - .5, '外れた', '#a99cb0', 15);
+        for (const g of hits) { hitFoe(g, 30); if (!g.dead) { const gx = Math.round(g.x) - x, gy = Math.round(g.y) - y; if (gx || gy) shove(g, DIRS.findIndex(([dx, dy]) => dx === Math.sign(gx) && dy === Math.sign(gy) && (!gx || !gy))); } }
+      } finally { G.hitSrc = null; G.hitMul = 1; }
+    });
+    return;
+  }
+  if (ty === 'bear') {
     sfx.bear(); spr('snap', x, y, .45); trapSuccess(); hitFoe(f, 14);
     if (!f.dead) { f.stun = Math.max(f.stun, 2.2 * FOES[f.type].stunMul); tr.snap = f.stun; f.lurch = f.lastDir; }
-  } else if (tr.type === 'spring') {
+  } else if (ty === 'spring') {
     sfx.spring(); spr('spring', x, y, .5, 1, -8); trapSuccess(); hitFoe(f, 6);
     if (f.dead) return;
     const [dx, dy] = DIRS[tr.dir]; let cx = x, cy = y, steps = 0, slam = false;
@@ -1266,10 +1621,10 @@ function triggerAt(x, y, f, chained) {
     f.moving = false; f.stun = 0;
     f.lastDir = tr.dir;
     f.fly = { fx: x, fy: y, tx: cx, ty: cy, t: 0, dur: .16 + .07 * Math.max(1, steps), slam, fall };
-  } else if (tr.type === 'rock') {
-    G.fx.push({ type: 'rock', x, y, t: 0, dur: .3, boom: fav });
+  } else if (ty === 'rock') {
+    G.fx.push({ type: 'rock', x, y, t: 0, dur: .3, boom: fav, mul: G.hitMul });
     f.stun = Math.max(f.stun, .45); // 物音に気づいて見上げる
-  } else if (tr.type === 'fire') {
+  } else if (ty === 'fire') {
     sfx.fire();
     const tiles = [[x, y]];
     for (const [dx, dy] of DIRS) for (let i = 1; i <= (fav ? 2 : 1) && isFloor(x + dx * i, y + dy * i); i++) tiles.push([x + dx * i, y + dy * i]); // ミーナは2マスずつ
@@ -1281,7 +1636,7 @@ function triggerAt(x, y, f, chained) {
       const gx = Math.round(g.x), gy = Math.round(g.y);
       shove(g, gx === x && gy === y ? g.lastDir : DIRS.findIndex(([dx, dy]) => dx === Math.sign(gx - x) && dy === Math.sign(gy - y)));
     }
-  } else if (tr.type === 'ice') { // 進んでいた向きのまま、壁か奈落まで滑る
+  } else if (ty === 'ice') { // 進んでいた向きのまま、壁か奈落まで滑る
     sfx.ice(); spr('ice', x, y, .6);
     trapSuccess(); hitFoe(f, 8); burst(x, y, '#bfe6f2', 14, 110);
     if (f.dead) return;
@@ -1294,7 +1649,7 @@ function triggerAt(x, y, f, chained) {
     }
     f.moving = false; f.stun = 0; f.lastDir = d;
     f.fly = { fx: x, fy: y, tx: cx, ty: cy, t: 0, dur: .12 + .09 * Math.max(1, steps), slam, fall, slide: true, polish: fav };
-  } else if (tr.type === 'warp') { // 入ってきた扉まで送り返す
+  } else if (ty === 'warp') { // 入ってきた扉まで送り返す
     sfx.warp();
     trapSuccess(); hitFoe(f, fav ? 14 : 8);
     if (f.dead) return;
@@ -1305,7 +1660,7 @@ function triggerAt(x, y, f, chained) {
     f.tx = f.nx = ddx; f.ty = f.ny = ddy; f.x = ddx; f.y = ddy; f.moving = false; f.prog = 0;
     f.stun = Math.max(f.stun, fav ? 2.5 : .8); // リリィは扉の前で長く足止め
     addText(ddx, ddy - 1, '戻された！', '#c9b8ff', 16);
-  } else if (tr.type === 'blade') {
+  } else if (ty === 'blade') {
     sfx.blade();
     const [dx, dy] = DIRS[tr.dir], tiles = [[x, y]];
     for (let i = 1; i < 4 && isFloor(x + dx * i, y + dy * i); i++) tiles.push([x + dx * i, y + dy * i]);
@@ -1314,17 +1669,17 @@ function triggerAt(x, y, f, chained) {
     const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
     if (hits.length) { trapSuccess(); multiHit(hits); }
     hits.forEach(g => { hitFoe(g, 15); shove(g, tr.dir); });
-  } else if (tr.type === 'bell') {
+  } else if (ty === 'bell') {
     sfx.handbell(); spr('bell', x, y, .7, 1.4);
     trapSuccess();
     G.lure = { x, y, t: 3 };
     for (const g of G.foes) if (!g.dead && !g.fly && Math.abs(g.x - x) + Math.abs(g.y - y) <= 4) g.stun = Math.max(g.stun, .3 * FOES[g.type].stunMul); // 音に気を取られる
     addText(x, y - 1, '鈴の音', '#f1d98e', 16);
-  } else if (tr.type === 'caltrop') { // 弱いが安くてすぐ置ける
+  } else if (ty === 'caltrop') { // 弱いが安くてすぐ置ける
     sfx.caltrop(); spr('caltrop', x, y, .45);
     trapSuccess(); hitFoe(f, 9); burst(x, y, '#c9c3b5', 6, 70);
     if (!f.dead) { f.slow = Math.max(f.slow, 1.5); shove(f, f.lastDir); }
-  } else if (tr.type === 'vortex') { // 周りの侵入者をまとめて吸い寄せる（吸い寄せた先の罠も発動する）
+  } else if (ty === 'vortex') { // 周りの侵入者をまとめて吸い寄せる（吸い寄せた先の罠も発動する）
     sfx.vortex(); spr('vortex', x, y, .7, 2);
     trapSuccess(); hitFoe(f, 6);
     G.fx.push({ type: 'vortex', x, y, t: 0, dur: .7 });
@@ -1432,7 +1787,7 @@ function chooseHeroMove() {
     if (h.idle > 0) return -1;
     if (G.char === 'mina' && Math.random() < .04) { h.doze = 12; heroBubble('すや…', 2); flawShow(); return -1; }
     if (G.char === 'cecil' && !h.peek && Math.random() < .12) { // セシルの寄り道: 罠や仕掛けを覗きに行く
-      const doorSide = DOORS.slice(0, Math.min(DOORS.length, G.wave)).map(([x, y]) => [x === 0 ? 1 : x === COLS - 1 ? COLS - 2 : x, y === 0 ? 1 : y]);
+      const doorSide = DOORS.slice(0, Math.min(DOORS.length, G.wave)).map(([x, y]) => [x === 0 ? 1 : x === COLS - 1 ? COLS - 2 : x, y === 0 ? 1 : y === ROWS - 1 ? ROWS - 2 : y]);
       const spots = [...doorSide, ...doorSide, ...G.devices.map(o => [o.x, o.y])]; // 扉の向こうが気になる
       if (spots.length) { h.peek = pick(spots); heroBubble('なにこれ？', 1.2); flawShow(); }
     }
@@ -1444,7 +1799,7 @@ function chooseHeroMove() {
     }
     if (Math.random() < .35) { h.idle = rnd(.5, 1.5); if (Math.random() < .3) heroBubble('♪', 1); return -1; }
     if (G.traps.size && Math.random() < .5 + .1 * L) { // 罠の奥で待つ（賢いほど確実に）
-      if (!h.goal || h.goalT <= 0) { h.goal = idleGoal(); h.goalT = 5; }
+      if (!h.goal || h.goalT <= 0) { const it = G.items.find(i => Math.abs(i.x - h.tx) + Math.abs(i.y - h.ty) <= 8); h.goal = it ? [it.x, it.y] : idleGoal(); h.goalT = it ? 3 : 5; } // 近くの宝物を拾いに行く
       const gf = bfs(h.goal[0], h.goal[1], isFloor), cur = gf[h.tx + h.ty * COLS];
       if (cur <= 0) { h.idle = rnd(.8, 1.6); return -1; }
       const st = cands.find(([d, x, y]) => d >= 0 && gf[x + y * COLS] === cur - 1);
@@ -1530,7 +1885,7 @@ function updateFoe(f, dt) {
       f.tx = f.nx = fl.tx; f.ty = f.ny = fl.ty; f.x = f.tx; f.y = f.ty; f.z = 0; f.fly = null; f.prog = 0;
       f.stun = Math.max(f.stun, .35 * FOES[f.type].stunMul);
       if (fl.fall) {
-        addText(f.x, f.y - 1.1, '奈落へ！', '#c9b8ff', 22); G.score += 300 * Math.max(1, G.combo);
+        addText(f.x, f.y - 1.1, '奈落へ！', '#c9b8ff', 22); G.nightPit = (G.nightPit || 0) + 1; if (G.nightPit >= 5) achieve('pit'); G.score += 300 * Math.max(1, G.combo);
         trapSuccess(); killFoe(f); finishFoe(f); G.shake = Math.max(G.shake, 7); sfx.pit(); spr('pit', f.x, f.y, .7, 1.2); return;
       }
       if (fl.slam && fl.polish) { // ノエルの磨き上げた床: 勢いよくぶつかって目を回す
@@ -1542,9 +1897,10 @@ function updateFoe(f, dt) {
     }
     return;
   }
-  if (f.down > 0) { // HP0: 連続が切れるまで歩き続けて罠を踏む（逃げる子には当たらない）
-    f.downT += dt;
-    if (G.time - G.lastHit > COMBO_WINDOW || f.downT > DOWN_MAX) { finishFoe(f); burst(f.x, f.y, '#b9a5ff', 10, 90); return; }
+  if (f.down > 0) { // 倒れている: 動かないが、罠や玉突きには当たる
+    f.down -= dt; f.downT += dt;
+    if (f.down <= 0 || f.downT > DOWN_MAX) { finishFoe(f); burst(f.x, f.y, '#b9a5ff', 10, 90); }
+    return;
   }
   if (f.stun > 0) { f.stun -= dt; if (f.stun <= 0 && f.lurch != null) { const d = f.lurch; f.lurch = null; shove(f, d); } return; }
   if (f.moving) {
@@ -1571,10 +1927,12 @@ function updateFoe(f, dt) {
 }
 function update(dt) {
   G.time += dt;
+  if (G.later.length) { const due = G.later.filter(l => (l.t -= dt) <= 0); G.later = G.later.filter(l => l.t > 0); for (const l of due) l.fn(); }
   G.mana = Math.min(stat.maxMana(), G.mana + stat.regen() * dt);
   if (G.lure) { G.lure.t -= dt; if (G.lure.t <= 0) G.lure = null; }
   G.foeField = bfsMulti(G.foes.filter(f => !f.dead && !(f.down > 0)).map(f => [Math.round(f.x), Math.round(f.y)]), foeWalk);
   updateHero(dt);
+  updateItems(dt);
   const h = G.hero;
   G.field = G.lure ? bfs(G.lure.x, G.lure.y, foeWalk) : bfs(Math.round(h.x), Math.round(h.y), foeWalk); // 鈴が鳴っている間は鈴へ向かう
 
@@ -1598,6 +1956,7 @@ function update(dt) {
       for (const f of hits) { hitFoe(f, 35); if (!f.dead) f.stun = Math.max(f.stun, 1 * FOES[f.type].stunMul); }
     }
     if (fx.type === 'rock' && !fx.done && fx.t >= fx.dur) {
+      G.hitSrc = 'rock'; G.hitMul = fx.mul || 1; later(0, () => { G.hitSrc = null; G.hitMul = 1; });
       fx.done = true; sfx.rock(); spr('rock', fx.x, fx.y, .6, 1.4); G.shake = Math.max(G.shake, 6); burst(fx.x, fx.y, '#8c8478', 16, 140);
       const hits = G.foes.filter(f => !f.dead && f.z <= 6 && Math.hypot(f.x - fx.x, f.y - fx.y) < .75);
       const near = fx.boom ? G.foes.filter(f => !f.dead && f.z <= 6 && !hits.includes(f) && Math.max(Math.abs(f.x - fx.x), Math.abs(f.y - fx.y)) <= 1.4) : [];
@@ -1621,7 +1980,7 @@ function update(dt) {
     for (const f of G.foes) {
       if (f.dead || f.down > 0 || f.fly || f.z > 0) continue;
       if (Math.hypot(f.x - h.x, f.y - h.y) < .6) {
-        G.hp--; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt(); spr('hurt', h.x, h.y, .5, 1, -14);
+        G.hp--; G.nightHurt = true; G.hpLost = true; h.inv = G.wave <= 3 ? 3 : 2.2; h.hurt = .6; G.shake = 8; sfx.hurt(); spr('hurt', h.x, h.y, .5, 1, -14);
         f.stun = Math.max(f.stun, 1.2); // 捕まえかけて一瞬止まる
         if (Math.random() < Math.max(.08, .35 - .06 * smartL())) { h.confused = 1.2; heroBubble('？', 1.2); }
         addText(h.x, h.y - 1, 'きゃっ！', '#ffc0d3', 20);
@@ -1630,7 +1989,7 @@ function update(dt) {
       }
     }
   }
-  if (G.clearT >= 0) { G.clearT -= dt; if (G.clearT <= 0) { if (G.wave >= LAST_NIGHT) gameOver(true); else openShop(); } return; }
+  if (G.clearT >= 0) { G.clearT -= dt; if (G.clearT <= 0) { if (runMode !== 'challenge' || G.wave >= LAST_NIGHT) gameOver(true); else openShop(); } return; }
   if (G.phase === 0) { G.prepT -= dt; if (G.prepT <= 0) beginDefense(); }
   if (G.wave === 1 && G.phase === 0) { // 第1夜の準備中だけの案内
     if (!G.tip1 && G.time > 2.6) { G.tip1 = true; say('罠ボタンを選んで、扉から来る道に置こう', 4); }
@@ -1657,6 +2016,14 @@ function drawTrapUI(c, type, cx, cy, size, dir = 1) {
 }
 function drawTrapIcon(c, type, cx, cy, s, dir, t, closed) {
   c.save(); c.translate(cx, cy); c.scale(s, s);
+  if (type === 'keg') { // 火薬樽
+    c.fillStyle = '#6b4526'; c.beginPath(); c.ellipse(0, 2, 12, 14, 0, 0, 7); c.fill();
+    c.strokeStyle = '#3a2412'; c.lineWidth = 2; for (const yy of [-6, 8]) { c.beginPath(); c.moveTo(-12, yy); c.lineTo(12, yy); c.stroke(); }
+    c.fillStyle = '#c9a24a'; c.fillRect(-12, -1, 24, 3);
+    c.strokeStyle = '#d8c9a8'; c.lineWidth = 2; c.beginPath(); c.moveTo(4, -11); c.quadraticCurveTo(9, -18, 13, -15); c.stroke();
+    c.fillStyle = '#ffb35a'; c.beginPath(); c.arc(13, -15, 2.5, 0, 7); c.fill();
+    c.restore(); return;
+  }
   if (type === 'bear') {
     c.fillStyle = '#3a332e'; c.beginPath(); c.arc(0, 0, 15, 0, 7); c.fill();
     c.strokeStyle = '#8e857b'; c.lineWidth = 3; c.beginPath(); c.arc(0, 0, 13, 0, 7); c.stroke();
@@ -1739,7 +2106,11 @@ function drawTraps() {
     const cx = tr.x * T + T / 2, cy = tr.y * T + T / 2, armed = tr.cd <= 0;
     const pop = tr.anim > 0 ? 1 + tr.anim * .6 : 1;
     ctx.globalAlpha = armed ? 1 : .45;
-    drawTrapIcon(ctx, tr.type, cx, cy, pop, tr.dir, G.time, tr.snap > 0);
+    if (tr.type === 'fusion') { // 2つの罠を少しずらして重ね、金の輪で囲む
+      drawTrapIcon(ctx, tr.parts[0], cx - 6, cy - 5, pop * .72, tr.dir, G.time, tr.snap > 0);
+      drawTrapIcon(ctx, tr.parts[1], cx + 6, cy + 5, pop * .72, tr.dir, G.time, tr.snap > 0);
+      ctx.strokeStyle = `rgba(255,210,122,${.55 + .3 * Math.sin(G.time * 4)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 7); ctx.stroke();
+    } else drawTrapIcon(ctx, tr.type, cx, cy, pop, tr.dir, G.time, tr.snap > 0);
     ctx.globalAlpha = 1;
     if (!armed) { // 再装填の残り
       ctx.strokeStyle = 'rgba(241,217,142,.85)'; ctx.lineWidth = 3;
@@ -1993,15 +2364,7 @@ function drawHeroBubble(px, by) {
     ctx.fillStyle = '#3a2819'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(h.bubble, px, by + 1);
   }
 }
-function drawWisp(x, y) { // HP0 の侵入者の頭上のひとだま（逃げる子には当たらない印）
-  const t = G.time, by = y - 6 + Math.sin(t * 6 + x) * 2;
-  ctx.save(); ctx.globalAlpha = downAlpha() + .3;
-  const g = ctx.createRadialGradient(x, by, 0, x, by, 9); g.addColorStop(0, 'rgba(230,240,255,.95)'); g.addColorStop(.5, 'rgba(150,180,255,.6)'); g.addColorStop(1, 'rgba(120,140,255,0)');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, by, 9, 0, 7); ctx.fill();
-  ctx.fillStyle = 'rgba(200,215,255,.8)'; ctx.beginPath(); ctx.moveTo(x - 3, by + 2); ctx.quadraticCurveTo(x, by + 12 + Math.sin(t * 9) * 2, x + 3, by + 2); ctx.fill();
-  ctx.restore();
-}
-function downAlpha() { const left = COMBO_WINDOW - (G.time - G.lastHit); return left < 1 && Math.floor(G.time * 14) % 2 ? .25 : .55; } // HP0 の侵入者の透け具合
+function downAlpha(f) { return f.down < .5 && Math.floor(G.time * 16) % 2 ? .35 : .85; } // 倒れた侵入者は消える前に点滅
 function drawFoe(f) {
   const t = G.time, px = f.x * T + T / 2, gy = f.y * T + T / 2 + 2, py = gy - f.z;
   const sc = f.type === 'heavy' ? 1.18 : 1;
@@ -2011,17 +2374,17 @@ function drawFoe(f) {
     const left = Math.round(px - size / 2), top = Math.round(footY - 46 * sc - f.z);
     ctx.save();
     if (f.dead) ctx.globalAlpha = Math.max(0, 1 - f.deadT / .5);
-    else if (f.down > 0) ctx.globalAlpha = downAlpha();
-    if (!(f.down > 0)) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 11 * sc, 3.5 * sc); }
+    else if (f.down > 0) ctx.globalAlpha = downAlpha(f);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 11 * sc, 3.5 * sc);
     const walking = f.moving && f.stun <= 0 && !f.fly;
     const img = walking ? IMG[`${key}_walk`] : IMG[`${key}_idle`];
     const sx = walking ? (Math.floor((f.walk || 0) / WALK_STEP) % 4) * 48 : row * 48, sy = walking ? row * 48 : 0;
     ctx.imageSmoothingEnabled = false;
     if (f.dead) { ctx.translate(px, footY); ctx.scale(1 + f.deadT, 1 - f.deadT * 1.2); ctx.translate(-px, -footY); }
+    else if (f.down > 0 && !f.fly) { const pv = footY - 8; ctx.translate(px, pv); ctx.rotate((f.face < 0 ? -1 : 1) * Math.PI / 2 * Math.min(1, f.downT * 6)); ctx.translate(-px, -pv); } // 横倒し
     ctx.drawImage(img, sx, sy, 48, 48, left, top, size, size);
     if (f.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = f.down > 0 ? .25 : .6; ctx.drawImage(img, sx, sy, 48, 48, left, top, size, size); }
     ctx.restore();
-    if (f.down > 0 && !f.dead) drawWisp(px, top + 4);
     if (!f.dead && !(f.down > 0) && f.hp < f.maxhp) {
       const w = 26, x = px - w / 2, y = top + 4;
       ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, y - 1, w + 2, 5);
@@ -2036,9 +2399,10 @@ function drawFoe(f) {
   }
   ctx.save();
   if (f.dead) { const p = f.deadT / .5; ctx.globalAlpha = 1 - p; }
-  else if (f.down > 0) ctx.globalAlpha = downAlpha();
-  if (!(f.down > 0)) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, gy + 16, 12 * sc, 4 * sc); }
+  else if (f.down > 0) ctx.globalAlpha = downAlpha(f);
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, gy + 16, 12 * sc, 4 * sc);
   ctx.translate(px, py); ctx.scale(sc * (f.face < 0 ? -1 : 1), sc);
+  if (f.down > 0 && !f.fly) ctx.rotate(Math.PI / 2 * Math.min(1, f.downT * 6));
   if (f.dead) ctx.scale(1 + f.deadT, 1 - f.deadT * 1.2);
   const walking = f.moving && f.stun <= 0;
   const step = walking ? Math.sin(t * 10 + f.seed) : 0, bob = walking ? -Math.abs(step) * 1.5 : 0;
@@ -2083,7 +2447,7 @@ function drawFoe(f) {
 function drawTorches() {
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const [x, y] of TORCHES) {
-    const px = x * T + T / 2, py = y === 0 ? T - 24 : y * T + 10;
+    const px = x * T + T / 2, py = y === 0 ? T - 24 : (ROWS - 1) * T + 10;
     const fl = 1 + Math.sin(G.time * 9 + x) * .06 + Math.sin(G.time * 23 + y) * .04;
     const g = ctx.createRadialGradient(px, py, 2, px, py, 130 * fl);
     g.addColorStop(0, 'rgba(255,170,80,.22)'); g.addColorStop(1, 'rgba(255,120,40,0)');
@@ -2091,7 +2455,7 @@ function drawTorches() {
   }
   ctx.restore();
   for (const [x, y] of TORCHES) {
-    const px = x * T + T / 2, py = y === 0 ? T - 24 : y * T + 10, fl = Math.sin(G.time * 12 + x) * 1.5;
+    const px = x * T + T / 2, py = y === 0 ? T - 24 : (ROWS - 1) * T + 10, fl = Math.sin(G.time * 12 + x) * 1.5;
     ctx.fillStyle = '#ff8a3c'; ctx.beginPath(); ctx.moveTo(px, py - 10 - fl); ctx.quadraticCurveTo(px + 6, py - 2, px, py + 3); ctx.quadraticCurveTo(px - 6, py - 2, px, py - 10 - fl); ctx.fill();
     ctx.fillStyle = '#ffe08a'; ell(px, py - 1, 2, 3);
   }
@@ -2139,6 +2503,10 @@ function drawFx() {
       ctx.fillStyle = '#f4ecdf';
       for (const [x, y] of fx.tiles) ctx.fillRect(x * T + 4, y * T + T / 2 - 3, T - 8, 6);
       ctx.globalAlpha = 1;
+    } else if (fx.type === 'fuse') { // 火薬樽の導火線（残り時間の輪）
+      const p = Math.min(1, fx.t / fx.dur), cx = fx.x * T + T / 2, cy = fx.y * T + T / 2;
+      ctx.strokeStyle = '#ffb35a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, 20, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - p)); ctx.stroke();
+      if (Math.random() < .5) G.parts.push({ x: cx + rnd(-4, 4), y: cy - 18, vx: rnd(-30, 30), vy: rnd(-60, -20), life: .3, t: 0, color: '#ffd27a', size: 2 });
     } else if (fx.type === 'boom') { // セシルの落石の爆発
       const q = fx.t / .4;
       ctx.fillStyle = `rgba(255,170,80,${.5 * (1 - q)})`; ell(fx.x * T + T / 2, fx.y * T + T / 2, 60 * (.5 + q), 50 * (.5 + q));
@@ -2237,6 +2605,7 @@ function draw() {
   ctx.drawImage(bg, 0, 0, W, H);
   drawTorches();
   drawTraps();
+  drawItems();
   drawPreview();
   const ents = [...G.foes.map(f => ({ y: f.y, f })), { y: G.hero.y + .01, hero: true }].sort((a, b) => a.y - b.y);
   for (const e of ents) e.hero ? drawHero() : drawFoe(e.f);
@@ -2260,7 +2629,9 @@ function updateHud() {
   el.hearts.setAttribute('aria-label', `体力 ${G.hp}/${maxHp}`);
   el.manaFill.style.width = (G.mana / mm * 100) + '%';
   el.manaText.textContent = `${Math.floor(G.mana)}/${mm}`;
-  el.wave.textContent = Math.max(1, G.wave);
+  const wb = $('#sWaveBox'), wk = runMode + runStage;
+  if (wb.dataset.k !== wk) { wb.dataset.k = wk; wb.innerHTML = runMode === 'stage' ? `ステージ<b id="sWave">${runStage}</b><small>／全40</small>` : runMode === 'edit' ? '<b id="sWave">自作</b><small>の部屋</small>' : '第<b id="sWave">1</b>夜<small>／全10夜</small>'; el.wave = $('#sWave'); }
+  if (runMode === 'challenge') el.wave.textContent = Math.max(1, G.wave);
   el.score.textContent = G.score.toLocaleString('ja-JP');
   el.soul.textContent = G.soul.toLocaleString('ja-JP');
   el.traps.textContent = `${G.traps.size}/${stat.limit()}`;
@@ -2326,12 +2697,12 @@ buildPalette();
 
 // ---------- 画面切り替え ----------
 const stage = $('#stage');
-const OVS = ['ovTitle', 'ovSelect', 'ovHelp', 'ovShop', 'ovOver', 'ovPause'];
+const OVS = ['ovTitle', 'ovSelect', 'ovHelp', 'ovShop', 'ovOver', 'ovPause', 'ovStages', 'ovAch'];
 function showOv(id) {
   OVS.forEach(o => $('#' + o).hidden = o !== id);
   stage.classList.toggle('has-ov', !!id);
-  stage.classList.toggle('tall', id === 'ovSelect'); // 支度の画面は盤面を隠して全部見せる
-  palette.hidden = id === 'ovSelect';
+  stage.classList.toggle('tall', ['ovSelect', 'ovStages', 'ovAch'].includes(id)); // 支度・ステージ選択・実績は盤面を隠して全部見せる
+  palette.hidden = ['ovSelect', 'ovStages', 'ovAch'].includes(id);
 }
 // ---------- 遊び方（図つきのページ） ----------
 const hc = $('#helpCv').getContext('2d');
@@ -2381,7 +2752,9 @@ const HELP = [
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 2, 1, 1); miniTrap(g, 'blade', 4, 1, 2); miniLabel(g, 2, 0, '向き →'); miniLabel(g, 4, 0, '向き ↓'); miniLabel(g, 6, 1, '押して置く', '#fff4e0'); } },
   { t: '連続で得点アップ', d: '罠を3秒半以内に続けて当てると「連続」。続くほど得点と魂が増え、3連続からは魔力も少し戻る。罠に当たった侵入者はよろけて動く（火柱・まきびしは1歩前、落石は1歩後ろ、トラバサミは抜け出したあと1歩前、振り子刃は刃の向き、槍の石像は外へ）。動いた先に罠を置いておけば連鎖する。',
     draw() { const g = miniGrid(7, 3); miniFoe(g, 1, 1); miniTrap(g, 'bear', 3, 1); miniTrap(g, 'rock', 5, 1); miniArrow(g, [1, 1], [3, 1]); miniArrow(g, [3, 1], [5, 1]); miniLabel(g, 3, 0, '1'); miniLabel(g, 5, 0, '2連続！'); } },
-  { t: '巻き込み・玉突き・追い打ち', d: '1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。ダブルヒットと玉突きは得点が大きく増える。HP が0になった侵入者も、連続が切れるまでは半透明の姿で歩き続け、罠を踏むと「追い打ち」で連続が伸びる（逃げる子には当たらない）。',
+  { t: '敵との相性・合成・火薬樽', d: '侵入者には罠との相性がある。騎士は火柱に弱く、振り子刃とまきびしに強い。盗賊はまきびし・トラバサミ・火薬樽に弱く、落石に強い。重装兵は火柱と火薬樽に弱く、落石・振り子刃・まきびしに強い。弱点に当てると「効いた！」。置いてある罠の上に別の罠を置くと「合成」になり、2つの罠が1マスで続けて作動する（少し強くなり、罠の数は1つのまま）。火薬樽は踏まれて1秒後に爆発するので、侵入者が進む先を読んで置く。',
+    draw() { const g = miniGrid(7, 3); miniTrap(g, 'fire', 1, 1); miniTrap(g, 'rock', 2, 1); miniArrow(g, [1, 1], [3.3, 1]); miniTrap(g, 'fire', 4, 1); miniTrap(g, 'rock', 4.5, 1.4); miniLabel(g, 4.3, 0, '合成「溶岩落とし」'); miniFoe(g, 6, 1); miniLabel(g, 6, 2, '効いた！', '#ff9b5a'); } },
+  { t: '巻き込み・玉突き・追い打ち', d: '1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。ダブルヒットと玉突きは得点が大きく増える。倒した侵入者も少しのあいだその場に倒れたまま残り、罠に当てると「追い打ち」で連続が続く（逃げる子には当たらない）。',
     draw() { const g = miniGrid(9, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniFoe(g, 4, 1); miniTile(g, 7, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniArrow(g, [4, 1], [7, 1], '#ffb38a'); miniLabel(g, 4, 0, '玉突き！', '#ffb38a'); miniLabel(g, 7, 0, '奈落へ！'); miniLabel(g, 2.5, 2, '飛ばして、ぶつける', '#fff4e0'); } },
   { t: '跳ね床と奈落', d: '跳ね床は踏んだ侵入者を矢印の向きへ3マス（重装兵は2マス）飛ばす。飛んだ先に罠があれば「連鎖」ボーナス。奈落に落とせば一撃で倒せる。壁にぶつけても追加ダメージ。',
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniTile(g, 4, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniLabel(g, 4, 0, '奈落へ！'); miniLabel(g, 2.5, 2, '矢印の向きへ飛ぶ', '#fff4e0'); } },
@@ -2475,7 +2848,7 @@ function renderSelect() {
     const row = document.createElement('div'); row.className = 'row'; row.append(ic);
     row.insertAdjacentHTML('beforeend', `<div><div class="n">${d.name}</div><div class="t"><span>魔力 ${fvc && CHARS[sel.char].passive.cost || d.cost}</span>・<span>再装填 ${fvc && CHARS[sel.char].passive.cd || d.cd}秒</span></div></div>`);
     b.append(row);
-    b.insertAdjacentHTML('beforeend', `<span class="d">${d.desc}</span>`);
+    b.insertAdjacentHTML('beforeend', `<span class="d">${d.desc}</span>${affText(id) ? `<span class="aff">${affText(id)}</span>` : ''}`);
     if (fvc) b.insertAdjacentHTML('beforeend', `<span class="fvb">★<b>${CHARS[sel.char].name}の</b>得意</span>`);
     b.addEventListener('click', () => {
       if (on) sel.traps = sel.traps.filter(t => t !== id);
@@ -2513,14 +2886,24 @@ function renderConfirm() {
   box.innerHTML = `<div class="cf-ph">${pic ? `<img alt="" src="${pic}">` : ''}<div class="nm">${ch.name}</div></div><div><p class="say">${ch.ready}</p><ul>${items}</ul>${fvline}</div>`;
   box.querySelectorAll('li').forEach(li => li.prepend(trapIconCanvas(li.dataset.t, 30)));
 }
-function openSelect() { audio(); renderSelect(); showOv('ovSelect'); setSelStep(1); }
+function openSelect() { audio(); renderSelect(); showOv('ovSelect'); setSelStep(1); $('#selMode').textContent = runMode === 'stage' ? `ステージ${runStage}（${MAPS[stageMap(runStage)].name}）` : runMode === 'edit' ? '自作の部屋を試す' : 'チャレンジ（全10夜）'; $('#btnBack1').textContent = runMode === 'challenge' ? '◀ タイトルへ' : '◀ 戻る'; }
 function startRun(char = sel.char, loadout = sel.traps) {
   audio();
   const lo = TRAP_ORDER.filter(t => loadout.includes(t)); // 罠ボタンは図鑑の順に並べる
   try { localStorage.setItem('wanakan-loadout', JSON.stringify({ char, traps: lo })); } catch (e) {}
-  setMap(0);
+  const mi = runMode === 'stage' ? stageMap(runStage) : runMode === 'edit' ? CUSTOM_MAP : 0;
+  setMap(mi);
   G = makeRun('play', char, lo); paused = false; hudCache = '';
-  buildPalette(); showOv(null); startWave(1);
+  if (runMode === 'stage') { // ステージが進むほど、館の備えも少し強くしておく
+    const k = runStage - 1;
+    Object.assign(G.up, { limit: Math.min(3, Math.floor(k / 8)), smart: Math.min(5, Math.floor(k / 6)), regen: Math.min(3, Math.floor(k / 9)), power: Math.min(2, Math.floor(k / 14)), hp: k >= 16 && k < 24 ? 1 : 0 }); // 書庫（16〜20）は少し体力を足す
+    G.hp = stat.maxHp();
+    G.mana = stat.maxMana();
+  }
+  $('#editBar').hidden = true; buildPalette(); showOv(null);
+  if (runMode === 'stage') startWave(stageWave(runStage), { map: mi, stage: runStage, intro: (runStage - 1) % 5 === 0 });
+  else if (runMode === 'edit') startWave(editLv, { map: mi, intro: true });
+  else startWave(1);
 }
 function openShop() {
   G.state = 'shop';
@@ -2557,7 +2940,9 @@ function renderShop() {
   }
 }
 function gameOver(won) {
-  G.state = 'over'; $('#btnGo').hidden = true;
+  if (runMode !== 'challenge') { stageResult(won); return; }
+  G.state = 'over'; $('#btnGo').hidden = true; $('#btnRetry2').hidden = true;
+  if (won) { achieve('challenge'); clearedBy(); }
   const hpBonus = won ? G.hp * 2000 : 0;
   G.score += hpBonus;
   const newBest = G.score > best;
@@ -2576,12 +2961,132 @@ function gameOver(won) {
   if (newBc) try { localStorage.setItem('wanakan-bestcombo', String(G.bestCombo)); } catch (e) {}
   $('#rComboBest').textContent = newBc ? (bc ? `最大連続の記録を更新！（これまで ${bc}連続）` : '最大連続の記録') : `これまでの記録 ${bc}連続`;
   $('#rComboBest').className = newBc ? 'new' : '';
-  $('#rOiuchi').textContent = `${G.oiuchi || 0}回`; $('#rMulti').textContent = `${G.multiHits || 0}回`; $('#rCrash').textContent = `${G.crashes || 0}回`;
+  $('#rOiuchi').textContent = `${G.oiuchi || 0}回`; $('#rMulti').textContent = `${G.multiHits || 0}回`; $('#rCrash').textContent = `${G.crashes || 0}回`; $('#rItems').textContent = `${G.itemsGot || 0}個`;
   $('#rKills').textContent = G.kills;
   $('#rBest').textContent = (won ? `体力ボーナス +${hpBonus.toLocaleString('ja-JP')}点。` : '') + (newBest ? 'ハイスコア更新！ ' : '') + bestText();
   if (bgmBuf[won ? 'dawn' : 'over']) { if (!won || bgmKey !== 'dawn') { bgmKey = null; playBgm(won ? 'dawn' : 'over'); } } else if (won) sfx.dawn(); else sfx.lose();
   setTimeout(() => showOv('ovOver'), won ? 300 : 700);
 }
+function clearedBy() { // 4人全員でクリアした実績
+  const c = stats.chars || {}; c[G.char] = 1; stats.chars = c; addStat('clears');
+  if (CHAR_ORDER.every(k => c[k])) achieve('all4');
+}
+// ステージ（と自作の部屋）の結果
+function stageResult(won) {
+  G.state = 'over'; $('#btnGo').hidden = true;
+  const n = runStage, stars = won ? 1 + (G.hpLost ? 0 : 1) + (G.bestCombo >= 8 + Math.floor(n / 5) ? 1 : 0) : 0;
+  let newBest = false;
+  if (runMode === 'stage') {
+    const r = stageRec.rec[n] || { best: 0, stars: 0 };
+    if (won) { newBest = G.score > r.best; r.best = Math.max(r.best, G.score); r.stars = Math.max(r.stars, stars); stageRec.rec[n] = r; stageRec.open = Math.max(stageRec.open, Math.min(STAGE_COUNT, n + 1)); saveStages(); clearedBy(); }
+    if (won && n >= 10) achieve('stage10'); if (won && n >= 20) achieve('stage20'); if (won && n >= 40) achieve('stage40');
+  } else if (won) { achieve('editor'); clearedBy(); }
+  setKv($('#kvOver'), CH().art ? `portrait_${CH().art}${won && ART[`portrait_${CH().art}_happy`] ? '_happy' : ''}` : null);
+  $('#kvOver').classList.toggle('joy', !!won);
+  $('#rSay').textContent = won ? pick(CH().joy) : CH().lose;
+  const label = runMode === 'edit' ? '自作の部屋' : `ステージ${n}`;
+  $('#rTitle').textContent = won ? `${label} クリア！` : `${label} 失敗…`;
+  $('#rWave').textContent = won ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '—';
+  const sec = Math.floor(G.time);
+  $('#rTime').textContent = `${Math.floor(sec / 60)}分${sec % 60}秒`;
+  $('#rScore').textContent = G.score.toLocaleString('ja-JP');
+  $('#rCombo').textContent = G.bestCombo;
+  $('#rComboBest').textContent = won ? '★1: クリア　★2: 体力を減らさない　★3: ' + (8 + Math.floor(n / 5)) + '連続以上' : '';
+  $('#rComboBest').className = '';
+  $('#rOiuchi').textContent = `${G.oiuchi || 0}回`; $('#rMulti').textContent = `${G.multiHits || 0}回`; $('#rCrash').textContent = `${G.crashes || 0}回`; $('#rItems').textContent = `${G.itemsGot || 0}個`;
+  $('#rKills').textContent = G.kills;
+  $('#rBest').textContent = runMode === 'stage' && won ? (newBest ? 'このステージの最高得点を更新！' : `このステージの最高得点 ${stageRec.rec[n].best.toLocaleString('ja-JP')}`) : '';
+  const next = runMode === 'stage' && won && n < STAGE_COUNT;
+  $('#btnRetry').textContent = runMode === 'edit' ? 'エディットに戻る' : next ? `ステージ${n + 1}へ` : 'もう一度';
+  $('#btnRetry2').hidden = runMode === 'edit'; $('#btnRetry2').textContent = 'ステージ選択へ';
+  if (bgmBuf[won ? 'dawn' : 'over']) { if (!won || bgmKey !== 'dawn') { bgmKey = null; playBgm(won ? 'dawn' : 'over'); } } else if (won) sfx.dawn(); else sfx.lose();
+  setTimeout(() => showOv('ovOver'), won ? 300 : 700);
+}
+// ステージ選択の画面
+function renderStages() {
+  const g = $('#stageGrid'); g.innerHTML = '';
+  let total = 0;
+  for (let n = 1; n <= STAGE_COUNT; n++) {
+    if ((n - 1) % 5 === 0) g.insertAdjacentHTML('beforeend', `<h3 class="stageh">${MAPS[stageMap(n)].name}<span>ステージ${n}〜${n + 4}</span></h3>`);
+    const r = stageRec.rec[n], open = n <= stageRec.open, b = document.createElement('button');
+    total += r ? r.stars : 0;
+    b.type = 'button'; b.className = 'stg' + (open ? '' : ' lock') + (r ? ' done' : '') + (n % 5 === 0 ? ' boss' : ''); b.id = 'stg-' + n; b.disabled = !open;
+    b.innerHTML = `<b>${n}</b><span>${open ? (r ? '★'.repeat(r.stars) + '☆'.repeat(3 - r.stars) : 'NEW') : '鍵'}</span>`;
+    b.addEventListener('click', () => { runMode = 'stage'; runStage = n; openSelect(); });
+    g.append(b);
+  }
+  $('#stageInfo').textContent = `${Math.min(stageRec.open, STAGE_COUNT)} / ${STAGE_COUNT} ステージ開放・星 ${total} / ${STAGE_COUNT * 3}`;
+}
+function openStages() { audio(); renderStages(); showOv('ovStages'); }
+// ---------- エディット ----------
+const ETOOLS = [['.', '床'], ['#', '壁'], ['O', '奈落'], ['^', 'トゲ床'], ['c', 'シャンデリア'], ['S', '槍の石像'], ['D', '扉'], ['start', '開始位置']];
+let etool = '#';
+function openEditor() {
+  audio(); runMode = 'edit';
+  const m = MAPS[CUSTOM_MAP];
+  setMap(CUSTOM_MAP, false); // 作るときは横長のまま
+  G = makeRun('edit', sel.char, sel.traps); G.devices = makeDevices(); paused = false;
+  Object.assign(G.hero, { tx: m.start[0], ty: m.start[1], nx: m.start[0], ny: m.start[1], x: m.start[0], y: m.start[1] });
+  showOv(null); palette.hidden = true; $('#btnGo').hidden = true; $('#editBar').hidden = false;
+  $('#editTools').innerHTML = ETOOLS.map(([k, n]) => `<button type="button" class="etool${k === etool ? ' on' : ''}" data-k="${k}">${n}</button>`).join('');
+  $('#editTools').querySelectorAll('.etool').forEach(b => b.addEventListener('click', () => { etool = b.dataset.k; $('#editTools').querySelectorAll('.etool').forEach(o => o.classList.toggle('on', o === b)); }));
+  $('#editLv').innerHTML = Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}"${i + 1 === editLv ? ' selected' : ''}>${i + 1}${i ? '' : '（やさしい）'}${i === 9 ? '（最強）' : ''}</option>`).join('');
+  editMsg('マスを押して置く。扉は外周の壁に3つまで');
+}
+function closeEditor() { $('#editBar').hidden = true; palette.hidden = false; }
+function editMsg(t, bad) { const e = $('#editMsg'); e.textContent = t; e.style.color = bad ? '#ffb3a0' : ''; }
+function setTile(m, x, y, c) { m.rows[y] = m.rows[y].slice(0, x) + c + m.rows[y].slice(x + 1); }
+function editAt(p) {
+  const m = MAPS[CUSTOM_MAP], { x, y } = p;
+  if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return;
+  const edge = x === 0 || y === 0 || x === COLS - 1 || y === ROWS - 1, corner = (x === 0 || x === COLS - 1) && (y === 0 || y === ROWS - 1);
+  if (etool === 'D') {
+    if (!edge || corner) { editMsg('扉は外周の壁（角以外）に置く', true); sfx.bad(); return; }
+    const i = m.doors.findIndex(([a, b]) => a === x && b === y);
+    if (i >= 0) { m.doors.splice(i, 1); setTile(m, x, y, '#'); }
+    else if (m.doors.length >= 3) { editMsg('扉は3つまで。いらない扉を押すと消せる', true); sfx.bad(); return; }
+    else { m.doors.push([x, y]); setTile(m, x, y, 'D'); }
+  } else if (edge) { editMsg('外周の壁には扉だけ置ける', true); sfx.bad(); return; }
+  else if (etool === 'start') {
+    if (m.rows[y][x] !== '.') { editMsg('開始位置は床に置く', true); sfx.bad(); return; }
+    m.start = [x, y]; Object.assign(G.hero, { tx: x, ty: y, nx: x, ny: y, x, y });
+  } else {
+    if (x === m.start[0] && y === m.start[1] && etool !== '.') { editMsg('開始位置の上には置けない', true); sfx.bad(); return; }
+    setTile(m, x, y, etool);
+  }
+  sfx.place(); setMap(CUSTOM_MAP, false); G.devices = makeDevices(); editMsg(`置いた（${ETOOLS.find(t => t[0] === etool)[1]}）`);
+}
+function checkRoom(m) { // 遊べる部屋か: 扉が1つ以上、開始位置が床、どの扉からも開始位置へ歩ける
+  if (!m.doors.length) return '扉を1つ以上置いてください';
+  const fl = (x, y) => x >= 0 && y >= 0 && x < 15 && y < 10 && '.^c'.includes(m.rows[y][x]);
+  if (!fl(m.start[0], m.start[1])) return '開始位置を床に置いてください';
+  const seen = new Set([m.start.join(',')]), q = [m.start];
+  while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of DIRS) { const k = (x + dx) + ',' + (y + dy); if (fl(x + dx, y + dy) && !seen.has(k)) { seen.add(k); q.push([x + dx, y + dy]); } } }
+  if (seen.size < 20) return '歩ける床が少なすぎます（20マス以上）';
+  for (const [x, y] of m.doors) if (!DIRS.some(([dx, dy]) => seen.has((x + dx) + ',' + (y + dy)))) return `扉（${x},${y}）から開始位置へ歩けません`;
+  return '';
+}
+function saveRoom() { const m = MAPS[CUSTOM_MAP]; m.lv = editLv; try { localStorage.setItem('trapoflily-custom', JSON.stringify({ rows: m.rows, doors: m.doors, start: m.start, lv: m.lv })); } catch (e) {} }
+function drawEditOverlay() { // マス目・扉の番号・開始位置
+  const m = MAPS[CUSTOM_MAP];
+  ctx.setTransform(dpr, 0, 0, dpr, -VX * dpr, -VY * dpr);
+  ctx.strokeStyle = 'rgba(241,217,142,.12)'; ctx.lineWidth = 1;
+  for (let x = 1; x < COLS; x++) { ctx.beginPath(); ctx.moveTo(x * T, 0); ctx.lineTo(x * T, H); ctx.stroke(); }
+  for (let y = 1; y < ROWS; y++) { ctx.beginPath(); ctx.moveTo(0, y * T); ctx.lineTo(W, y * T); ctx.stroke(); }
+  ctx.font = '800 16px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  m.doors.forEach(([x, y], i) => { ctx.fillStyle = 'rgba(208,80,63,.85)'; ctx.beginPath(); ctx.arc(x * T + T / 2, y * T + T / 2, 11, 0, 7); ctx.fill(); ctx.fillStyle = '#fff4e0'; ctx.fillText(String(i + 1), x * T + T / 2, y * T + T / 2 + 1); });
+  const [sx, sy] = m.start; ctx.strokeStyle = '#9fe08a'; ctx.lineWidth = 2; ctx.strokeRect(sx * T + 3, sy * T + 3, T - 6, T - 6);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+$('#btnEdit').addEventListener('click', openEditor);
+$('#editLv').addEventListener('change', e => { editLv = +e.target.value; });
+$('#editBack').addEventListener('click', () => { saveRoom(); closeEditor(); G = makeRun('title'); showOv('ovTitle'); });
+$('#editClear').addEventListener('click', () => { const b = blankRoom(); Object.assign(MAPS[CUSTOM_MAP], { rows: b.rows, doors: b.doors, start: b.start }); openEditor(); });
+$('#editTest').addEventListener('click', () => {
+  const err = checkRoom(MAPS[CUSTOM_MAP]);
+  if (err) { editMsg(err, true); sfx.bad(); return; }
+  saveRoom(); closeEditor(); runMode = 'edit'; openSelect();
+});
 function setPause(p) {
   if (G.state !== 'play') return;
   paused = p;
@@ -2589,17 +3094,26 @@ function setPause(p) {
   showOv(p ? 'ovPause' : null);
   $('#btnPause').textContent = p ? '再開' : '一時停止';
 }
-$('#btnStart').addEventListener('click', openSelect);
-$('#btnRetry').addEventListener('click', openSelect);
+$('#btnStart').addEventListener('click', () => { runMode = 'challenge'; openSelect(); });
+$('#btnRetry').addEventListener('click', () => {
+  if (runMode === 'edit') { openEditor(); return; }
+  if (runMode === 'stage' && G.state === 'over' && stageRec.rec[runStage] && runStage < STAGE_COUNT && /へ$/.test($('#btnRetry').textContent)) runStage++;
+  openSelect();
+});
+$('#btnRetry2').addEventListener('click', openStages);
+$('#btnStage').addEventListener('click', openStages);
+$('#btnStagesBack').addEventListener('click', () => showOv('ovTitle'));
+$('#btnAch').addEventListener('click', () => { renderAch(); showOv('ovAch'); });
+$('#btnAchBack').addEventListener('click', () => showOv('ovTitle'));
 $('#btnRetry').textContent = '支度をして、もう一度';
 $('#btnBegin').addEventListener('click', () => { if (sel.traps.length === 4) startRun(); });
 $('#btnNext1').addEventListener('click', () => { audio(); setSelStep(2); });
 $('#btnNext2').addEventListener('click', () => { if (sel.traps.length === 4) { audio(); setSelStep(3); } });
 $('#btnBack2').addEventListener('click', () => setSelStep(1));
-$('#btnBack1').addEventListener('click', () => showOv('ovTitle'));
+$('#btnBack1').addEventListener('click', () => { if (runMode === 'stage') openStages(); else if (runMode === 'edit') openEditor(); else showOv('ovTitle'); });
 addEventListener('keydown', e => { // 支度画面は Escape で前の段へ
   if (e.code !== 'Escape' || $('#ovSelect').hidden || !$('#ovHelp').hidden) return;
-  e.preventDefault(); if (selStep > 1) setSelStep(selStep - 1); else showOv('ovTitle');
+  e.preventDefault(); if (selStep > 1) setSelStep(selStep - 1); else $('#btnBack1').click();
 });
 $('#btnBack3').addEventListener('click', () => setSelStep(2));
 $('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave(G.wave + 1); hudCache = ''; });
@@ -2634,18 +3148,19 @@ let last = 0;
 let playingCls = false, drawSkip = 0;
 function frame(ts) {
   const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts;
-  if ((G.state === 'play') !== playingCls) { playingCls = G.state === 'play'; document.body.classList.toggle('playing', playingCls); requestAnimationFrame(setViewportVars); }
+  if ((G.state === 'play' || G.state === 'edit') !== playingCls) { playingCls = G.state === 'play' || G.state === 'edit'; document.body.classList.toggle('playing', playingCls); requestAnimationFrame(setViewportVars); }
   if (G.state === 'play' && !paused && G.intro) { G.time += dt; updateIntro(dt); }
   else if (G.state === 'play' && !paused) update(dt);
   else if (G.state === 'title') G.time += dt;
   else if (G.state === 'over') { G.time += dt; for (const p of G.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; } }
   // ショップ・タイトル・結果などの画面が重なっている間は、盤面を描く回数を減らす（電池と熱のため）
-  if (G.state === 'play' || !(drawSkip = (drawSkip + 1) % 6)) draw();
+  if (G.state === 'play' || G.state === 'edit' || !(drawSkip = (drawSkip + 1) % 6)) draw();
+  if (G.state === 'edit') { G.time += dt; drawEditOverlay(); }
   updateHud(); sceneBgm();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, setRun: (m, n) => { runMode = m; runStage = n; }, mapName: () => MAPS[mapIdx].name, editTool: k => { etool = k; }, editAt: (x, y) => editAt({ x, y }), customRow: y => MAPS[CUSTOM_MAP].rows[y], showAch: () => { renderAch(); showOv('ovAch'); }, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
 })();
 </script>
 

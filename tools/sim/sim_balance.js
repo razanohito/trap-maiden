@@ -2,6 +2,7 @@
 // 使い方: python -m http.server 8766 --bind 127.0.0.1（リポジトリ直下）→ node tools/sim/sim_balance.js [1組あたりの回数]
 const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
 const RUNS = +(process.argv[2] || 3);
+const STAGE = +(process.env.STAGE || 0); // STAGE=20 なら、ステージ20を1夜だけ遊ばせてクリア率を見る
 const LOADOUTS = {
   定番: ['bear', 'spring', 'rock', 'fire'],
   足止め: ['bear', 'ice', 'blade', 'bell'],
@@ -21,14 +22,15 @@ const LOADOUTS = {
   const results = [];
   for (const char of ['lily', 'mina', 'noel', 'cecil']) {
     for (const [lname, lo0] of Object.entries(LOADOUTS)) {
+      if (STAGE && !['定番', '得意入り'].includes(lname)) continue;
       const fav = { lily: 'warp', mina: 'fire', noel: 'ice', cecil: 'rock' }[char];
       const lo = lo0 || (LOADOUTS.定番.includes(fav) ? LOADOUTS.定番 : LOADOUTS.定番.map(t => t === 'spring' ? fav : t));
-      const r = await p.evaluate(({ char, lo, RUNS }) => {
+      const r = await p.evaluate(({ char, lo, RUNS, STAGE }) => {
         const A = window.__wanakan.api, W = window.__wanakan;
         const COLS = 15, DT = 1 / 30;
         const out = [];
         for (let run = 0; run < RUNS; run++) {
-          A.startRun(char, lo); A.setPaused(true);
+          A.setRun(STAGE ? 'stage' : 'challenge', STAGE || 1); A.startRun(char, lo); A.setPaused(true); W.G.intro = null;
           let G = W.G, nextPlace = 0, guard = 0;
           const tileFoe = (x, y) => G.foes.some(f => !f.dead && Math.round(f.x) === x && Math.round(f.y) === y);
           // 侵入者がたどる道（目的地の BFS を逆にたどる）
@@ -88,13 +90,14 @@ const LOADOUTS = {
             A.update(DT);
             G = W.G;
           }
-          out.push({ oiuchi: G.oiuchi || 0, multi: G.multiHits || 0, crash: G.crashes || 0, combo: G.bestCombo, kills: G.kills, traps: G.traps.size, trig: [...G.traps.values()].map(t => t.type).join('+'), wave: G.wave, won: G.bannerTitle === '全滅させた！' || G.bannerTitle === '夜明け' ? G.wave >= 10 && G.hp > 0 : false, score: G.score, hp: G.hp, time: Math.round(G.time) });
+          out.push({ cleared: G.hp > 0, oiuchi: G.oiuchi || 0, multi: G.multiHits || 0, crash: G.crashes || 0, combo: G.bestCombo, kills: G.kills, traps: G.traps.size, trig: [...G.traps.values()].map(t => t.type).join('+'), wave: G.wave, won: G.bannerTitle === '全滅させた！' || G.bannerTitle === '夜明け' ? G.wave >= 10 && G.hp > 0 : false, score: G.score, hp: G.hp, time: Math.round(G.time) });
         }
         return out;
-      }, { char, lo, RUNS });
+      }, { char, lo, RUNS, STAGE });
       results.push({ char, loadout: lname, runs: r });
       const avgW = r.reduce((a, b) => a + b.wave, 0) / r.length, wins = r.filter(x => x.wave >= 10 && x.hp > 0).length, avgS = Math.round(r.reduce((a, b) => a + b.score, 0) / r.length);
       if (process.env.DETAIL) console.log(JSON.stringify(r));
+      if (STAGE) { console.log(`ステージ${STAGE} ${char.padEnd(6)} ${lname.padEnd(5)} クリア ${r.filter(x => x.cleared).length}/${r.length}  平均得点 ${avgS}`); continue; }
       console.log(`${char.padEnd(6)} ${lname.padEnd(5)} 到達夜 ${avgW.toFixed(1)}  クリア ${wins}/${r.length}  平均得点 ${avgS}`);
     }
   }
