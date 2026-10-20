@@ -114,19 +114,6 @@ body.pboard #cv{aspect-ratio:9/14}
 .panel.wide{width:min(780px,100%)}
 .selh{font:800 15px var(--f-display);margin:12px 0 6px;color:#5a1e2c;display:flex;gap:10px;align-items:baseline}
 .selh span{font:700 13px var(--f-body);color:var(--parch-ink)}
-.chargrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.cpick{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:0;min-width:0;padding:0 0 7px;cursor:pointer;overflow:hidden;color:var(--parch);font-family:var(--f-body);background:radial-gradient(ellipse at 50% 62%,#4d3e55 0%,#2a2130 62%,#1d1722 100%);border:1px solid var(--gold-dk);border-radius:2px}
-.cpick .ph{position:relative;width:100%;aspect-ratio:5/6;max-height:42vh;overflow:hidden;border-bottom:1px solid var(--gold-dk);background:radial-gradient(ellipse at 50% 45%,rgba(241,217,142,.14),transparent 70%)}
-.cpick .ph img{position:absolute;left:50%;top:1%;width:158%;max-width:none;height:auto;transform:translateX(-50%);filter:saturate(.55) brightness(.72);transition:filter .15s,transform .15s}
-.cpick:hover .ph img{filter:saturate(.8) brightness(.9)}
-.cpick.on{box-shadow:inset 0 0 0 2px var(--gold-hi),0 0 16px rgba(241,217,142,.35);background:radial-gradient(ellipse at 50% 58%,#6a5468 0%,#352a3a 62%,#221a26 100%)}
-.cpick.on .ph img{filter:none;transform:translateX(-50%) scale(1.04);transform-origin:50% 0}
-.cpick canvas.face{width:84px;height:84px;margin-bottom:30px}
-.cpick .n{position:relative;font:800 18px var(--f-display);color:var(--gold-hi);letter-spacing:.08em;text-shadow:0 2px 3px #000;margin-top:5px;white-space:nowrap}
-.cpick .t{position:relative;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.cpick .fv{position:absolute;z-index:1;bottom:4px;left:4px;display:flex;align-items:center;gap:2px;padding:1px 5px 1px 2px;background:rgba(14,10,16,.78);border:1px solid var(--gold-dk);border-radius:2px;font:700 10px var(--f-body);color:var(--gold-hi)}
-.cpick .fv canvas{width:20px;height:20px}
-.cpick:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
 .chardetail{margin-top:8px;padding:12px 14px;background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;color:var(--parch);display:grid;gap:8px}
 .chardetail .hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .chardetail .hd b{font:800 20px var(--f-display);color:var(--gold-hi);letter-spacing:.06em}
@@ -185,59 +172,151 @@ body.pboard #cv{aspect-ratio:9/14}
 .selsteps li.done{color:#7d5f22;border-bottom-color:#c9a24a}
 .selnav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .selnav .btn{margin-top:0}
-/* スマホ横は次へのボタンを下に固定する */
-@media (max-height:520px) and (orientation:landscape){body.playing.pboard .frame{width:calc((var(--vh,100dvh) - 34px) * 9 / 14 + 12px)}#ovSelect .selnav{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:8px max(14px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(20,14,22,0),rgba(20,14,22,.92) 35%)}#ovSelect .panel{padding-bottom:64px}}
+@media (max-height:520px) and (orientation:landscape){body.playing.pboard .frame{width:calc((var(--vh,100dvh) - 34px) * 9 / 14 + 12px)}}
 .selhint{margin:0 0 6px;font-size:13px;color:var(--parch-ink)}
 .selhint b{color:#5a1e2c}
-.confirm{display:grid;grid-template-columns:minmax(120px,210px) 1fr;gap:14px;padding:12px;background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;color:var(--parch)}
-.confirm .cf-ph{position:relative;aspect-ratio:4/5;overflow:hidden;border:1px solid var(--gold-dk);background:radial-gradient(ellipse at 50% 45%,#6a5468,#221a26 75%)}
-.confirm .cf-ph img{position:absolute;left:50%;top:1%;width:158%;max-width:none;transform:translateX(-50%)}
-.confirm .cf-ph .nm{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 6px;text-align:center;font:800 18px var(--f-display);color:var(--gold-hi);letter-spacing:.08em;background:linear-gradient(transparent,rgba(14,10,16,.9));text-shadow:0 2px 3px #000}
-.confirm .say{margin:0 0 8px;font:700 15px var(--f-display);color:#fff4e0;line-height:1.6}
-.confirm .say::before{content:"「";color:var(--gold-hi)}.confirm .say::after{content:"」";color:var(--gold-hi)}
-.confirm ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-.confirm li{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(0,0,0,.25);border:1px solid rgba(201,162,74,.35);border-radius:2px;min-width:0}
-.confirm li>div{min-width:0}
-.confirm li canvas{width:30px;height:30px;flex:none}
-.confirm li b{display:block;font:800 14px var(--f-display);color:var(--gold-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.confirm li small{display:block;font-size:11px;color:var(--muted)}
-.confirm li.fav{border-color:var(--gold-hi);background:rgba(201,162,74,.14)}
-.confirm .fvline{margin:8px 0 0;font-size:13px;line-height:1.6}
-.confirm .fvline b{color:var(--gold-hi)}
-.confirm .fvline.warn{color:#ffb3a0}
-.pick .aff{font-size:11px;color:#ffb38a;line-height:1.4}
-.pick .fvb{position:absolute;top:-1px;left:-1px;font:700 9px var(--f-body);color:var(--ink);background:var(--gold-hi);padding:1px 6px;border-radius:2px}
-.pick.favt{border-color:var(--gold-hi)}
-.pick .row>div{min-width:0}
-.pick .t span{white-space:nowrap}
-.pick .n{overflow:hidden;text-overflow:ellipsis;max-width:100%}
-/* スマホ横: 立ち絵と説明を横に並べ、立ち絵を画面の高さいっぱいに */
-@media (max-height:520px) and (orientation:landscape){
-  .charsel{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px;align-items:stretch}
-  .charsel .chardetail{margin-top:0;align-content:start;padding:10px 12px;gap:6px}
-  .charsel .chargrid{align-self:start}
-  .confirm{grid-template-columns:118px 1fr;gap:10px;padding:8px 10px}
-  .confirm li{padding:4px 8px}
-  .confirm .fvline{margin-top:6px;font-size:12px;line-height:1.5}
-  #selStep3 .selh{margin-top:4px}
-  .confirm .cf-ph{aspect-ratio:1/1}
-  .confirm .say{margin-bottom:6px}
-  .cpick .ph{max-height:none;aspect-ratio:4/5}
-  .chardetail .d,.chardetail .ln{font-size:13px;line-height:1.5}
-}
-.trapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
-.pick{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;cursor:pointer;padding:8px 10px;color:var(--parch);background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px;font-family:var(--f-body);min-width:0}
-.pick:hover{border-color:var(--gold-hi)}
-.pick.on{box-shadow:inset 0 0 0 2px var(--gold-hi);background:var(--stone-hi)}
-.pick.on::after{content:"選択中";position:absolute;top:-1px;right:-1px;font:700 9px var(--f-body);color:var(--ink);background:var(--gold-hi);padding:1px 6px;border-radius:2px}
 .stage.tall #cv{display:none}
+/* 支度の画面: 画面いっぱいに重ねて、どの向きでもスクロールなしで収める。
+   1 逃げる子（立ち絵を並べる→押すと詳しく→決める） 2 罠（アイコンだけ並べる→押すと詳しく→持っていく） */
+body.selecting{overflow:hidden}
+.stage #ovSelect.overlay{position:fixed;inset:0;z-index:20;align-items:center;background:rgba(14,10,16,.94);backdrop-filter:blur(2px);overflow:hidden;
+  padding:max(10px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+#ovSelect .panel{box-sizing:border-box;display:flex;flex-direction:column;max-height:100%;overflow:hidden;padding:14px 18px}
+#ovSelect .panel.s1{height:min(100%,680px)}
+.selhead{display:flex;align-items:flex-end;justify-content:space-between;gap:4px 16px;flex-wrap:wrap;flex:none}
+.selhead h2{margin:0}
+.selhead .selsteps{flex:1 1 220px;max-width:360px;margin:0}
+.selstep{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+.selstep .selh{flex:none;margin:10px 0 6px}
+.selstep .selnav{flex:none;margin-top:10px}
+#selStep1 .chargrid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:8px}
+.cpick{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;padding:0;cursor:pointer;overflow:hidden;color:var(--parch);font-family:var(--f-body);
+  background:radial-gradient(ellipse at 50% 62%,#4d3e55 0%,#2a2130 62%,#1d1722 100%);border:1px solid var(--gold-dk);border-radius:2px;transition:transform .12s,border-color .12s}
+.cpick .ph{flex:1 1 auto;min-height:0;background:no-repeat 50% 0 / 158% auto;filter:saturate(.8) brightness(.88);transition:filter .15s}
+.cpick canvas.face{flex:1 1 auto;min-height:0;width:84px;height:84px;margin:auto;object-fit:contain}
+.cpick:hover{border-color:var(--gold-hi)}
+.cpick:hover .ph{filter:none}
+.cpick:active{transform:scale(.98)}
+.cpick.on{box-shadow:inset 0 0 0 2px var(--gold-hi),0 0 16px rgba(241,217,142,.35)}
+.cpick.on .ph{filter:none}
+.cpick .cap{flex:none;display:flex;flex-direction:column;align-items:center;padding:4px 4px 6px;border-top:1px solid var(--gold-dk);background:rgba(14,10,16,.55)}
+.cpick .n{font:800 18px var(--f-display);color:var(--gold-hi);letter-spacing:.08em;text-shadow:0 2px 3px #000;white-space:nowrap}
+.cpick .t{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cpick .fv{position:absolute;top:5px;left:5px;display:flex;align-items:center;padding:2px;background:rgba(14,10,16,.78);border:1px solid var(--gold-dk);border-radius:2px}
+.cpick .fv canvas{width:24px;height:24px;display:block}
+.cpick:focus-visible,.tpick:focus-visible,.lslot:focus-visible,.selwho:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+/* 2 罠: 上に選んだ子と持っていく4つ、下にアイコンだけの一覧 */
+.s2body{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;gap:8px;margin-top:10px}
+.s2side{flex:none;display:grid;gap:6px}
+.s2main{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;overflow-y:auto}
+.s2main .selh{margin:0 0 6px}
+.loadbar{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:stretch}
+.selwho{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 10px 4px 4px;cursor:pointer;text-align:left;color:var(--parch);font-family:var(--f-body);background:var(--stone);border:1px solid var(--gold-dk);border-radius:2px}
+.selwho:hover{border-color:var(--gold-hi)}
+.selwho .mini{width:52px;height:52px;flex:none;border:1px solid var(--gold-dk);background:#221a26 no-repeat 50% 0 / 158% auto}
+.selwho b{display:block;font:800 16px var(--f-display);color:var(--gold-hi);white-space:nowrap}
+.selwho small{display:block;font-size:11px;color:var(--muted);white-space:nowrap}
+.loadslots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.lslot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;padding:4px 2px;cursor:pointer;color:var(--parch);font-family:var(--f-body);
+  background:linear-gradient(180deg,var(--stone-hi),var(--stone));border:1px solid var(--gold-dk);border-radius:2px}
+.lslot canvas{width:34px;height:34px}
+.lslot .n{font:800 12px var(--f-display);color:var(--gold-hi);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.lslot.fav{background:linear-gradient(180deg,#5a4630,#3a2c1e);border-color:var(--gold-hi)}
+.lslot.fav .n::before{content:"★"}
+.lslot.empty{cursor:default;background:rgba(58,40,25,.1);border:1px dashed rgba(125,95,34,.7);color:rgba(58,40,25,.6);font-size:12px}
+.selsay,#ovSelect .selsay{margin:0;font:700 13px var(--f-display);color:#5a1e2c;line-height:1.5}
+.selsay::before{content:"「"}.selsay::after{content:"」"}
+.selhint,#ovSelect .selhint{margin:0;font-size:12px;line-height:1.5;color:var(--parch-ink)}
+.selhint b{color:#5a1e2c}
+.trapgrid{display:grid;grid-template-columns:repeat(6,minmax(0,92px));justify-content:center;gap:8px;align-content:start;padding:3px}
+.tpick{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;min-width:0;padding:0;cursor:pointer;
+  background:radial-gradient(ellipse at 50% 40%,var(--stone-hi),var(--stone) 70%);border:1px solid var(--gold-dk);border-radius:3px;transition:transform .12s}
+.tpick canvas{width:62%;height:62%}
+.tpick:hover{border-color:var(--gold-hi)}
+.tpick:active{transform:scale(.95)}
+.tpick.on{border-color:var(--gold-hi);box-shadow:inset 0 0 0 2px var(--gold-hi),0 0 12px rgba(241,217,142,.4);background:radial-gradient(ellipse at 50% 40%,#5f5068,#3a3040 70%)}
+.tpick.on::after{content:"✓";position:absolute;top:-1px;right:-1px;font:800 12px/1 var(--f-body);color:var(--ink);background:var(--gold-hi);padding:3px 5px;border-radius:0 2px 0 3px}
+.tpick .st{position:absolute;top:2px;left:4px;font-size:14px;color:var(--gold-hi);text-shadow:0 1px 2px #000}
+/* 詳しく見る小窓（逃げる子・罠） */
+.selsheet{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;background:rgba(10,7,12,.72);
+  padding:max(10px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));animation:sheetin .16s ease-out}
+@keyframes sheetin{from{opacity:0}to{opacity:1}}
+.sheetcard{box-sizing:border-box;display:grid;gap:10px;max-height:100%;min-height:0;width:min(720px,100%);padding:12px;color:var(--parch);background:linear-gradient(180deg,#2f2836,#211b26);border:1px solid var(--gold-hi);box-shadow:0 10px 40px rgba(0,0,0,.7);border-radius:3px;animation:sheetup .18s ease-out}
+@keyframes sheetup{from{transform:translateY(14px)}to{transform:none}}
+.sheetnav{display:flex;gap:8px;justify-content:space-between}
+.sheetnav .btn{margin-top:0;flex:1 1 auto;white-space:nowrap}
+.sheetnav .btn.sub{flex:0 1 auto}
+.chsheet{grid-template-columns:minmax(150px,240px) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;height:min(100%,520px)}
+.chsheet .csph{grid-row:1;position:relative;min-height:0;overflow:hidden;border:1px solid var(--gold-dk);background:radial-gradient(ellipse at 50% 45%,#6a5468,#221a26 75%)}
+.chsheet .csph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0}
+.chsheet .csph canvas{position:absolute;inset:0;margin:auto;width:120px;height:120px}
+.chsheet .csbody{grid-row:1;min-height:0;overflow-y:auto}
+.chsheet .chardetail{margin:0;padding:0;background:none;border:0}
+.chsheet .sheetnav{grid-column:1/-1}
+.trsheet{width:min(460px,100%);overflow-y:auto}
+#trapDetail{display:grid;gap:8px}
+.tdhd{display:flex;align-items:center;gap:12px}
+.tdhd canvas{width:64px;height:64px;flex:none;background:radial-gradient(ellipse at 50% 40%,var(--stone-hi),var(--stone) 70%);border:1px solid var(--gold-dk);border-radius:3px;padding:4px}
+.tdhd b{display:block;font:800 22px var(--f-display);color:var(--gold-hi);letter-spacing:.04em}
+.tdhd small{display:block;font-size:13px;color:var(--muted)}
+.tdd,#trapDetail p{margin:0;font-size:14px;line-height:1.65}
+.tdaff{margin:0;font-size:13px;color:#ffb38a}
+.tdfav{margin:0;padding:8px 10px;font-size:13px;line-height:1.6;background:rgba(201,162,74,.12);border:1px solid rgba(241,217,142,.5)}
+.tdfav b{color:var(--gold-hi)}
+.tdnote{margin:0;font-size:13px;color:#ffd27a}
+.tsswap{display:grid;gap:6px}
+.tsswap .loadslots .lslot{padding:6px 2px}
+.tsswap .lslot::after{content:"⇄";position:absolute;top:1px;right:4px;font-size:11px;color:var(--gold-hi)}
+/* スマホ縦 */
+@media (max-width:640px){
+  #ovSelect .panel{padding:12px}
+  #ovSelect .panel h2{font-size:20px}
+  #ovSelect .panel.s1{height:100%}
+  .selhead .selsteps{flex-basis:100%;max-width:none}
+  #selStep1 .chargrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .cpick .n{font-size:16px}
+  .trapgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .lslot canvas{width:30px;height:30px}
+  .lslot .n{font-size:11px}
+  .selwho{padding:3px}
+  .selwho .mini{width:44px;height:44px}
+  .selwho span{display:none}
+  .chsheet{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(110px,30%) minmax(0,1fr) auto;height:100%;max-height:660px;padding:10px;gap:8px}
+  .chsheet .chardetail{gap:6px}
+  .chsheet .chardetail .d{margin:0;line-height:1.5}
+  .chsheet .chardetail .ln{line-height:1.5}
+  .chsheet .chardetail .ln.fav,.chsheet .chardetail .ln.fl{padding:6px 8px}
+  .sheetnav .btn{font-size:14px;padding:10px 8px;letter-spacing:.02em}
+  .chsheet .csph{grid-row:1}
+  .chsheet .csph img{object-position:50% 2%}
+  .chsheet .csbody{grid-row:2}
+  .chsheet .sheetnav{grid-row:3}
+}
+/* スマホ横（高さが低い）: 見出しを1行に。罠は左に選んだ子と4つ、右にアイコン */
+@media (max-height:520px) and (orientation:landscape){
+  #ovSelect .panel{padding:8px 12px}
+  #ovSelect .panel h2{font-size:18px}
+  #ovSelect .panel.s1{height:100%}
+  .selstep .selh{margin:6px 0 4px}
+  .selstep .selnav{margin-top:6px}
+  .selnav .btn{padding:7px 14px;font-size:14px}
+  .cpick .cap{padding:2px 4px 4px}
+  .cpick .n{font-size:15px}
+  .s2body{flex-direction:row;margin-top:6px;gap:10px}
+  .s2side{width:min(42%,330px);align-content:start}
+  .loadbar{grid-template-columns:minmax(0,1fr)}
+  .selwho .mini{width:40px;height:40px}
+  .s2main{overflow-y:auto}
+  .trapgrid{grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px}
+  .chsheet{grid-template-columns:minmax(120px,30%) minmax(0,1fr);height:100%}
+  .chsheet .chardetail{gap:5px}
+  .chsheet .chardetail .d,.chsheet .chardetail .ln{font-size:12px;line-height:1.45}
+  .sheetcard{padding:8px 10px;gap:6px}
+  .trsheet{width:min(560px,100%)}
+  .tdhd canvas{width:48px;height:48px}
+  .tdd{font-size:13px;line-height:1.5}
+}
 .stage.tall .overlay{position:static;background:none;backdrop-filter:none;padding:12px}
-.pick:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
-.pick .row{display:flex;align-items:center;gap:8px}
-.pick canvas{width:34px;height:34px;flex:none}
-.pick .n{font:800 15px var(--f-display);color:var(--gold-hi);white-space:nowrap}
-.pick .t{font-size:11px;color:var(--muted)}
-.pick .d{font-size:12px;line-height:1.5}
 .rotate{display:none;align-items:center;justify-content:center;gap:10px;margin:8px 6px 0;padding:12px;border:1px dashed var(--gold-dk);color:var(--muted);font-size:13px;line-height:1.6;text-align:center}
 .rotate b{color:var(--gold-hi)}
 .howto canvas{display:block;width:100%;max-width:440px;height:auto;aspect-ratio:2/1;margin:6px auto 8px;background:#1c1720;border:1px solid var(--gold-dk)}
@@ -254,40 +333,18 @@ body.pboard #cv{aspect-ratio:9/14}
   .stage.has-ov .overlay{position:static;background:none;backdrop-filter:none;padding:10px}
   .slot .n{font-size:11px}
   .slot .k,.slot .ds{display:none}
-  .trapgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stagegrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
   .stg{padding:6px 2px}
   .stg b{font-size:16px}
   .stg span{font-size:10px}
-  .confirm{grid-template-columns:1fr;padding:10px}
-  .confirm .cf-ph{width:min(200px,70%);margin:0 auto}
-  .confirm li b{font-size:13px}
-  .confirm ul{grid-template-columns:1fr}
-  .confirm li small{display:inline;margin-left:6px}
-  .confirm li b{display:inline}
   .selnav .btn{flex:1 1 auto;padding:10px 12px}
-  .chargrid{gap:5px}
-  .cpick .n{font-size:15px;letter-spacing:.02em}
-  .cpick .t{display:none}
-  .chargrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .cpick .fv span{display:none}
-  .cpick .ph{aspect-ratio:1/1}
-  .cpick .ph img{width:150%}
   .chardetail .ln.fl{flex-wrap:wrap;gap:6px 8px}
   .chardetail .ln.fl>div{flex-basis:100%}
-  .pick.on::after{content:"✓";font-size:11px;padding:0 5px}
-  .pick .fvb b{display:none}
   .chardetail{padding:10px}
   .chardetail .d,.chardetail .ln{font-size:13px}
   .chardetail .chips span{font-size:12px}
-  .pick{padding:7px 8px}
-  .pick .d{font-size:11px}
-  .pick .row{padding-right:10px;gap:5px}
-  .pick canvas{width:24px;height:24px}
-  .pick .n{font-size:13px;letter-spacing:0}
   .chardetail .ln.fav{flex-wrap:wrap;gap:6px 8px}
   .chardetail .ln.fav>div{flex-basis:100%}
-  .cpick .ph img{filter:saturate(.8) brightness(.88)}
   .slot canvas{width:34px;height:34px}
   .help .pc{display:none}
 }
@@ -439,28 +496,46 @@ body.pboard #cv{aspect-ratio:9/14}
 
       <div class="overlay" id="ovSelect" hidden>
         <div class="panel wide">
-          <h2>今夜の支度 <small class="selmode" id="selMode"></small></h2>
-          <ol class="selsteps" id="selSteps"><li>逃げる子</li><li>罠を4つ</li><li>確かめる</li></ol>
-          <section id="selStep1">
-            <h3 class="selh">逃げる子を選ぶ</h3>
-            <div class="charsel">
-              <div class="chargrid" id="charGrid"></div>
-              <div class="chardetail" id="charDetail"></div>
+          <div class="selhead">
+            <h2>今夜の支度 <small class="selmode" id="selMode"></small></h2>
+            <ol class="selsteps" id="selSteps"><li>逃げる子</li><li>罠を4つ</li></ol>
+          </div>
+          <section class="selstep" id="selStep1">
+            <h3 class="selh">逃げる子を選ぶ <span>押すと詳しく見られる</span></h3>
+            <div class="chargrid" id="charGrid"></div>
+            <div class="selnav"><button class="btn sub" id="btnBack1" type="button">◀ タイトルへ</button></div>
+          </section>
+          <section class="selstep" id="selStep2" hidden>
+            <div class="s2body">
+              <div class="s2side">
+                <div class="loadbar">
+                  <button class="selwho" id="selWho" type="button" aria-label="逃げる子を選び直す"></button>
+                  <div class="loadslots" id="loadSlots"></div>
+                </div>
+                <p class="selsay" id="selSay"></p>
+                <p class="selhint" id="favHint"></p>
+              </div>
+              <div class="s2main">
+                <h3 class="selh">持っていく罠を4つ選ぶ <span id="pickCount">0/4</span></h3>
+                <div class="trapgrid" id="trapGrid"></div>
+              </div>
             </div>
-            <div class="selnav"><button class="btn sub" id="btnBack1" type="button">◀ タイトルへ</button><button class="btn" id="btnNext1" type="button">この子で罠を選ぶ ▶</button></div>
+            <div class="selnav"><button class="btn sub" id="btnBack2" type="button">◀ 逃げる子を選び直す</button><button class="btn" id="btnBegin" type="button">この支度で夜を迎える</button></div>
           </section>
-          <section id="selStep2" hidden>
-            <h3 class="selh">持っていく罠を4つ選ぶ <span id="pickCount">0/4</span></h3>
-            <p class="selhint" id="favHint"></p>
-            <div class="trapgrid" id="trapGrid"></div>
-            <p class="sm" id="selNote"></p>
-            <div class="selnav"><button class="btn sub" id="btnBack2" type="button">◀ 逃げる子を選び直す</button><button class="btn" id="btnNext2" type="button">支度を確かめる ▶</button></div>
-          </section>
-          <section id="selStep3" hidden>
-            <h3 class="selh">この支度で夜を迎える？</h3>
-            <div class="confirm" id="selConfirm"></div>
-            <div class="selnav"><button class="btn sub" id="btnBack3" type="button">◀ 罠を選び直す</button><button class="btn" id="btnBegin" type="button">この支度で夜を迎える</button></div>
-          </section>
+        </div>
+        <div class="selsheet" id="charSheet" role="dialog" aria-modal="true" aria-label="逃げる子の詳しい説明" hidden>
+          <div class="sheetcard chsheet">
+            <div class="csph" id="csPh"></div>
+            <div class="csbody"><div class="chardetail" id="charDetail"></div></div>
+            <div class="sheetnav"><button class="btn sub" id="csClose" type="button">◀ ほかの子を見る</button><button class="btn" id="btnNext1" type="button">この子に決める ▶</button></div>
+          </div>
+        </div>
+        <div class="selsheet" id="trapSheet" role="dialog" aria-modal="true" aria-label="罠の詳しい説明" hidden>
+          <div class="sheetcard trsheet">
+            <div id="trapDetail"></div>
+            <div class="tsswap" id="tsSwap" hidden><p class="tdnote">罠は4つまで。どれと入れ替える？</p><div class="loadslots" id="tsSwapSlots"></div></div>
+            <div class="sheetnav"><button class="btn sub" id="tsClose" type="button">閉じる</button><button class="btn" id="tsToggle" type="button">持っていく</button></div>
+          </div>
         </div>
       </div>
 
@@ -2705,6 +2780,7 @@ function showOv(id) {
   stage.classList.toggle('has-ov', !!id);
   stage.classList.toggle('tall', ['ovSelect', 'ovStages', 'ovAch'].includes(id)); // 支度・ステージ選択・実績は盤面を隠して全部見せる
   palette.hidden = ['ovSelect', 'ovStages', 'ovAch'].includes(id);
+  document.body.classList.toggle('selecting', id === 'ovSelect');
 }
 // ---------- 遊び方（図つきのページ） ----------
 const hc = $('#helpCv').getContext('2d');
@@ -2814,8 +2890,13 @@ try {
   if (sv && CHARS[sv.char] && Array.isArray(sv.traps) && sv.traps.length === 4 && sv.traps.every(t => TRAPS[t])) sel = sv;
 } catch (e) {}
 function trapIconCanvas(id, px) { const ic = document.createElement('canvas'); ic.width = ic.height = px * 2; const c = ic.getContext('2d'); c.scale(2 * px / 34, 2 * px / 34); drawTrapUI(c, id, 17, 17, 34); return ic; }
-function renderCharDetail() {
-  const ch = CHARS[sel.char], fv = TRAPS[ch.fav], box = $('#charDetail');
+const portraitOf = ch => ch.art && ART[`portrait_${ch.art}`];
+function trapStat(id, ch = CHARS[sel.char]) { // 得意な罠は魔力・再装填が変わる子がいる
+  const d = TRAPS[id], fv = ch.fav === id;
+  return { cost: fv && ch.passive.cost || d.cost, cd: fv && ch.passive.cd || d.cd, fv };
+}
+function renderCharDetail(id = sel.char) {
+  const ch = CHARS[id], fv = TRAPS[ch.fav], box = $('#charDetail');
   box.innerHTML = `<div class="hd"><b>${ch.name}</b><span>${ch.title}</span></div>
     <p class="d">${ch.profile}</p>
     <div class="chips"><span><i>体力</i>${'♥'.repeat(ch.hp)}</span><span><i>足</i>${Math.round(ch.speed / 3.4 * 100)}%</span><span><i>魔力</i>${ch.maxMana}</span><span><i>回復</i>毎秒 ${Math.round(ch.regen)}</span></div>
@@ -2827,66 +2908,108 @@ function renderCharDetail() {
 function renderSelect() {
   const cg = $('#charGrid'); cg.innerHTML = '';
   for (const id of CHAR_ORDER) {
-    const ch = CHARS[id], b = document.createElement('button');
+    const ch = CHARS[id], b = document.createElement('button'), pic = portraitOf(ch);
     b.type = 'button'; b.className = 'cpick' + (sel.char === id ? ' on' : ''); b.id = 'pick-' + id;
-    b.setAttribute('aria-pressed', sel.char === id); b.setAttribute('aria-label', `${ch.name}（${ch.title}）`);
+    b.setAttribute('aria-pressed', sel.char === id); b.setAttribute('aria-haspopup', 'dialog'); b.setAttribute('aria-label', `${ch.name}（${ch.title}）`);
     let ic;
-    if (ch.art && ART[`portrait_${ch.art}`]) { ic = document.createElement('div'); ic.className = 'ph'; ic.innerHTML = `<img alt="" src="${ART[`portrait_${ch.art}`]}">`; }
+    if (pic) { ic = document.createElement('div'); ic.className = 'ph'; ic.style.backgroundImage = `url("${pic}")`; }
     else { ic = document.createElement('canvas'); ic.className = 'face'; ic.width = 84; ic.height = 84; const c = ic.getContext('2d'); c.scale(2, 2); drawCharIcon(c, ch.look, 21, 22, 1.3); }
     b.append(ic);
-    b.insertAdjacentHTML('beforeend', `<span class="fv"><span>得意</span></span><span class="n">${ch.name}</span><span class="t">${ch.title}</span>`);
-    b.querySelector('.fv').prepend(trapIconCanvas(ch.fav, 20));
-    if (ic.classList.contains('ph')) ic.append(b.querySelector('.fv'));
-    b.addEventListener('click', () => { sel.char = id; renderSelect(); });
+    b.insertAdjacentHTML('beforeend', `<span class="fv" title="得意: ${TRAPS[ch.fav].name}"></span><span class="cap"><span class="n">${ch.name}</span><span class="t">${ch.title}</span></span>`);
+    b.querySelector('.fv').append(trapIconCanvas(ch.fav, 24));
+    b.addEventListener('click', () => { audio(); openCharSheet(id); });
     cg.append(b);
   }
-  const tg = $('#trapGrid'); tg.innerHTML = '';
+  const ch = CHARS[sel.char], tg = $('#trapGrid'); tg.innerHTML = '';
   for (const id of TRAP_ORDER) {
-    const d = TRAPS[id], on = sel.traps.includes(id), b = document.createElement('button');
-    const fvc = CHARS[sel.char].fav === id;
-    b.type = 'button'; b.className = 'pick' + (on ? ' on' : '') + (fvc ? ' favt' : ''); b.id = 'pickt-' + id;
-    b.setAttribute('aria-pressed', on);
-    const ic = document.createElement('canvas'); ic.width = 68; ic.height = 68; const c = ic.getContext('2d'); c.scale(2, 2); drawTrapUI(c, id, 17, 17, 34);
-    const row = document.createElement('div'); row.className = 'row'; row.append(ic);
-    row.insertAdjacentHTML('beforeend', `<div><div class="n">${d.name}</div><div class="t"><span>魔力 ${fvc && CHARS[sel.char].passive.cost || d.cost}</span>・<span>再装填 ${fvc && CHARS[sel.char].passive.cd || d.cd}秒</span></div></div>`);
-    b.append(row);
-    b.insertAdjacentHTML('beforeend', `<span class="d">${d.desc}</span>${affText(id) ? `<span class="aff">${affText(id)}</span>` : ''}`);
-    if (fvc) b.insertAdjacentHTML('beforeend', `<span class="fvb">★<b>${CHARS[sel.char].name}の</b>得意</span>`);
-    b.addEventListener('click', () => {
-      if (on) sel.traps = sel.traps.filter(t => t !== id);
-      else if (sel.traps.length >= 4) { $('#selNote').textContent = '罠は4つまで。外したい罠をもう一度押してから選ぶ'; return; }
-      else sel.traps.push(id);
-      $('#selNote').textContent = ''; renderSelect();
-    });
+    const d = TRAPS[id], on = sel.traps.includes(id), fv = ch.fav === id, b = document.createElement('button');
+    b.type = 'button'; b.className = 'tpick' + (on ? ' on' : '') + (fv ? ' favt' : ''); b.id = 'pickt-' + id; b.dataset.t = id;
+    b.title = d.name; b.setAttribute('aria-haspopup', 'dialog'); b.setAttribute('aria-pressed', on);
+    b.setAttribute('aria-label', d.name + (fv ? '（★得意）' : '') + (on ? '（持っていく）' : ''));
+    b.append(trapIconCanvas(id, 48));
+    if (fv) b.insertAdjacentHTML('beforeend', '<span class="st" aria-hidden="true">★</span>');
+    b.addEventListener('click', () => { audio(); openTrapSheet(id); });
     tg.append(b);
   }
-  renderCharDetail();
-  $('#pickCount').textContent = `${sel.traps.length}/4`;
-  $('#btnNext2').disabled = sel.traps.length !== 4;
-  $('#btnNext2').textContent = sel.traps.length === 4 ? '支度を確かめる ▶' : `罠をあと${4 - sel.traps.length}つ選ぶ`;
-  $('#btnNext1').textContent = `${CHARS[sel.char].name}で罠を選ぶ ▶`;
-  const fc = CHARS[sel.char];
-  $('#favHint').innerHTML = `★は${fc.name}の得意な罠（<b>${TRAPS[fc.fav].name}</b>）。持っていくと「${fc.passive.name}」でとても強くなる`;
+  renderSlots($('#loadSlots'), t => openTrapSheet(t));
+  const pic = portraitOf(ch), who = $('#selWho');
+  who.innerHTML = `<i class="mini"${pic ? ` style="background-image:url('${pic}')"` : ''}></i><span><b>${ch.name}</b><small>${ch.title}・選び直す</small></span>`;
+  const n = sel.traps.length;
+  $('#pickCount').textContent = `${n}/4`;
+  $('#btnBegin').disabled = n !== 4;
+  $('#btnBegin').textContent = n === 4 ? 'この支度で夜を迎える' : `罠をあと${4 - n}つ選ぶ`;
+  $('#selSay').textContent = ch.ready; $('#selSay').hidden = n !== 4;
+  $('#favHint').innerHTML = n === 4 && !sel.traps.includes(ch.fav)
+    ? `得意な罠（<b>${TRAPS[ch.fav].name}</b>）を持っていないので、得意の力「${ch.passive.name}」は使えない`
+    : `★は${ch.name}の得意な罠（<b>${TRAPS[ch.fav].name}</b>）。持っていくと「${ch.passive.name}」でとても強くなる。罠を押すと詳しく見られる`;
 }
+function renderSlots(box, onPick) { // 持っていく4つ。空きは点線
+  box.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    const t = sel.traps[i];
+    if (!t) { const e = document.createElement('div'); e.className = 'lslot empty'; e.textContent = '空き'; box.append(e); continue; }
+    const b = document.createElement('button'), fv = CHARS[sel.char].fav === t;
+    b.type = 'button'; b.className = 'lslot' + (fv ? ' fav' : ''); b.dataset.t = t; b.dataset.i = i;
+    b.append(trapIconCanvas(t, 34));
+    b.insertAdjacentHTML('beforeend', `<span class="n">${TRAPS[t].name}</span>`);
+    b.addEventListener('click', () => onPick(t, i));
+    box.append(b);
+  }
+}
+// 詳しく見る小窓
+let sheetChar = null, sheetTrap = null;
+function openSheet(id, focus) {
+  $('#charSheet').hidden = id !== 'charSheet'; $('#trapSheet').hidden = id !== 'trapSheet';
+  if (focus) try { focus.focus({ preventScroll: true }); } catch (e) {}
+}
+function closeSheets() {
+  const was = sheetTrap ? $('#pickt-' + sheetTrap) : sheetChar ? $('#pick-' + sheetChar) : null;
+  const open = !$('#charSheet').hidden || !$('#trapSheet').hidden;
+  $('#charSheet').hidden = $('#trapSheet').hidden = true; sheetChar = sheetTrap = null;
+  if (open && was) try { was.focus({ preventScroll: true }); } catch (e) {}
+}
+function openCharSheet(id) {
+  sheetChar = id; sheetTrap = null;
+  const ch = CHARS[id], pic = portraitOf(ch), ph = $('#csPh');
+  renderCharDetail(id);
+  if (pic) ph.innerHTML = `<img alt="" src="${pic}">`;
+  else { ph.innerHTML = ''; const c = document.createElement('canvas'); c.width = c.height = 240; const x = c.getContext('2d'); x.scale(4, 4); drawCharIcon(x, ch.look, 30, 32, 1.8); ph.append(c); }
+  $('#btnNext1').textContent = `${ch.name}に決める ▶`;
+  openSheet('charSheet', $('#btnNext1'));
+}
+function openTrapSheet(id) {
+  sheetTrap = id; sheetChar = null;
+  const d = TRAPS[id], ch = CHARS[sel.char], st = trapStat(id), on = sel.traps.includes(id), full = !on && sel.traps.length >= 4, box = $('#trapDetail');
+  box.innerHTML = `<div class="tdhd"><div><b>${st.fv ? '★' : ''}${d.name}</b><small>魔力 ${st.cost}・再装填 ${st.cd}秒</small></div></div>
+    <p class="tdd">${d.desc}</p>${affText(id) ? `<p class="tdaff">${affText(id)}</p>` : ''}
+    ${st.fv ? `<p class="tdfav">★<b>${ch.name}の得意</b>「${ch.passive.name}」：${ch.passive.desc}</p>` : ''}`;
+  box.querySelector('.tdhd').prepend(trapIconCanvas(id, 64));
+  const tg = $('#tsToggle');
+  tg.hidden = full; tg.textContent = on ? 'この罠を外す' : '持っていく'; tg.classList.toggle('sub', on);
+  $('#tsSwap').hidden = !full;
+  if (full) renderSlots($('#tsSwapSlots'), (t, i) => { sel.traps[i] = id; closeSheets(); renderSelect(); });
+  openSheet('trapSheet', full ? $('#tsSwapSlots .lslot') : tg);
+}
+$('#tsToggle').addEventListener('click', () => {
+  const id = sheetTrap; if (!id) return;
+  if (sel.traps.includes(id)) sel.traps = sel.traps.filter(t => t !== id);
+  else if (sel.traps.length < 4) sel.traps.push(id);
+  closeSheets(); renderSelect();
+  const b = $('#pickt-' + id); if (b) try { b.focus({ preventScroll: true }); } catch (e) {}
+});
+$('#tsClose').addEventListener('click', closeSheets);
+$('#csClose').addEventListener('click', closeSheets);
+$('#selWho').addEventListener('click', () => setSelStep(1));
+['#charSheet', '#trapSheet'].forEach(q => $(q).addEventListener('click', e => { if (e.target === e.currentTarget) closeSheets(); })); // 外側を押すと閉じる
 let selStep = 1;
 function setSelStep(n) {
+  closeSheets();
   selStep = n;
-  [1, 2, 3].forEach(i => { $(`#selStep${i}`).hidden = i !== n; });
+  [1, 2].forEach(i => { $(`#selStep${i}`).hidden = i !== n; });
   [...$('#selSteps').children].forEach((li, i) => { li.className = i + 1 === n ? 'on' : i + 1 < n ? 'done' : ''; });
-  if (n === 3) renderConfirm();
-  const ov = $('#ovSelect'); ov.scrollTop = 0; window.scrollTo(0, 0);
-  const next = $(`#selStep${n} .selnav .btn:last-child`); if (next) try { next.focus({ preventScroll: true }); } catch (e) {}
-}
-function renderConfirm() {
-  const ch = CHARS[sel.char], box = $('#selConfirm'), has = sel.traps.includes(ch.fav);
-  const lo = TRAP_ORDER.filter(t => sel.traps.includes(t)), pic = ch.art && ART[`portrait_${ch.art}`];
-  const items = lo.map(t => {
-    const d = TRAPS[t], fv = t === ch.fav;
-    return `<li class="${fv ? 'fav' : ''}" data-t="${t}"><div><b>${fv ? '★' : ''}${d.name}</b><small>魔力 ${fv && ch.passive.cost || d.cost}・再装填 ${fv && ch.passive.cd || d.cd}秒</small></div></li>`;
-  }).join('');
-  const fvline = has ? `<p class="fvline">★得意「<b>${ch.passive.name}</b>」：${ch.passive.desc}</p>` : `<p class="fvline warn">得意な罠（${TRAPS[ch.fav].name}）を持っていないので、得意の力は使えない</p>`;
-  box.innerHTML = `<div class="cf-ph">${pic ? `<img alt="" src="${pic}">` : ''}<div class="nm">${ch.name}</div></div><div><p class="say">${ch.ready}</p><ul>${items}</ul>${fvline}</div>`;
-  box.querySelectorAll('li').forEach(li => li.prepend(trapIconCanvas(li.dataset.t, 30)));
+  $('#ovSelect .panel').classList.toggle('s1', n === 1);
+  window.scrollTo(0, 0);
+  const f = n === 1 ? $('#pick-' + sel.char) : $('#btnBegin'); if (f) try { f.focus({ preventScroll: true }); } catch (e) {}
 }
 function openSelect() { audio(); renderSelect(); showOv('ovSelect'); setSelStep(1); $('#selMode').textContent = runMode === 'stage' ? `ステージ${runStage}（${MAPS[stageMap(runStage)].name}）` : runMode === 'edit' ? '自作の部屋を試す' : 'チャレンジ（全10夜）'; $('#btnBack1').textContent = runMode === 'challenge' ? '◀ タイトルへ' : '◀ 戻る'; }
 function startRun(char = sel.char, loadout = sel.traps) {
@@ -3110,15 +3233,13 @@ $('#btnAch').addEventListener('click', () => { renderAch(); showOv('ovAch'); });
 $('#btnAchBack').addEventListener('click', () => showOv('ovTitle'));
 $('#btnRetry').textContent = '支度をして、もう一度';
 $('#btnBegin').addEventListener('click', () => { if (sel.traps.length === 4) startRun(); });
-$('#btnNext1').addEventListener('click', () => { audio(); setSelStep(2); });
-$('#btnNext2').addEventListener('click', () => { if (sel.traps.length === 4) { audio(); setSelStep(3); } });
+$('#btnNext1').addEventListener('click', () => { audio(); if (sheetChar) sel.char = sheetChar; renderSelect(); setSelStep(2); });
 $('#btnBack2').addEventListener('click', () => setSelStep(1));
 $('#btnBack1').addEventListener('click', () => { if (runMode === 'stage') openStages(); else if (runMode === 'edit') openEditor(); else showOv('ovTitle'); });
 addEventListener('keydown', e => { // 支度画面は Escape で前の段へ
   if (e.code !== 'Escape' || $('#ovSelect').hidden || !$('#ovHelp').hidden) return;
-  e.preventDefault(); if (selStep > 1) setSelStep(selStep - 1); else $('#btnBack1').click();
+  e.preventDefault(); if (!$('#charSheet').hidden || !$('#trapSheet').hidden) closeSheets(); else if (selStep > 1) setSelStep(selStep - 1); else $('#btnBack1').click();
 });
-$('#btnBack3').addEventListener('click', () => setSelStep(2));
 $('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave(G.wave + 1); hudCache = ''; });
 $('#btnResume').addEventListener('click', () => setPause(false));
 $('#btnGo').addEventListener('click', beginDefense);
