@@ -1,0 +1,5 @@
+node_modules/
+dist/
+game/
+licenses/
+steam_appid.txt

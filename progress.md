@@ -22,3 +22,17 @@
 終わったこと（追加）: push 済み（razanohito/trap-maiden）、Artifact 更新済み（version 33）
 残った課題: 実機（iPhone）での確認はしていない。ステージの難しさはボットのクリア率（5:100% 20:44% 40:28%）で合わせただけ
 次にやること: ユーザーの遊んだ感想を待つ
+
+## 支度画面の作り直し（2026-10-20, ブランチ ui/select-redesign）
+- 支度は2段: 1 逃げる子（立ち絵4枚だけ並べる→押すと説明の小窓→「○○に決める」） 2 罠（選んだ子と持っていく4つ＋アイコンだけ11個→押すと説明の小窓→持っていく／外す。4つ埋まっていれば「どれと入れ替える？」）。前の「確かめる」段はなくし、出発の台詞は罠の段に出す
+- 支度の画面は画面いっぱいに重ねる（#ovSelect を position:fixed）。PC・スマホ縦・横・小さいスマホでスクロールなしに収まる（320x568 だけ罠の一覧が少しスクロール）
+- テスト: tools/sim/shot_select.js を新しい流れに合わせて書き直し（はみ出し検査つき）。ほかのテストは「.cpick.on → #btnNext1 → #btnBegin」で開始
+
+## 英語対応と Steam（2026-10-20, ブランチ release/english-steam。#2 フォント・#3 支度画面を含む）
+- 英語: 文言は日本語のまま `$t\`…\`` で書き、訳は src/lang/en.js（日本語→英語、`${}` は {0} {1}…）。HTML は translateStatic が訳す（translate="no" は飛ばす）。言語は localStorage trapoflily-lang → Steam の言語 → 端末の言語
+- 文言を足したら `python tools/i18n_check.py --add` で抜けを出して訳を入れ、`python tools/make_fonts.py` でフォントを作り直す
+- 設定画面（音楽・効果音の音量、言語、全画面・終了はデスクトップ版だけ）とクレジット
+- Windows 版: desktop/（Electron + steamworks.js）。セーブは %APPDATA%\TrapOfLily\save.json（Steam Auto-Cloud）。実績の API 名は ACH_<ID>。App ID は desktop/steam.json（0 なら Steam なし）
+- Steam の画像・文章・手順: steam/（README.md が手順）
+- テスト: tools/sim/test_english.js（英語で全画面、日本語の残り・はみ出し）、desktop/test/test_desktop.js（Xvfb で Electron）。どちらも合格
+- まだ: Windows 実機、Steam（App ID がない）。ユーザーの作業は Steamworks 登録・$100・App ID
