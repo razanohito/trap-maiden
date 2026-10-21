@@ -30,6 +30,7 @@
 |---|---|
 | `src/game.html` | ゲーム本体（HTML 1 枚。外部スクリプトなし、フォントだけ Google Fonts） |
 | `tools/build.py` | `src/game.html` から `index.html`（GitHub Pages 用）と `dist-artifact/trap-maiden.html`（claude.ai Artifact 用）を作る |
+| `tools/import_v2.py` | **今の絵柄（月夜のおかし箱）**。`art-src/v2/` の Nano Banana の絵（白背景）から、立ち絵（`art/portrait_<子>[_happy\|_teary\|_smug].webp`）と盤面のちびキャラ（`art/sprites/*.webp`、1コマ 96px）を作る。numpy・Pillow・scipy を使う。下の古い取り込み道具（cut_sheet・cut_happy・import_sprites）は前の絵柄用で、動かすと今の絵を上書きするので使わない |
 | `docs/art-brief.html` | ChatGPT に頼むグラフィックと演出の提案 |
 | `art-src/` | ChatGPT に描いてもらった原画（4人の設定画 `<名前>_sheet.webp`、参考の絵は `reference/`） |
 | `tools/import_sprites.py` | ChatGPT に作ってもらった 48px のスプライトシート（`art-src/sprites48/`）のずれを直して `art/sprites/` に入れる（4人と侵入者3種の歩行、4人の被弾。ピンチの絵は服が破れる表現なので使わない） |
