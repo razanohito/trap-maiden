@@ -73,6 +73,14 @@ body.editing .editonly{display:flex}
 @media (orientation:landscape){body .etools{grid-template-columns:repeat(4,minmax(0,1fr))}body .etool{flex-direction:column;gap:2px;font-size:10px;justify-content:center;padding:4px 2px;min-height:44px}body .etool::before{width:18px;height:18px}.erow{font-size:11px}}
 @media (orientation:landscape) and (max-height:420px){body .etool{min-height:40px}#editMsg{display:none}.editbar{gap:4px}}
 /* 縦持ちの状態帯は 1 行に詰める（狭いときは魔力の数字を隠す） */
+/* 背の低い横持ち: 開始ボタンと罠タイルを詰めて欄に収める */
+@media (orientation:landscape) and (max-height:430px){
+  .hud{padding:6px 8px;gap:4px}.hbtn{width:40px;height:40px}.hearts{font-size:15px}
+  .hud .hrow{flex-wrap:nowrap;gap:8px}.where{flex-wrap:nowrap}.where #sWaveBox small,.pips em{display:none}.score{margin-left:auto}.score b{font-size:16px}.vial{min-width:40px}
+  #dockHint{display:none}.dock{gap:4px}.palette{gap:4px}
+  .go{min-height:40px;font-size:13px;padding:4px 10px}.go .ringwrap,.go .ring{width:26px;height:26px}
+  .slot{padding:3px 3px 4px}.slot canvas{width:clamp(24px,7.5vh,34px);height:clamp(24px,7.5vh,34px)}.slot .n{font-size:11px}
+}
 /* PC の大きな画面: 帯と罠タイルを大きく */
 @media (orientation:landscape) and (min-width:1100px) and (min-height:650px){
   .hud{gap:12px;padding:14px}.hearts{font-size:24px}.bar{height:16px}.vial b{font-size:14px}
@@ -90,8 +98,8 @@ body.editing .editonly{display:flex}
   background:linear-gradient(135deg,var(--gold-hi),var(--gold) 30%,var(--gold-dk) 55%,var(--gold) 75%,var(--gold-hi));box-shadow:0 0 0 2px #000,0 10px 30px rgba(0,0,0,.6)}
 .stage{position:relative;border:2px solid #000;background:#000;line-height:0}
 #cv{display:block;touch-action:none;cursor:pointer}
-.go{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:10px;white-space:nowrap;
-  padding:10px 20px 10px 14px;border-radius:999px;border:1px solid var(--gold-hi);cursor:pointer;color:var(--parch);font:800 15px var(--f-display);letter-spacing:.05em;
+.go{position:relative;z-index:5;display:flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;width:100%;min-height:46px; /* 盤面にかぶらないよう、罠タイルの上に置く */
+  padding:6px 16px 6px 10px;border-radius:999px;border:1px solid var(--gold-hi);cursor:pointer;color:var(--parch);font:800 15px var(--f-display);letter-spacing:.05em;
   background:linear-gradient(180deg,#a12a3d,var(--wax) 50%,var(--wax-dk));box-shadow:0 0 0 3px rgba(0,0,0,.45),0 6px 16px rgba(0,0,0,.6),0 0 18px rgba(241,217,142,.35)}
 .go .ring{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:800 13px var(--f-body);color:var(--gold-hi);
   background:conic-gradient(var(--gold-hi) var(--p,100%),rgba(0,0,0,.35) 0);-webkit-mask:radial-gradient(circle,transparent 9px,#000 10px);mask:radial-gradient(circle,transparent 9px,#000 10px)}
@@ -421,11 +429,11 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
     <div class="frame">
       <div class="stage" id="stage"><canvas id="cv" aria-label="館の見取り図"></canvas></div>
     </div>
-    <button class="go" id="btnGo" type="button" hidden><span class="ringwrap"><span class="ring" id="goRing"></span><span id="goSec">25</span></span><span id="goText">侵入者を迎える</span></button>
   </main>
 
   <section class="dock" id="dock">
     <div class="dockhead"><span>罠 <b id="sTraps">0/5</b></span><span id="dockHint">罠を選んで、マスを押して置く</span></div>
+    <button class="go" id="btnGo" type="button" hidden><span class="ringwrap"><span class="ring" id="goRing"></span><span id="goSec">25</span></span><span id="goText">侵入者を迎える</span></button>
     <nav class="palette" id="palette" aria-label="罠の選択"></nav>
     <div class="editbar" id="editBar" hidden>
       <div class="etools" id="editTools"></div>
