@@ -175,10 +175,10 @@ body.editing .editonly{display:flex}
 .panel::after{bottom:8px;right:8px;transform:rotate(180deg)}
 .phead{display:flex;align-items:center;gap:10px;min-height:44px;flex:none;padding-left:16px}
 .phead:has(> .back:not([hidden])){padding-left:12px}
-@media (orientation:portrait) and (max-width:480px){#ovSelect .phead .meta{display:none}}
-@media (max-height:450px){#charDetail .chips,#charDetail .d,#charDetail .ln.fav canvas{display:none}#ovSelect .charsel{grid-template-columns:minmax(0,.8fr) minmax(0,1fr)}#charDetail{padding:6px 10px;gap:4px}#charDetail .hd b{font-size:16px}#charDetail .ln{font-size:11.5px;line-height:1.35}}
-@media (orientation:portrait){.charsel{grid-template-rows:minmax(150px,1fr) minmax(0,auto)}}
-@media (orientation:portrait) and (max-width:360px){#charGrid{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}#ovSelect .charsel{grid-template-rows:minmax(0,.8fr) minmax(0,1fr)}#ovSelect .cpick{min-height:0}#ovSelect .cpick .fv span{display:none}#ovSelect .chardetail .d,#ovSelect .chardetail .chips{display:none}#ovSelect .cpick .n{font-size:12px}}
+@media (orientation:portrait) and (max-width:480px){#ovSelect .phead .selmode{display:none}#ovSelect .phead .comicbtn{margin-right:0}}
+@media (max-width:360px){#ovSelect .phead h2{display:none}#ovSelect .phead .meta{margin-left:auto}}
+@media (max-height:450px){#charDetail .chips,#charDetail .ln.fav canvas{display:none}#charDetail{padding:6px 10px;gap:4px}#charDetail .hd b{font-size:16px}#charDetail .ln{font-size:11.5px;line-height:1.35}.dlgph{display:none}}
+@media (orientation:portrait) and (max-width:360px){#charGrid{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}#ovSelect .cpick{min-height:0}#ovSelect .cpick .fv span{display:none}#ovSelect .cpick .n{font-size:12px}}
 @media (max-width:360px){#ovHelp #helpText{font-size:12px;line-height:1.5}#ovHelp canvas{max-height:calc(100% - 230px)}.cpick .fv{display:none}.pick .n{font-size:11px}.pick .t{display:none}.pick canvas{width:26px;height:26px}.pick{padding:4px 2px}.trapinfo{padding:6px 8px;gap:3px}.trapinfo canvas{width:30px;height:30px}.trapinfo p{font-size:12px;line-height:1.45}#favHint{display:none}}
 .phead h2{margin:0;font:800 clamp(18px,3.4vmin,26px) var(--f-display);color:var(--berry);letter-spacing:.06em}
 .phead .meta{margin-left:auto;font:700 12px var(--f-body);color:var(--ink-soft);white-space:nowrap}
@@ -259,9 +259,21 @@ body.editing .editonly{display:flex}
 .selsteps li.done{color:var(--gold-dk)}.selsteps li.done::before{background:var(--gold)}
 .selsteps li+li{margin-left:6px}
 section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
-.charsel{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:10px}
-@media (orientation:portrait){.charsel{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}}
-.chargrid{min-height:0;height:100%;max-height:460px;align-self:center;width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.charsel{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+/* キャラの詳しい説明は、押したあとに出る小窓に（一覧は立ち絵だけにして、どの画面でも見切れないようにする） */
+.chardlg{position:absolute;inset:0;z-index:8;display:grid;place-items:center;padding:12px;background:rgba(43,38,90,.55);backdrop-filter:blur(2px)}
+.dlgcard{width:min(640px,100%);max-height:100%;display:flex;gap:12px;overflow:hidden;padding:12px;border-radius:18px;
+  background:linear-gradient(180deg,#fffdf8,var(--parch-dk));box-shadow:0 0 0 3px var(--wax),0 0 0 6px #fff8f0,0 12px 30px rgba(30,25,64,.5)}
+.dlgph{position:relative;flex:0 0 34%;min-height:0;overflow:hidden;border-radius:12px;background:radial-gradient(ellipse at 50% 40%,#7268b8,#3f3878 75%)}
+.dlgph img{position:absolute;left:50%;top:0;width:130%;transform:translateX(-50%)}
+.dlgbody{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px}
+.dlgbody .chardetail{flex:1 1 auto;min-height:0;border:0;background:none;padding:0;overflow:auto}
+.dlgacts{flex:none;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.dlgacts .btn{flex:1 1 auto;white-space:nowrap}
+@media (orientation:portrait) and (max-width:560px){.dlgcard{flex-direction:column}.dlgph{flex:0 0 150px}.dlgph img{width:100%;top:-6%}}
+@media (max-height:600px){.dlgph{display:none}}
+@media (max-height:420px){.dlgcard{padding:8px}.dlgacts .btn{min-height:40px;padding:6px 12px}}
+.chargrid{min-height:0;height:100%;max-height:560px;align-self:center;width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 @media (orientation:portrait){.chargrid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}}
 .cpick{position:relative;min-height:70px;display:flex;flex-direction:column;cursor:pointer;overflow:hidden;padding:0 0 6px;color:var(--parch);border-radius:6px;
   background:radial-gradient(ellipse at 50% 40%,#6a60b0,#3a3370 75%);border:1px solid var(--gold-dk)}
@@ -426,6 +438,19 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .keys b{color:var(--ink)}
 @media (pointer:coarse){.keys{display:none}}
 
+/* ---------- 導入マンガ（コマごとに大きく見せ、吹き出しにセリフを縦書きで入れる） ---------- */
+.overlay.comic{z-index:40;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:8px;place-items:stretch;background:radial-gradient(ellipse at 50% 30%,#4a4290,var(--night) 70%)}
+#comicCv{width:100%;height:100%;min-height:0;cursor:pointer;touch-action:manipulation}
+.comicsay{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.comicsay.show{position:static;width:min(720px,100%);height:auto;overflow:visible;clip:auto;margin:0 auto;padding:8px 12px;border-radius:12px;background:rgba(255,248,240,.95);color:var(--ink);font:700 15px/1.5 var(--f-body);box-sizing:border-box}
+.comicsay b{color:var(--berry);margin-right:2px}
+.comicsay span{display:block}
+.comicbar{display:flex;align-items:center;gap:8px;justify-content:flex-end;width:min(720px,100%);margin:0 auto}
+.comicbar #comicSkip{margin-right:auto}
+.comicpg{font:700 12px var(--f-body);color:var(--muted);white-space:nowrap}
+.comicbtn{border:1px solid var(--wax);background:#fff;color:var(--berry);border-radius:999px;padding:4px 10px;min-height:32px;font:700 12px var(--f-body);cursor:pointer;margin-right:8px}
+@media (max-width:360px){.comicbar .btn{padding:6px 10px;font-size:13px}}
+
 /* ---------- 通知 ---------- */
 .toast{position:fixed;left:50%;top:10px;z-index:60;transform:translate(-50%,-150%);visibility:hidden;transition:transform .35s,visibility .35s;display:grid;gap:2px;min-width:220px;max-width:92vw;padding:10px 16px;border-radius:14px;
   background:linear-gradient(180deg,#5d55a8,var(--walnut-dk));border:1px solid var(--gold-hi);box-shadow:0 6px 20px rgba(30,25,64,.5);color:var(--parch);text-align:center;pointer-events:none}
@@ -500,11 +525,15 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 
 <div class="overlay" id="ovSelect" hidden>
   <div class="panel">
-    <div class="phead"><button class="back" id="btnBack1" type="button">戻る</button><button class="back" id="btnBack2" type="button" hidden>逃げる子へ</button><button class="back" id="btnBack3" type="button" hidden>罠へ</button><h2>今夜の支度</h2><span class="meta"><span class="selmode" id="selMode"></span></span></div>
+    <div class="phead"><button class="back" id="btnBack1" type="button">戻る</button><button class="back" id="btnBack2" type="button" hidden>逃げる子へ</button><button class="back" id="btnBack3" type="button" hidden>罠へ</button><h2>今夜の支度</h2><span class="meta"><button class="comicbtn" id="btnComic" type="button">導入マンガ</button><span class="selmode" id="selMode"></span></span></div>
     <ol class="selsteps" id="selSteps"><li>逃げる子</li><li>罠を4つ</li><li>確かめる</li></ol>
     <section class="step" id="selStep1">
-      <div class="charsel"><div class="chargrid" id="charGrid"></div><div class="chardetail" id="charDetail"></div></div>
-      <div class="pfoot"><button class="btn" id="btnNext1" type="button">この子で罠を選ぶ</button></div>
+      <p class="selhint">今夜逃げる子を押すと、得意なことや弱点が見られます</p>
+      <div class="charsel"><div class="chargrid" id="charGrid"></div></div>
+      <div class="chardlg" id="charDlg" role="dialog" aria-modal="true" aria-labelledby="charDlgName" hidden>
+        <div class="dlgcard"><div class="dlgph" id="charDlgPh"></div><div class="dlgbody"><div class="chardetail" id="charDetail"></div>
+          <div class="dlgacts"><button class="btn sub" id="charDlgClose" type="button">ほかの子を見る</button><button class="btn" id="btnNext1" type="button">この子で罠を選ぶ</button></div></div></div>
+      </div>
     </section>
     <section class="step" id="selStep2" hidden>
       <p class="selhint" id="favHint"></p>
@@ -516,6 +545,12 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
       <div class="pfoot"><button class="btn" id="btnBegin" type="button">この支度で夜を迎える</button></div>
     </section>
   </div>
+</div>
+
+<div class="overlay comic" id="ovComic" role="dialog" aria-label="導入マンガ" hidden>
+  <canvas id="comicCv" aria-hidden="true"></canvas>
+  <p class="comicsay" id="comicSay" aria-live="polite"></p>
+  <div class="comicbar"><button class="btn sub" id="comicSkip" type="button">スキップ</button><span class="comicpg" id="comicPg"></span><button class="btn sub" id="comicPrev" type="button">前へ</button><button class="btn" id="comicNext" type="button">次へ</button></div>
 </div>
 
 <div class="overlay" id="ovHelp" hidden>
@@ -775,6 +810,7 @@ const ART = { portrait_lily: '../art/portrait_lily.webp', portrait_mina: '../art
   fx_bell: '../art/fx/bell.png', fx_caltrop: '../art/fx/caltrop.png', fx_vortex: '../art/fx/vortex.png', fx_slash: '../art/fx/slash.png', fx_spear: '../art/fx/spear.png', fx_spike: '../art/fx/spike.png', fx_pit: '../art/fx/pit.png', fx_chandelier: '../art/fx/chandelier.png', fx_bomb: '../art/fx/bomb.png', fx_hurt: '../art/fx/hurt.png', fx_keys: '../art/fx/keys.png', fx_mana: '../art/fx/mana.png',
   lily_jump: '../art/sprites/lily_jump.webp', mina_jump: '../art/sprites/mina_jump.webp', noel_jump: '../art/sprites/noel_jump.webp', cecil_jump: '../art/sprites/cecil_jump.webp',
   portrait_lily_teary: '../art/portrait_lily_teary.webp', portrait_mina_teary: '../art/portrait_mina_teary.webp', portrait_noel_teary: '../art/portrait_noel_teary.webp', portrait_cecil_teary: '../art/portrait_cecil_teary.webp',
+  comic_1: '../art/comic/page01.webp', comic_2: '../art/comic/page02.webp', comic_3: '../art/comic/page03.webp',
   portrait_lily_smug: '../art/portrait_lily_smug.webp', portrait_mina_smug: '../art/portrait_mina_smug.webp', portrait_noel_smug: '../art/portrait_noel_smug.webp', portrait_cecil_smug: '../art/portrait_cecil_smug.webp',
   portrait_lily_happy: '../art/portrait_lily_happy.webp', portrait_mina_happy: '../art/portrait_mina_happy.webp', portrait_noel_happy: '../art/portrait_noel_happy.webp', portrait_cecil_happy: '../art/portrait_cecil_happy.webp',
   foe_knight_walk: '../art/sprites/foe_knight_walk.webp', foe_knight_idle: '../art/sprites/foe_knight_idle.webp',
@@ -3009,6 +3045,9 @@ function renderCharDetail() {
 `;
   box.querySelector('.ln.fav').prepend(trapIconCanvas(ch.fav, 36));
 }
+// 選択まわりの立ち絵は真顔か笑顔だけ。ミナの通常絵はあくびなので笑顔を使う
+const SEL_FACE = { mina: 'happy' };
+function selFace(art) { return ART[`portrait_${art}${SEL_FACE[art] ? '_' + SEL_FACE[art] : ''}`] || ART[`portrait_${art}`]; }
 function renderSelect() {
   const cg = $('#charGrid'); cg.innerHTML = '';
   for (const id of CHAR_ORDER) {
@@ -3016,13 +3055,13 @@ function renderSelect() {
     b.type = 'button'; b.className = 'cpick' + (sel.char === id ? ' on' : ''); b.id = 'pick-' + id;
     b.setAttribute('aria-pressed', sel.char === id); b.setAttribute('aria-label', `${ch.name}（${ch.title}）`);
     let ic;
-    if (ch.art && ART[`portrait_${ch.art}`]) { ic = document.createElement('div'); ic.className = 'ph'; ic.innerHTML = `<img alt="" src="${ART[`portrait_${ch.art}`]}">`; }
+    if (ch.art && selFace(ch.art)) { ic = document.createElement('div'); ic.className = 'ph'; ic.innerHTML = `<img alt="" src="${selFace(ch.art)}">`; }
     else { ic = document.createElement('canvas'); ic.className = 'face'; ic.width = 84; ic.height = 84; const c = ic.getContext('2d'); c.scale(2, 2); drawCharIcon(c, ch.look, 21, 22, 1.3); }
     b.append(ic);
     b.insertAdjacentHTML('beforeend', `<span class="fv"><span>得意</span></span><span class="n">${ch.name}</span><span class="t">${ch.title}</span>`);
     b.querySelector('.fv').prepend(trapIconCanvas(ch.fav, 20));
     if (ic.classList.contains('ph')) ic.append(b.querySelector('.fv'));
-    b.addEventListener('click', () => { sel.char = id; renderSelect(); });
+    b.addEventListener('click', () => { sel.char = id; renderSelect(); openCharDlg(); });
     cg.append(b);
   }
   const tg = $('#trapGrid'); tg.innerHTML = '';
@@ -3056,9 +3095,109 @@ function renderSelect() {
   const fc = CHARS[sel.char];
   $('#favHint').innerHTML = `★は${fc.name}の得意な罠（<b>${TRAPS[fc.fav].name}</b>）。持っていくと「${fc.passive.name}」でとても強くなる`;
 }
+// ---------- 導入マンガ ----------
+// ページの絵（687x1024）の上の、コマの範囲と吹き出しの範囲（絵の座標）。読む順は日本の漫画と同じ。
+// セリフは art-src の吹き出しが空の絵に、ゲームで縦書きにして入れる（Nano Banana は日本語の文字が崩れやすいため）
+const COMIC = [
+  { img: 'comic_1', panels: [
+    { r: [32, 29, 655, 327], b: [[514, 76, 92, 141, 'ノエル', 'リボンよし、ケーキよし、床のぴかぴか度もよし……']] },
+    { r: [293, 329, 680, 664], b: [] },
+    { r: [32, 338, 288, 664], b: [[231, 350, 47, 91, 'ノエル', '……'], [42, 477, 55, 109, 'ノエル', '磨きすぎました']] },
+    { r: [409, 677, 655, 995], b: [[579, 682, 71, 145, 'セシル', 'あははっ！今の滑りっぷり、'], [413, 833, 52, 130, 'セシル', 'ボクのノートに記録しとくね']] },
+    { r: [32, 677, 404, 995], b: [[37, 840, 81, 151, 'ミーナ', 'ふぁ……いちご、ひとつだけ味見……'], [314, 682, 86, 115, 'ノエル', 'ダメです！主役がまだです！']] },
+  ] },
+  { img: 'comic_2', panels: [
+    { r: [32, 29, 655, 504], b: [[487, 68, 132, 211, 'リリィ', 'おはよう、みんな。……まあ。これ、全部わたしのために？']] },
+    { r: [346, 519, 655, 802], b: [[583, 523, 67, 139, 'ノエル', 'はい。お誕生日おめでとうございます、お嬢さま']] },
+    { r: [32, 519, 340, 802], b: [[260, 522, 78, 152, 'セシル', '14歳おめでと。夜はボク特製の花火もあるよ。ちょっとだけ爆発するやつ']] },
+    { r: [32, 815, 655, 995], b: [[106, 829, 93, 149, 'リリィ', 'ふふっ。……花火は、爆発しないものよ？']] },
+  ] },
+  { img: 'comic_3', panels: [
+    { r: [447, 29, 655, 326], b: [] },
+    { r: [32, 29, 442, 326], b: [[322, 33, 102, 164, 'ノエル', 'お嬢さま、おばあさまから小包です！'], [46, 161, 87, 147, 'ノエル', '消印は……南の海の島ですね']] },
+    { r: [32, 339, 655, 608], b: [] },
+    { r: [32, 625, 655, 995], b: [[572, 640, 68, 154, 'おばあさま（手紙）', 'リリィ、お誕生日おめでとう！約束どおり、館の鍵束を送ります。'], [49, 807, 82, 171, 'おばあさま（手紙）', '今日からあなたが百合の館の主よ']] },
+  ] },
+];
+const esc = t => String(t).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[m]);
+const COMIC_STEPS = COMIC.flatMap((pg, pi) => pg.panels.map((pn, ni) => ({ pi, ni })));
+let comicI = 0, comicDone = null;
+const comicCv = $('#comicCv'), cc = comicCv.getContext('2d');
+const COMIC_ROT = 'ー…〜～—―（）「」『』()‥：'; // 縦書きで横に寝かせる文字
+function vertText(c, text, x, y, w, h) { // 戻り値は使った字の大きさ // 吹き出しの中に縦書き（右の列から）。入る一番大きい字で
+  const chars = [...text];
+  let size = Math.floor(Math.min(w, h) / 2);
+  for (; size > 6; size--) { const per = Math.floor(h / size), cols = Math.ceil(chars.length / Math.max(1, per)); if (per >= 1 && cols * size * 1.18 <= w) break; }
+  const per = Math.max(1, Math.floor(h / size)), cols = Math.ceil(chars.length / per);
+  const total = cols * size * 1.18 - size * .18, x0 = x + (w + total) / 2 - size / 2;
+  const colH = Math.min(per, chars.length) * size, y0 = y + (h - colH) / 2;
+  c.font = `700 ${size}px "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif`; c.fillStyle = '#4a3434'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  chars.forEach((ch, i) => {
+    const col = Math.floor(i / per), row = i % per, cx = x0 - col * size * 1.18, cy = y0 + row * size + size / 2;
+    if (COMIC_ROT.includes(ch)) { c.save(); c.translate(cx, cy); c.rotate(Math.PI / 2); c.fillText(ch, 0, 0); c.restore(); }
+    else if ('、。'.includes(ch)) c.fillText(ch, cx + size * .32, cy - size * .3);
+    else if ('っゃゅょぁぃぅぇぉッャュョァィゥェォ'.includes(ch)) c.fillText(ch, cx + size * .1, cy - size * .08);
+    else c.fillText(ch, cx, cy);
+  });
+  return size;
+}
+function drawComic(flip = true) {
+  const r = comicCv.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+  comicCv.width = Math.max(1, Math.round(r.width * d)); comicCv.height = Math.max(1, Math.round(r.height * d));
+  const { pi, ni } = COMIC_STEPS[comicI], pg = COMIC[pi], pn = pg.panels[ni], im = IMG[pg.img];
+  cc.setTransform(1, 0, 0, 1, 0, 0); cc.clearRect(0, 0, comicCv.width, comicCv.height);
+  if (!imgReady(pg.img)) { im.onload = drawComic; return; }
+  const [x0, y0, x1, y1] = pn.r, pad = 10 * d, k = Math.min((comicCv.width - pad * 2) / (x1 - x0), (comicCv.height - pad * 2) / (y1 - y0));
+  const ox = (comicCv.width - (x1 - x0) * k) / 2, oy = (comicCv.height - (y1 - y0) * k) / 2;
+  cc.setTransform(k, 0, 0, k, ox - x0 * k, oy - y0 * k);
+  cc.imageSmoothingQuality = 'high';
+  cc.save(); cc.beginPath(); cc.rect(x0, y0, x1 - x0, y1 - y0); cc.clip();
+  cc.drawImage(im, 0, 0, im.naturalWidth, im.naturalHeight, 0, 0, 687, 1024);
+  cc.setTransform(1, 0, 0, 1, 0, 0);
+  let fs = Infinity;
+  for (const [bx, by, bw, bh, , line] of pn.b) { // 吹き出しの内側（楕円なので少し内側）に、画面の大きさの字で書く
+    fs = Math.min(fs, vertText(cc, line, ox + (bx - x0 + bw * .14) * k, oy + (by - y0 + bh * .12) * k, bw * .72 * k, bh * .76 * k) / d);
+  }
+  cc.restore();
+  cc.setTransform(1, 0, 0, 1, 0, 0); cc.strokeStyle = 'rgba(255,248,240,.9)'; cc.lineWidth = 3 * d; cc.strokeRect(ox, oy, (x1 - x0) * k, (y1 - y0) * k);
+  const say = $('#comicSay'), small = fs < 13; // 横長のコマをスマホで見ると吹き出しの字が小さいので、下にも同じセリフを出す
+  say.innerHTML = pn.b.map(b => `<span><b>${esc(b[4])}</b>「${esc(b[5])}」</span>`).join('');
+  if (say.classList.contains('show') !== small && flip) { say.classList.toggle('show', small); return drawComic(false); }
+  $('#comicPg').textContent = `${pi + 1} / ${COMIC.length} ページ`;
+  $('#comicPrev').disabled = comicI === 0;
+  $('#comicNext').textContent = comicI === COMIC_STEPS.length - 1 ? 'おわり' : '次へ';
+}
+function openComic(then) { comicI = 0; comicDone = then || null; $('#ovComic').hidden = false; drawComic(); try { $('#comicNext').focus({ preventScroll: true }); } catch (e) {} }
+function closeComic() {
+  $('#ovComic').hidden = true; try { localStorage.setItem('trapoflily-comic', '1'); } catch (e) {}
+  const f = comicDone; comicDone = null; if (f) f();
+}
+function comicStep(dir) { const n = comicI + dir; if (n < 0) return; if (n >= COMIC_STEPS.length) { closeComic(); return; } comicI = n; drawComic(); }
+function comicSeen() { try { return localStorage.getItem('trapoflily-comic') === '1'; } catch (e) { return true; } }
+$('#comicNext').addEventListener('click', () => comicStep(1));
+$('#comicPrev').addEventListener('click', () => comicStep(-1));
+$('#comicSkip').addEventListener('click', closeComic);
+comicCv.addEventListener('click', () => comicStep(1));
+addEventListener('resize', () => { if (!$('#ovComic').hidden) drawComic(); });
+addEventListener('keydown', e => {
+  if ($('#ovComic').hidden) return;
+  if (e.code === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeComic(); }
+  else if (e.code === 'ArrowRight' || e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); e.stopImmediatePropagation(); comicStep(1); }
+  else if (e.code === 'ArrowLeft') { e.preventDefault(); e.stopImmediatePropagation(); comicStep(-1); }
+}, true);
+
 let selStep = 1;
+function openCharDlg() { // 押した子の詳しい説明（得意・弱点）を小窓で出す
+  const ch = CHARS[sel.char], pic = ch.art && selFace(ch.art);
+  $('#charDlgPh').innerHTML = pic ? `<img alt="" src="${pic}">` : '';
+  $('#charDlgPh').hidden = !pic;
+  $('#charDlg').hidden = false;
+  const h = $('#charDetail .hd b'); if (h) h.id = 'charDlgName';
+  try { $('#btnNext1').focus({ preventScroll: true }); } catch (e) {}
+}
+function closeCharDlg() { $('#charDlg').hidden = true; const b = $(`#pick-${sel.char}`); if (b) try { b.focus({ preventScroll: true }); } catch (e) {} }
 function setSelStep(n) {
-  selStep = n;
+  selStep = n; $('#charDlg').hidden = true;
   [1, 2, 3].forEach(i => { $(`#selStep${i}`).hidden = i !== n; });
   [...$('#selSteps').children].forEach((li, i) => { li.className = i + 1 === n ? 'on' : i + 1 < n ? 'done' : ''; });
   [1, 2, 3].forEach(i => { $(`#btnBack${i}`).hidden = i !== n; });
@@ -3074,7 +3213,7 @@ function showTrapInfo(id) { // 罠の説明（選択画面の詳細欄）
 }
 function renderConfirm() {
   const ch = CHARS[sel.char], box = $('#selConfirm'), has = sel.traps.includes(ch.fav);
-  const lo = TRAP_ORDER.filter(t => sel.traps.includes(t)), pic = ch.art && (ART[`portrait_${ch.art}_smug`] || ART[`portrait_${ch.art}`]); // 出発前は自信のある顔
+  const lo = TRAP_ORDER.filter(t => sel.traps.includes(t)), pic = ch.art && selFace(ch.art); // 選択画面は真顔か笑顔で固定
   const items = lo.map(t => {
     const d = TRAPS[t], fv = t === ch.fav;
     return `<li class="${fv ? 'fav' : ''}" data-t="${t}"><div><b>${fv ? '★' : ''}${d.name}</b><small>魔力 ${fv && ch.passive.cost || d.cost}・再装填 ${fv && ch.passive.cd || d.cd}秒</small></div></li>`;
@@ -3083,7 +3222,7 @@ function renderConfirm() {
   box.innerHTML = `<div class="cf-ph">${pic ? `<img alt="" src="${pic}">` : ''}<div class="nm">${ch.name}</div></div><div><p class="say">${ch.ready}</p><ul>${items}</ul>${fvline}</div>`;
   box.querySelectorAll('li').forEach(li => li.prepend(trapIconCanvas(li.dataset.t, 30)));
 }
-function openSelect() { audio(); renderSelect(); showOv('ovSelect'); setSelStep(1); $('#selMode').textContent = runMode === 'stage' ? `ステージ${runStage}（${MAPS[stageMap(runStage)].name}）` : runMode === 'edit' ? '自作の部屋を試す' : runMode === 'training' ? 'トレーニング' : runMode === 'endless' ? '無限の夜' : 'チャレンジ（全10夜）'; $('#btnBack1').textContent = runMode === 'stage' ? 'ステージ一覧' : runMode === 'edit' ? '部屋づくり' : runMode === 'training' ? '練習の一覧' : 'タイトルへ'; }
+function openSelect() { audio(); renderSelect(); showOv('ovSelect'); setSelStep(1); if (!comicSeen() && !navigator.webdriver) openComic(); $('#selMode').textContent = runMode === 'stage' ? `ステージ${runStage}（${MAPS[stageMap(runStage)].name}）` : runMode === 'edit' ? '自作の部屋を試す' : runMode === 'training' ? 'トレーニング' : runMode === 'endless' ? '無限の夜' : 'チャレンジ（全10夜）'; $('#btnBack1').textContent = runMode === 'stage' ? 'ステージ一覧' : runMode === 'edit' ? '部屋づくり' : runMode === 'training' ? '練習の一覧' : 'タイトルへ'; }
 function startRun(char = sel.char, loadout = sel.traps, noSave = false) {
   audio();
   const lo = TRAP_ORDER.filter(t => loadout.includes(t)); // 罠ボタンは図鑑の順に並べる
@@ -3365,10 +3504,13 @@ $('#btnBegin').addEventListener('click', () => { if (sel.traps.length === 4) sta
 $('#btnNext1').addEventListener('click', () => { audio(); setSelStep(2); });
 $('#btnNext2').addEventListener('click', () => { if (sel.traps.length === 4) { audio(); setSelStep(3); } });
 $('#btnBack2').addEventListener('click', () => setSelStep(1));
+$('#charDlgClose').addEventListener('click', closeCharDlg);
+$('#btnComic').addEventListener('click', () => openComic());
+$('#charDlg').addEventListener('click', e => { if (e.target === e.currentTarget) closeCharDlg(); }); // 小窓の外を押すと閉じる
 $('#btnBack1').addEventListener('click', () => { if (runMode === 'stage') openStages(); else if (runMode === 'edit') openEditor(); else if (runMode === 'training') openTrain(); else showOv('ovTitle'); });
 addEventListener('keydown', e => { // 支度画面は Escape で前の段へ
   if (e.code !== 'Escape' || $('#ovSelect').hidden || !$('#ovHelp').hidden) return;
-  e.preventDefault(); if (selStep > 1) setSelStep(selStep - 1); else $('#btnBack1').click();
+  e.preventDefault(); if (!$('#charDlg').hidden) closeCharDlg(); else if (selStep > 1) setSelStep(selStep - 1); else $('#btnBack1').click();
 });
 $('#btnBack3').addEventListener('click', () => setSelStep(2));
 $('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave(G.wave + 1); hudCache = ''; });
