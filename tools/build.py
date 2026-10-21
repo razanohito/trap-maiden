@@ -1,7 +1,9 @@
-"""src/game.html から公開用の2つを作る。
+"""src/game.html（新しい絵柄「月夜のおかし箱」の版）から公開用の2つを作る。
 
-- index.html                     … GitHub Pages 用（doctype と html 要素を付ける）
-- dist-artifact/trap-maiden.html … claude.ai Artifact 用（中身だけ。骨組みは Artifact 側が付ける）
+- v2/index.html                     … GitHub Pages 用（doctype と html 要素を付ける）。…/trap-maiden/v2/ で開く
+- dist-artifact/trap-maiden-v2.html … claude.ai Artifact 用（中身だけ。骨組みは Artifact 側が付ける）
+
+前の絵柄の版（index.html と dist-artifact/trap-maiden.html）は別の版として残してあり、このビルドでは書き換えない。
 
 art/ の画像（webp・png）と BGM（mp3）は data URI にして埋め込む。
 """
@@ -23,8 +25,10 @@ def embed(m: re.Match) -> str:
 
 src = re.sub(r"'\.\./art/([\w/-]+\.(?:webp|png|mp3))'", embed, src)
 
-(ROOT / "index.html").write_text('<!doctype html>\n<html lang="ja">\n' + src + "\n</html>\n", encoding="utf-8")
-out = ROOT / "dist-artifact" / "trap-maiden.html"
+page = ROOT / "v2" / "index.html"
+page.parent.mkdir(exist_ok=True)
+page.write_text('<!doctype html>\n<html lang="ja">\n' + src + "\n</html>\n", encoding="utf-8")
+out = ROOT / "dist-artifact" / "trap-maiden-v2.html"
 out.parent.mkdir(exist_ok=True)
 out.write_text(src, encoding="utf-8")
-print("index.html と", out.relative_to(ROOT).as_posix(), "を作りました")
+print(page.relative_to(ROOT).as_posix(), "と", out.relative_to(ROOT).as_posix(), "を作りました")

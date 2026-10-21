@@ -8,6 +8,7 @@
 - 盤面: 月明かりの市松の床、キャラメル色の木の床、ピンクの絨毯、薄紫の柱と石像。見取り図・遊び方の図も同じ色に
 - 検査: shot_ui（6サイズ×24画面 OK）、test_features・test_guide・test_fx_sound・test_modes すべて pageerror なし
 残った課題: 罠のアイコンはドット絵のまま色だけ新しい配色に寄せた（tools/import_icons.py の sweets_tint）。効果の絵は前のまま。チリン・男爵・背景・CG はまだ使っていない（導入アドベンチャーで使う予定）。リリィのせりふは「怖がり」のまま（新しいシナリオの性格に合わせるのは別の仕事）
+- 別の版として公開（ユーザーの希望）: 新しい絵柄は v2/index.html と dist-artifact/trap-maiden-v2.html、前の絵柄は index.html（トップ）に残した。build.py は v2 だけを作る
 次にやること: ユーザーの確認を待つ
 
 # 引き継ぎメモ（更新: 2026-10-21）

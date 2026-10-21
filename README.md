@@ -2,6 +2,13 @@
 
 古い館の娘リリィは剣を持てず、夜ごとやって来る侵入者から逃げ回ることしかできません。プレイヤーは館の罠を仕掛けて、リリィを守ります。刻命館のように「主人公は逃げ回るだけ、戦うのは罠」というブラウザゲームです。
 
+## 2つの版
+
+- **新しい絵柄（月夜のおかし箱）**: `v2/index.html`（GitHub Pages では `…/trap-maiden/v2/`）。これから直すのはこちら（`src/game.html` → `python tools/build.py`）
+- **前の絵柄（夜の館のゴシック）**: `index.html`（GitHub Pages のトップ）と `dist-artifact/trap-maiden.html`。2026-10-21 時点のまま残した完成品で、ビルドでは書き換えない
+
+遊び方・記録の保存先は同じなので、同じブラウザならどちらの版でも記録と実績を引き継ぐ。
+
 ## 遊び方
 
 - モードは3つ。**ステージ**（全40。1ステージ＝1夜で、クリアすると次が開く。5ステージごとに部屋が変わり、部屋は大広間・回廊・温室・東の書庫・地下牢・礼拝堂・屋根裏・大時計の間の8つ。クリアの評価は星3つ）、**チャレンジ**（全10夜を続けて守り、ハイスコアを競う）、**エディット**（床・壁・奈落・トゲ床・シャンデリア・槍の石像・扉・開始位置を置いて自分の部屋を作り、強さ1〜10で試せる）。記録・実績・自作の部屋はこの端末に保存される。
@@ -29,7 +36,7 @@
 | パス | 内容 |
 |---|---|
 | `src/game.html` | ゲーム本体（HTML 1 枚。外部スクリプトなし、フォントだけ Google Fonts） |
-| `tools/build.py` | `src/game.html` から `index.html`（GitHub Pages 用）と `dist-artifact/trap-maiden.html`（claude.ai Artifact 用）を作る |
+| `tools/build.py` | `src/game.html` から `v2/index.html`（GitHub Pages 用）と `dist-artifact/trap-maiden-v2.html`（claude.ai Artifact 用）を作る。前の絵柄の `index.html` は書き換えない |
 | `tools/import_v2.py` | **今の絵柄（月夜のおかし箱）**。`art-src/v2/` の Nano Banana の絵（白背景）から、立ち絵（`art/portrait_<子>[_happy\|_teary\|_smug].webp`）と盤面のちびキャラ（`art/sprites/*.webp`、1コマ 96px）を作る。numpy・Pillow・scipy を使う。下の古い取り込み道具（cut_sheet・cut_happy・import_sprites）は前の絵柄用で、動かすと今の絵を上書きするので使わない |
 | `docs/art-brief.html` | ChatGPT に頼むグラフィックと演出の提案 |
 | `art-src/` | ChatGPT に描いてもらった原画（4人の設定画 `<名前>_sheet.webp`、参考の絵は `reference/`） |
@@ -48,13 +55,15 @@
 1. `src/game.html` を直す
 2. `python tools/build.py`
 3. 動作確認（下記）
-4. コミットして push（GitHub Pages に反映される）。Artifact は `dist-artifact/trap-maiden.html` を publish する
+4. コミットして push（GitHub Pages の `/v2/` に反映される）。Artifact は `dist-artifact/trap-maiden-v2.html` を publish する
 
 ## 動作確認
 
 ```bash
 python -m http.server 8766 --bind 127.0.0.1
 ```
+
+画面を撮る道具（`shot_*.js`）は `GAME_URL=http://127.0.0.1:8766/v2/index.html` を付けて新しい版を調べる。
 
 別のターミナルで（`playwright-core` と Chrome が必要。`PLAYWRIGHT_CORE` に playwright-core の場所を指定してもよい）:
 
