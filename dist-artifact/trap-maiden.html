@@ -210,6 +210,8 @@ body.editing .editonly{display:flex}
 .tminor button{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;cursor:pointer;color:var(--parch-dk);font:700 12px var(--f-body)}
 .tminor button i{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:18px;color:var(--gold-hi);background:radial-gradient(circle at 40% 35%,#4a3a2c,#21170f);border:1px solid var(--gold-dk)}
 .tminor button:hover{color:var(--gold-hi)}
+.tminor button.new i{box-shadow:0 0 0 2px #ffd27a,0 0 14px rgba(255,210,122,.8)}
+.tminor button.new::after{content:"はじめに";font:800 10px var(--f-body);color:#fff;background:var(--wax);padding:0 6px;border-radius:6px;margin-top:-2px}
 #bestLine{color:var(--muted);font-size:12px;text-align:center}
 @media (orientation:landscape){ /* 横持ち・PC: 左に4人、右にロゴとメニュー */
   .title{width:min(1500px,100%);grid-template-columns:minmax(0,1fr) minmax(280px,38%);grid-template-rows:1fr auto auto 1fr;align-items:center}
@@ -379,6 +381,13 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .achlist li.on{background:linear-gradient(180deg,var(--iron-hi),var(--iron));color:var(--parch);border-color:var(--gold)}
 .achlist li.on .md{background:radial-gradient(circle at 40% 35%,#fff0b8,var(--gold) 60%,var(--gold-dk));color:#5a1e2c;border-color:var(--gold-hi)}
 .achlist li.sel{box-shadow:inset 0 0 0 2px #5a1e2c}
+.guidebox{position:absolute;z-index:6;left:50%;top:10px;pointer-events:none;transform:translateX(-50%);width:min(560px,calc(100% - 16px));padding:10px 14px 10px 12px;border-radius:8px;
+  font:700 clamp(13px,2.2vmin,16px)/1.55 var(--f-body);color:var(--ink);background:linear-gradient(180deg,#f3e8cf,var(--parch-dk));border:1px solid var(--gold-dk);box-shadow:0 0 0 3px rgba(0,0,0,.4),0 8px 18px rgba(0,0,0,.5)}
+.guidebox.low{top:auto;bottom:10px}
+.guidebox .gstep{display:inline-block;margin-right:8px;padding:0 8px;border-radius:9px;background:#5a1e2c;color:var(--gold-hi);font:800 12px var(--f-body)}
+.guide-hl{position:relative;z-index:7;animation:guidehl 1s ease-in-out infinite}
+@keyframes guidehl{0%,100%{box-shadow:0 0 0 3px #ffd27a,0 0 18px 4px rgba(255,210,122,.8)}50%{box-shadow:0 0 0 3px #ffd27a,0 0 4px 1px rgba(255,210,122,.4)}}
+@media (prefers-reduced-motion:reduce){.guide-hl{animation:none;box-shadow:0 0 0 3px #ffd27a}}
 .lessons{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:8px}
 @media (orientation:portrait){.lessons{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .lesson{display:flex;flex-direction:column;gap:3px;min-height:0;overflow:hidden;padding:10px 12px;text-align:left;cursor:pointer;border-radius:6px;color:var(--parch);background:linear-gradient(180deg,var(--iron-hi),var(--iron));border:1px solid rgba(201,162,74,.45)}
@@ -390,8 +399,9 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 @media (max-width:360px),(orientation:landscape) and (max-height:420px){.lesson .lg{display:none}.lesson .ls{display:block}}
 .lesson.done{box-shadow:inset 0 0 0 1px #9fe08a}
 .lesson.done b{color:#c8f0b0}
+.lesson[data-i="0"]{background:linear-gradient(180deg,#5a1e2c,#3a1018);border-color:var(--gold-hi)}
 .lesson.free{background:linear-gradient(180deg,#3a2c1e,#241a12)}
-@media (max-height:620px),(max-width:420px){.lesson .lt{display:none}}
+@media (max-height:820px),(max-width:420px){.lesson .lt{display:none}}
 @media (orientation:landscape) and (max-height:520px){.lessons{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.lesson{padding:5px 7px;gap:1px}.lesson b{font-size:13px}.lesson .lg{font-size:11px;line-height:1.3}}
 @media (max-width:360px){.lessons{gap:4px}.lesson{padding:3px 6px;gap:0;justify-content:center}.lesson b{font-size:12.5px;line-height:1.25}.lesson .lg{font-size:11px;line-height:1.3}}
 .achinfo{flex:none;min-height:40px;font-size:13px;color:var(--ink)}
@@ -442,6 +452,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
   </header>
 
   <main class="board" id="board">
+    <div class="guidebox" id="guideBox" role="status" aria-live="polite" hidden></div>
     <div class="frame">
       <div class="stage" id="stage"><canvas id="cv" aria-label="館の見取り図"></canvas></div>
     </div>
@@ -853,6 +864,8 @@ let runMode = 'challenge', runStage = 1;
 let trainingMap = 0;
 // トレーニングの練習（目標つき）。lesson が null なら自由に練習
 const LESSONS = [
+  { id: 'guide', short: '手順どおりに', name: 'はじめての夜（チュートリアル）', goal: '手順どおりに罠を置いて、侵入者を止める', kind: 'guide', n: 7, traps: ['bear', 'rock', 'fire', 'spring'], keep: 0,
+    text: '罠の選び方・置き方・連続・館の仕掛けまで、光る場所を順に押していけば覚えられる。最初はここから。' },
   { id: 'combo3', short: '3連続', name: 'コンボの条件', goal: '3連続を出す', kind: 'combo', n: 3, traps: ['bear', 'spring', 'rock', 'fire'], keep: 3,
     text: '罠を3秒半以内に続けて当てると「連続」。トラバサミで止めた侵入者に、落石や火柱を重ねよう。' },
   { id: 'combo10', short: '10連続', name: '10コンボを目指そう', goal: '10連続を出す', kind: 'combo', n: 10, traps: ['bear', 'spring', 'fire', 'caltrop'], keep: 5,
@@ -885,10 +898,65 @@ function lessonProgress() { // いまの数と目標
   const v = L.kind === 'combo' ? G.bestCombo : L.kind === 'direct' ? (G.directHits || 0) : L.kind === 'multi' ? (G.multiHits || 0) : L.kind === 'survive' ? Math.floor(G.lessonT || 0) : (G[L.kind] || 0);
   return [Math.min(v, L.n), L.n];
 }
+// ---------- チュートリアル（手順つき） ----------
+// 光る場所を順に押す。each step: text（案内）、hl（光らせる罠ボタン・マス・ボタン）、ok（できたか）
+function initGuide() {
+  const h = G.hero, field = bfs(h.tx, h.ty, foeWalk), door = DOORS[0], path = [];
+  let [cx, cy] = door;
+  for (let k = 0; k < 40 && field[cx + cy * COLS] > 0; k++) {
+    const d = DIRS.find(([dx, dy]) => field[cx + dx + (cy + dy) * COLS] === field[cx + cy * COLS] - 1);
+    if (!d) break; cx += d[0]; cy += d[1]; path.push([cx, cy]);
+  }
+  let i = path.findIndex((t, k) => k >= 1 && k < path.length - 1 && canPlace(t[0], t[1]) && canPlace(path[k + 1][0], path[k + 1][1]) && t[0] - path[k - 1][0] === path[k + 1][0] - t[0] && t[1] - path[k - 1][1] === path[k + 1][1] - t[1] && Math.abs(t[0] - h.tx) + Math.abs(t[1] - h.ty) >= 3);
+  if (i < 0) i = Math.max(1, Math.min(2, path.length - 2));
+  const ch = G.devices.find(d => d.type === 'chandelier') || G.devices[0];
+  G.guide = { i: 0, path: [door, ...path], bear: path[i], rock: path[i + 1], ch: ch && [ch.x, ch.y], spawned: 0, t: 0 };
+  G.selected = null; // 最初の手順で自分で選ぶ
+}
+const GUIDE = [
+  { text: 'あなたは館の罠で、逃げる子を守る。まず下の罠ボタンから「トラバサミ」を選ぼう', hl: { slot: 'bear' }, ok: () => G.selected === 'bear' },
+  { text: () => `侵入者は${doorSide(DOORS[0])}の扉から入ってくる。光っているマスを押して、トラバサミを置こう`, hl: { tile: 'bear' }, ok: () => G.traps.has(G.guide.bear.join(',')) },
+  { text: '次は「落石」を選んで、トラバサミのすぐ先の光るマスに置こう', hl: { slot: 'rock', tile: 'rock' }, ok: () => G.traps.has(G.guide.rock.join(',')) },
+  { text: '準備ができた。「侵入者を迎える」を押そう', hl: { go: 1 }, ok: () => G.guide.spawned > 0 },
+  { text: 'トラバサミで止めて、抜けた先の落石が当たれば「連続」。罠を続けて当てると得点が増える', hl: { tile: 'rock' }, ok: () => G.bestCombo >= 2 },
+  { text: 'うまい！ 光っているシャンデリアを押してみよう。館の仕掛けは魔力いらずで、周り3x3に落ちる', hl: { ch: 1 }, ok: () => G.devices.some(d => d.type === 'chandelier' && d.cd > 0) },
+  { text: 'これで基本はおしまい。罠の合成や奈落など、ほかの技は練習の一覧で覚えよう', hl: {}, ok: () => G.guide.t > 3.5 },
+];
+function doorSide([x, y]) { return x === 0 ? '左' : x === COLS - 1 ? '右' : y === 0 ? '上' : '下'; }
+function guideSpawn() { const w = G.wave; G.wave = 1; spawn('knight'); G.wave = w; G.guide.spawned++; } // 左の扉から騎士を1人
+function updateGuide(dt) {
+  const g = G.guide; if (!g) return;
+  const st = GUIDE[g.i]; g.t += dt;
+  if (st && st.ok()) { g.i++; g.t = 0; sfx.introStep(); }
+  if (g.i === 4 && !G.foes.some(f => !f.dead && !(f.down > 0)) && g.t > 1.2 && G.bestCombo < 2) { guideSpawn(); g.t = 0; } // もう一度
+  const cur = GUIDE[Math.min(g.i, GUIDE.length - 1)];
+  const hlt = [cur.hl.tile && g[cur.hl.tile], cur.hl.ch && g.ch].filter(Boolean); // 光るマスが上半分なら、案内は下に出す
+  $('#guideBox').classList.toggle('low', hlt.some(([, y]) => y < ROWS / 2) || (g.i <= 4 && g.bear[1] < ROWS / 2)); // 罠を置いた場所も隠さない
+  $('#guideBox').hidden = false; $('#guideBox').innerHTML = `<span class="gstep">${Math.min(g.i + 1, GUIDE.length)} / ${GUIDE.length}</span>${typeof cur.text === 'function' ? cur.text() : cur.text}`;
+  document.querySelectorAll('.guide-hl').forEach(e => e.classList.remove('guide-hl'));
+  if (cur.hl.slot) { const b = document.querySelector(`.slot[data-type="${cur.hl.slot}"]`); if (b) b.classList.add('guide-hl'); }
+  if (cur.hl.go) $('#btnGo').classList.add('guide-hl');
+  $('#goText').textContent = '侵入者を迎える'; $('#goSec').textContent = g.i < 3 ? '…' : '!';
+  $('#dockHint').textContent = 'チュートリアル';
+}
+function drawGuide() { // 光らせるマス
+  const g = G.guide; if (!g || runMode !== 'training') return;
+  const cur = GUIDE[Math.min(g.i, GUIDE.length - 1)].hl, a = .55 + .45 * Math.sin(G.time * 6);
+  const tiles = [cur.tile && g[cur.tile], cur.ch && g.ch].filter(Boolean);
+  for (const [x, y] of tiles) {
+    ctx.save(); ctx.strokeStyle = `rgba(255,226,122,${a})`; ctx.lineWidth = 4; ctx.shadowColor = '#ffd27a'; ctx.shadowBlur = 14;
+    ctx.strokeRect(x * T + 3, y * T + 3, T - 6, T - 6);
+    ctx.fillStyle = `rgba(255,226,122,${a * .18})`; ctx.fillRect(x * T + 3, y * T + 3, T - 6, T - 6);
+    ctx.font = `900 ${Math.round(20 * TS)}px serif`; ctx.textAlign = 'center'; ctx.fillStyle = `rgba(255,240,190,${a})`; ctx.fillText('▼', x * T + T / 2, y * T - 4 - Math.abs(Math.sin(G.time * 4)) * 6);
+    ctx.restore();
+  }
+}
+function endGuide() { G.guide = null; $('#guideBox').hidden = true; document.querySelectorAll('.guide-hl').forEach(e => e.classList.remove('guide-hl')); }
 function updateLesson(dt) {
   const L = lesson; if (!L || G.lessonDone) return;
+  if (L.kind === 'guide') { updateGuide(dt); const g = G.guide; if (g && g.i >= GUIDE.length) { endGuide(); G.lessonDone = true; lessonDoneRec[L.id] = 1; try { localStorage.setItem('trapoflily-lessons', JSON.stringify(lessonDoneRec)); } catch (e) {} banner('できた！', 'チュートリアルおしまい'); sfx.dawn(); setTimeout(() => { if (runMode === 'training' && G.state === 'play') { G = makeRun('title'); openTrain(); } }, 2600); } return; }
   if (L.kind === 'survive' && G.phase > 0) G.lessonT = (G.lessonT || 0) + dt;
-  if (G.phase > 0) { // 侵入者が減ったら足す
+  if (G.phase > 0 && L.keep) { // 侵入者が減ったら足す
     G.keepT = (G.keepT || 0) - dt;
     if (G.keepT <= 0 && G.foes.filter(f => !f.dead && !(f.down > 0)).length < L.keep) { spawn(pick(['knight', 'knight', 'thief', 'heavy'])); G.keepT = 1.4; }
   }
@@ -1305,6 +1373,7 @@ cv.addEventListener('pointercancel', e => { endFlick(e, true); G.hover = null; }
 function say(text, dur = 1.8) { G.msg = text; G.msgT = dur; }
 function placeTrap(x, y, type) {
   const def = TRAPS[type];
+  if (G.guide && runMode === 'training') { const st = GUIDE[G.guide.i]; const want = st && st.hl.tile && G.guide[st.hl.tile]; if (G.guide.i < 3 && (!want || want[0] !== x || want[1] !== y || type !== st.hl.slot && G.guide.i === 2 || G.guide.i === 1 && type !== 'bear')) { say('光っているマスに置こう'); sfx.bad(); return; } }
   if (!canPlace(x, y)) { say('そこには置けない'); sfx.bad(); return; }
   const key = x + ',' + y, old = G.traps.get(key);
   if (old && (old.type === type || (old.type === 'fusion' && old.parts.includes(type)))) {
@@ -1947,6 +2016,7 @@ function tryStep(d) {
 }
 function updateHero(dt) {
   const h = G.hero;
+  if (G.guide && G.guide.i <= 4 && runMode === 'training') return; // チュートリアルの途中は動かずに待つ
   h.inv = Math.max(0, h.inv - dt); h.hurt = Math.max(0, h.hurt - dt); h.joy = Math.max(0, (h.joy || 0) - dt);
   h.confused = Math.max(0, h.confused - dt); h.idle = Math.max(0, h.idle - dt); h.bubbleT = Math.max(0, h.bubbleT - dt);
   if (h.joy > 0 && !h.moving) return; // 喜んでいる間はその場で跳ねる
@@ -2019,7 +2089,9 @@ function updateFoe(f, dt) {
     if (f.dead || f.stun > 0 || f.fly) return;
   }
   const here = G.field[f.tx + f.ty * COLS]; let bestD = -1, bd = here < 0 ? 9999 : here;
-  for (const d of shuffled()) {
+  const gp = G.guide && G.guide.i <= 4 && G.guide.path, gk = gp ? gp.findIndex(([a, b]) => a === f.tx && b === f.ty) : -1; // チュートリアル中は決めた道を通る
+  if (gk >= 0 && gk < gp.length - 1) { const [nx, ny] = gp[gk + 1]; bestD = DIRS.findIndex(([dx, dy]) => dx === nx - f.tx && dy === ny - f.ty); bd = -1; }
+  for (const d of bd < 0 ? [] : shuffled()) {
     const x = f.tx + DIRS[d][0], y = f.ty + DIRS[d][1];
     if (!foeWalk(x, y)) continue;
     const v = G.field[x + y * COLS];
@@ -2716,6 +2788,7 @@ function draw() {
   drawTorches();
   drawTraps();
   drawItems();
+  drawGuide();
   drawPreview();
   const ents = [...G.foes.map(f => ({ y: f.y, f })), { y: G.hero.y + .01, hero: true }].sort((a, b) => a.y - b.y);
   for (const e of ents) e.hero ? drawHero() : drawFoe(e.f);
@@ -3024,13 +3097,13 @@ function startRun(char = sel.char, loadout = sel.traps, noSave = false) {
   $('#editBar').hidden = true; buildPalette(); showOv(null);
   if (runMode === 'stage') startWave(stageWave(runStage), { map: mi, stage: runStage, intro: (runStage - 1) % 5 === 0 });
   else if (runMode === 'edit') startWave(editLv, { map: mi, intro: true });
-  else if (runMode === 'training') { G.up.limit = 3; startWave(4, { map: lesson ? 0 : mi, training: true }); G.prepT = Infinity; $('#goText').textContent = '侵入者を呼ぶ'; if (lesson) { banner(lesson.name, `目標: ${lesson.goal}`); $('#dockHint').textContent = `目標: ${lesson.goal}`; } }
+  else if (runMode === 'training') { G.up.limit = 3; startWave(4, { map: lesson ? 0 : mi, training: true }); G.prepT = Infinity; $('#goText').textContent = '侵入者を呼ぶ'; endGuide(); if (lesson) { banner(lesson.name, `目標: ${lesson.goal}`); $('#dockHint').textContent = `目標: ${lesson.goal}`; if (lesson.kind === 'guide') { G.banner = 0; initGuide(); } } }
   else if (runMode === 'endless') {
     G.up.limit = 3; G.up.smart = 5; startWave(6, { map: mi, intro: true });
     G.phaseQ = [['knight', 'knight', 'thief', 'heavy', 'thief', 'knight', 'heavy'], [], []]; G.nightLen = G.nightT = ENDLESS_TIME;
   }
   else startWave(1);
-  if (runMode !== 'training') { lesson = null; $('#goText').textContent = '侵入者を迎える'; $('#dockHint').textContent = '罠を選んで、マスを押して置く'; }
+  if (runMode !== 'training') { lesson = null; endGuide(); $('#goText').textContent = '侵入者を迎える'; $('#dockHint').textContent = '罠を選んで、マスを押して置く'; }
   document.body.classList.toggle('training', runMode === 'training');
 }
 function openShop() {
@@ -3272,7 +3345,7 @@ $('#btnStart').addEventListener('click', () => { runMode = 'challenge'; openSele
 $('#btnTrain').addEventListener('click', openTrain);
 $('#btnTrainBack').addEventListener('click', () => showOv('ovTitle'));
 $('#btnEndless').addEventListener('click', () => { runMode = 'endless'; openSelect(); });
-function refreshTitle() { $('#btnEndless').hidden = !endlessOpen(); }
+function refreshTitle() { $('#btnEndless').hidden = !endlessOpen(); $('#btnTrain').classList.toggle('new', !lessonDoneRec.guide); }
 refreshTitle();
 $('#btnRetry').addEventListener('click', () => {
   if (runMode === 'edit') { openEditor(); return; }
@@ -3299,6 +3372,7 @@ $('#btnNext').addEventListener('click', () => { audio(); showOv(null); startWave
 $('#btnResume').addEventListener('click', () => setPause(false));
 $('#btnGo').addEventListener('click', () => {
   if (runMode !== 'training' || G.intro) { beginDefense(); return; }
+  if (G.guide) { if (G.guide.i === 3) { audio(); G.phase = 1; guideSpawn(); sfx.door(); } else { say('光っている場所を先に押そう'); sfx.bad(); } return; }
   audio(); if (G.phase === 0) G.phase = 1; // トレーニング: 3種類を1体ずつ呼ぶ
   for (const ty of ['knight', 'thief', 'heavy']) spawn(ty); sfx.door();
 });
@@ -3347,6 +3421,6 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, showTrain: () => openTrain(), setRun: (m, n) => { runMode = m; runStage = n; }, mapName: () => MAPS[mapIdx].name, editTool: k => { etool = k; }, editAt: (x, y) => editAt({ x, y }), customRow: y => MAPS[CUSTOM_MAP].rows[y], showAch: () => { renderAch(); showOv('ovAch'); }, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, api: { sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, showTrain: () => openTrain(), view: () => ({ VW, VH, VX, VY }), setRun: (m, n) => { runMode = m; runStage = n; }, mapName: () => MAPS[mapIdx].name, editTool: k => { etool = k; }, editAt: (x, y) => editAt({ x, y }), customRow: y => MAPS[CUSTOM_MAP].rows[y], showAch: () => { renderAch(); showOv('ovAch'); }, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
 })();
 </script>
