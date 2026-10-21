@@ -47,6 +47,15 @@ def cut_white(img: Image.Image, drop_side_bits: bool = False) -> Image.Image:
     lab, _ = ndimage.label(white)
     border = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
     bg = np.isin(lab, border[border > 0])
+    # 髪と腕のすき間など、まわりを囲まれた背景も抜く。背景は紙より明るい真っ白（エプロンの白は少し暗い）なので明るさで見分ける
+    pure = a.min(2) > 248
+    lab2, n2 = ndimage.label(pure & ~bg)
+    if n2:
+        idx = np.arange(1, n2 + 1)
+        size = ndimage.sum(np.ones_like(lab2), lab2, idx)
+        mean = ndimage.mean(a.min(2), lab2, idx)
+        holes = idx[(size > 200) & (mean >= 251.5)]
+        bg |= np.isin(lab2, holes)
     alpha = np.where(bg, 0, 255).astype(np.uint8)
     # ふち: 背景のすぐ内側の明るい画素は、明るさに応じて透かす（暗い背景で白い縁が出ないように）
     near = np.asarray(Image.fromarray(alpha).filter(ImageFilter.MinFilter(5))) < 128
