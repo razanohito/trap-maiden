@@ -5,7 +5,7 @@ const path = require('path');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const errors = [];
   for (const [name, vp] of [['pc', { width: 1100, height: 1000 }], ['m', { width: 390, height: 844 }], ['ml', { width: 852, height: 393 }]]) {
-    const p = await (await browser.newContext({ viewport: vp })).newPage();
+    const p = await (await browser.newContext({ locale: 'ja-JP', viewport: vp })).newPage();
     p.on('pageerror', e => errors.push(String(e)));
     await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/src/game.html');
     await p.click('#btnStart');

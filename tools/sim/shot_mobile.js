@@ -5,7 +5,7 @@ const path = require('path');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const errors = [];
   for (const [name, vp] of [['portrait', { width: 393, height: 852 }], ['landscape', { width: 852, height: 393 }], ['landscape_safari', { width: 852, height: 340 }]]) {
-    const ctx = await browser.newContext({ viewport: vp, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    const ctx = await browser.newContext({ locale: 'ja-JP', viewport: vp, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
     const p = await ctx.newPage();
     p.on('pageerror', e => errors.push(String(e)));
     await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/index.html');

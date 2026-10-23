@@ -4,7 +4,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
 const path = require('path');
 (async () => {
   const b = await chromium.launch({ channel: 'chrome', headless: true });
-  const p = await (await b.newContext({ viewport: { width: 1100, height: 900 } })).newPage();
+  const p = await (await b.newContext({ locale: 'ja-JP', viewport: { width: 1100, height: 900 } })).newPage();
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
   await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/src/game.html');
   await p.evaluate(() => localStorage.clear()); await p.reload();

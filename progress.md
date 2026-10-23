@@ -1,3 +1,19 @@
+# 引き継ぎメモ（更新: 2026-10-23, ブランチ finish/release-ready）
+仕事: 作った絵・マンガ・UI を全部ゲームに入れて、Steam に出せる形に仕上げる（release/english-steam を合流）
+終わったこと:
+- おはなし（ADV）: 導入（マンガ→誕生日と手紙→操作の練習→続き）、章のはじめ・終わり（8章）、夜明け、結び、クリア後の「さかさまの夜」（結末を2つから選ぶ）。台本は src/game.html の STORY、絵は art/story/（tools/import_story.py でチリン・男爵・侵入者を切り抜き）
+  - ログ・オート・スキップ（スキップは選択肢の手前で止まる）、文字の速さ（設定）、タイトルの「おはなし」から見直し
+  - 練習は一時停止の「練習を飛ばしてお話へ」で飛ばせる
+  - 実績を3つ追加（終わらない夜・百合の館の主・さかさまの夜。全23）
+- 4人の性格を新しいシナリオに（リリィ=強がりな館の主、ミーナ=居眠り魔女、ノエル=お姉さんメイド、セシル=ボクっ娘錬金術師）。捕まった・連続・近づかれたときのひとこと、チリンの声（残り1つ・全滅・夜明け・シャンデリア）
+- 設定（音楽・効果音・文字の速さ・言語・全画面/終了はデスクトップ版のみ）、クレジット、タイトル右上に設定と言語
+- 英語: 892 件すべて訳あり。英語のマンガは横書き
+- フォントは Zen Maru Gothic だけ（ゲームに埋め込み、ネットなしで動く）。デスクトップ版は v2/index.html を包む
+- Steam: カプセル・スクリーンショット（9枚目におはなし）・実績アイコン23個を新しい絵で作り直し。store_text.md におはなしと AI 開示（Nano Banana / ChatGPT / Gemini / Claude）
+テスト（すべて pageerror なし）: test_english（src と index）、shot_ui（6サイズ）、test_story（新規。おはなしの通し）、test_features、test_guide、test_modes、test_fx_sound、test_flick
+テストの決まり: 自動テスト（webdriver）ではおはなしを挟まない。流すときは URL に ?story。日本語で見るテストは locale: 'ja-JP'
+残った課題: チリンの絵は顔のない「羽の生えた鍵」。iPhone・Windows の実機は未確認。Steam は App ID 待ち
+
 # 引き継ぎメモ（更新: 2026-10-21 夜）
 仕事: 新しい絵柄「月夜のおかし箱」でゲームの見た目を作り直す（ゲームのしくみ・数値はそのまま）
 成果物: tools/import_v2.py（新しい絵の取り込み）、art-src/v2/（Nano Banana の原画 31 枚）、art/portrait_*.webp・art/sprites/*.webp（作り直し）、src/game.html（配色・字体・盤面の色）
@@ -53,3 +69,17 @@
 終わったこと（追加）: push 済み（razanohito/trap-maiden）、Artifact 更新済み（version 33）
 残った課題: 実機（iPhone）での確認はしていない。ステージの難しさはボットのクリア率（5:100% 20:44% 40:28%）で合わせただけ
 次にやること: ユーザーの遊んだ感想を待つ
+
+## 支度画面の作り直し（2026-10-20, ブランチ ui/select-redesign）
+- 支度は2段: 1 逃げる子（立ち絵4枚だけ並べる→押すと説明の小窓→「○○に決める」） 2 罠（選んだ子と持っていく4つ＋アイコンだけ11個→押すと説明の小窓→持っていく／外す。4つ埋まっていれば「どれと入れ替える？」）。前の「確かめる」段はなくし、出発の台詞は罠の段に出す
+- 支度の画面は画面いっぱいに重ねる（#ovSelect を position:fixed）。PC・スマホ縦・横・小さいスマホでスクロールなしに収まる（320x568 だけ罠の一覧が少しスクロール）
+- テスト: tools/sim/shot_select.js を新しい流れに合わせて書き直し（はみ出し検査つき）。ほかのテストは「.cpick.on → #btnNext1 → #btnBegin」で開始
+
+## 英語対応と Steam（2026-10-20, ブランチ release/english-steam。#2 フォント・#3 支度画面を含む）
+- 英語: 文言は日本語のまま `$t\`…\`` で書き、訳は src/lang/en.js（日本語→英語、`${}` は {0} {1}…）。HTML は translateStatic が訳す（translate="no" は飛ばす）。言語は localStorage trapoflily-lang → Steam の言語 → 端末の言語
+- 文言を足したら `python tools/i18n_check.py --add` で抜けを出して訳を入れ、`python tools/make_fonts.py` でフォントを作り直す
+- 設定画面（音楽・効果音の音量、言語、全画面・終了はデスクトップ版だけ）とクレジット
+- Windows 版: desktop/（Electron + steamworks.js）。セーブは %APPDATA%\TrapOfLily\save.json（Steam Auto-Cloud）。実績の API 名は ACH_<ID>。App ID は desktop/steam.json（0 なら Steam なし）
+- Steam の画像・文章・手順: steam/（README.md が手順）
+- テスト: tools/sim/test_english.js（英語で全画面、日本語の残り・はみ出し）、desktop/test/test_desktop.js（Xvfb で Electron）。どちらも合格
+- まだ: Windows 実機、Steam（App ID がない）。ユーザーの作業は Steamworks 登録・$100・App ID

@@ -4,7 +4,7 @@ const path = require('path');
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const errors = [];
-  const p = await (await browser.newContext({ viewport: { width: 1100, height: 1000 } })).newPage();
+  const p = await (await browser.newContext({ locale: 'ja-JP', viewport: { width: 1100, height: 1000 } })).newPage();
   p.on('pageerror', e => errors.push(String(e)));
   await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/index.html');
   await p.click('#btnStart');

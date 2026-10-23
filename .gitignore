@@ -2,3 +2,4 @@ tools/sim/out/
 node_modules/
 __pycache__/
 art/*_full.png
+art-src/fonts/
