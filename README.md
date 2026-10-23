@@ -46,8 +46,11 @@
 | `tools/import_fx.py` | エフェクトの絵（`art-src/fx/`、8 コマ横長か 3x3）を、マゼンタのふちを消して `art/fx/`（384x48）に入れる |
 | `tools/cut_happy.py` | 喜びの立ち絵（`art-src/happy/`、白背景）の背景を抜いて `art/portrait_<名前>_happy.webp` にする（全10夜クリアの結果画面で使う） |
 | `tools/import_icons.py` | 罠のアイコン（`art-src/icons/icon_*.png`、金枠つき）のマゼンタを消し、64x64 にそろえて `art/icons/` に入れる（罠ボタン・支度画面・確認画面で使う） |
-| `tools/import_bgm.py` | BGM（`art-src/bgm/` の mp3）を音量 -18 LUFS・モノラル 64kbps にそろえて `art/bgm/` に入れる（ffmpeg を使う）。場面ごとの曲はタイトル・準備・第1〜5夜・書庫（第6〜9夜）・フェイズ3・最後の夜・ショップ、ジングルは夜明けと終わり |
+| `tools/import_bgm.py` | BGM（`art-src/bgm/` の mp3）を音量 -18 LUFS・モノラル 64kbps にそろえて `art/bgm/` に入れる（ffmpeg を使う）。場面ごとの曲はタイトル・準備・第1〜5夜・書庫（第6〜9夜）・フェイズ3・最後の夜・ショップ、ジングルは夜明けと終わり。おはなし用の `bgm_story`・`bgm_baron`・`bgm_ending` は無くても動く（代わりにタイトルなどの曲が流れる）。ステレオの曲はステレオのまま入れる |
 | `docs/sound-fx-brief.html` | BGM・エフェクト・効果音の提案（Gemini 用プロンプト） |
+| `tools/import_rooms.py` | 部屋ごとの床・外壁・置き物の絵（`art-src/rooms/<部屋>_{floor,wall,prop}.*`、Gemini で作ったもの）を、継ぎ目なしの模様と 96px の置き物にして `art/rooms/` に入れる。絵の無い部屋はキャンバスで描いた床のまま |
+| `tools/import_walk.py` | 盤面で動くキャラの 4x4 スプライト（`art-src/walk/<名前>_walk.*`・`_poses.*`、緑の背景）を `art/sprites/` に入れる。描いてもらったキャラは `import_v2.py` で上書きしない |
+| `tools/greenkey.py` | 緑 #00FF00 の背景を抜く（上の2つが使う） |
 | `tools/import_story.py` | おはなしの絵（チリン・男爵・侵入者の正面）を `art-src/v2/` から切り抜いて `art/story/` に入れる |
 | `tools/make_fonts.py` | フォント（Zen Maru Gothic、SIL OFL）を `src/game.html` に出てくる文字だけに絞って `art/fonts/*.woff2` にする。文言を増やしたら動かし直す（`pip install fonttools brotli`）。ライセンス文は `art/fonts/OFL-*.txt` |
 | `src/lang/en.js` | 英語の訳。ゲームの文言は日本語のまま `$t\`…\`` で書き（`${}` は訳では `{0}` `{1}` …）、ページの HTML は起動時に訳す。端末の言語（ストア版は Steam の言語）で決まり、タイトルの言語ボタンか設定で切り替え |

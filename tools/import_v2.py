@@ -223,8 +223,14 @@ def main() -> None:
             im.save(OUT / f"portrait_{g}{suf}.webp", quality=88, method=6)
         print("立ち絵", g)
     sheets = []
-    for g in GIRLS: sheets += make_sprites(g, g, True); print("盤面の絵", g)
-    for e in FOES: sheets += make_sprites(e, f"foe_{e}", False); print("盤面の絵", e)
+    # art-src/walk/ に描いてもらった歩きの絵があるキャラは、tools/import_walk.py の絵を残す（ここで上書きしない）
+    drawn = lambda n: any((ROOT / "art-src" / "walk").glob(f"{n}_walk.*"))
+    for g in GIRLS:
+        if drawn(g): print("盤面の絵", g, "は import_walk.py の絵を使う"); continue
+        sheets += make_sprites(g, g, True); print("盤面の絵", g)
+    for e in FOES:
+        if drawn(e): print("盤面の絵", e, "は import_walk.py の絵を使う"); continue
+        sheets += make_sprites(e, f"foe_{e}", False); print("盤面の絵", e)
     # 確認用: 全部を縦に並べて、暗い床の色の上に 2 倍で置く
     W = max(s.width for s in sheets); H = sum(s.height for s in sheets)
     pv = Image.new("RGBA", (W, H), (91, 91, 168, 255)); y = 0

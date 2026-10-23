@@ -1030,8 +1030,25 @@ const ART = { portrait_lily: '../art/portrait_lily.webp', portrait_mina: '../art
   baron_laugh: '../art/story/baron_laugh.webp', baron_panic: '../art/story/baron_panic.webp', baron_wet: '../art/story/baron_wet.webp',
   story_knight: '../art/story/foe_knight.webp', story_thief: '../art/story/foe_thief.webp', story_heavy: '../art/story/foe_heavy.webp',
 };
+// 部屋の床・壁・置き物の絵（tools/import_rooms.py。まだ無い部屋はキャンバスで描く）
+Object.assign(ART, {
+  room_hall_floor: '../art/rooms/hall_floor.webp', room_hall_wall: '../art/rooms/hall_wall.webp', room_hall_prop: '../art/rooms/hall_prop.webp',
+  room_library_floor: '../art/rooms/library_floor.webp', room_library_wall: '../art/rooms/library_wall.webp', room_library_prop: '../art/rooms/library_prop.webp',
+  room_gallery_floor: '../art/rooms/gallery_floor.webp', room_gallery_wall: '../art/rooms/gallery_wall.webp', room_gallery_prop: '../art/rooms/gallery_prop.webp',
+  room_greenhouse_floor: '../art/rooms/greenhouse_floor.webp', room_greenhouse_wall: '../art/rooms/greenhouse_wall.webp', room_greenhouse_prop: '../art/rooms/greenhouse_prop.webp',
+  room_dungeon_floor: '../art/rooms/dungeon_floor.webp', room_dungeon_wall: '../art/rooms/dungeon_wall.webp', room_dungeon_prop: '../art/rooms/dungeon_prop.webp',
+  room_chapel_floor: '../art/rooms/chapel_floor.webp', room_chapel_wall: '../art/rooms/chapel_wall.webp', room_chapel_prop: '../art/rooms/chapel_prop.webp',
+  room_attic_floor: '../art/rooms/attic_floor.webp', room_attic_wall: '../art/rooms/attic_wall.webp', room_attic_prop: '../art/rooms/attic_prop.webp',
+  room_clock_floor: '../art/rooms/clock_floor.webp', room_clock_wall: '../art/rooms/clock_wall.webp', room_clock_prop: '../art/rooms/clock_prop.webp',
+});
+const ROOM_KEYS = ['hall', 'library', 'gallery', 'greenhouse', 'dungeon', 'chapel', 'attic', 'clock']; // MAPS の順
 const IMG = {};
-for (const [k, src] of Object.entries(ART)) { const im = new Image(); im.decoding = 'async'; im.src = src; IMG[k] = im; }
+for (const [k, src] of Object.entries(ART)) {
+  const im = new Image(); im.decoding = 'async'; IMG[k] = im;
+  if (!src) continue; // ビルドで見つからなかった絵（まだ無い部屋の絵など）
+  if (k.startsWith('room_')) im.onload = () => { if (typeof buildBg === 'function' && k.startsWith(`room_${roomKey()}_`)) buildBg(); }; // 部屋の絵が届いたら背景を描き直す
+  im.src = src;
+}
 const imgReady = k => !!(IMG[k] && IMG[k].complete && IMG[k].naturalWidth > 0);
 const FOES = {
   knight: { hp:40, speed:1.6, soul:10, score:100, push:3, stunMul:1 },
@@ -1303,7 +1320,10 @@ const BGM = {
   title: '../art/bgm/bgm_title.mp3', prep: '../art/bgm/bgm_prep.mp3', night: '../art/bgm/bgm_night.mp3', library: '../art/bgm/bgm_library.mp3',
   phase3: '../art/bgm/bgm_phase3.mp3', lastnight: '../art/bgm/bgm_lastnight.mp3', shop: '../art/bgm/bgm_shop.mp3',
   dawn: '../art/bgm/jingle_dawn.mp3', over: '../art/bgm/jingle_over.mp3',
+  story: '../art/bgm/bgm_story.mp3', baron: '../art/bgm/bgm_baron.mp3', ending: '../art/bgm/bgm_ending.mp3', // おはなし用（まだ無ければ下の代わりの曲）
 };
+const BGM_ALT = { story: 'title', baron: 'prep', ending: 'title' }; // 曲のファイルが無いときに流す曲
+const bgmFor = k => (k && !BGM[k] && BGM_ALT[k]) ? BGM_ALT[k] : k;
 const BGM_VOL = .42, BGM_XF = 1.2; // 効果音より小さめ。ループのつなぎ目は 1.2 秒かけて重ねる
 const bgmBuf = {}, bgmLoading = {};
 let bgmBus = null, bgmKey = null, bgmVoice = null, bgmTimer = 0;
@@ -1318,7 +1338,8 @@ function bgmLoad(key) { // data URI を自前でほどいて decodeAudioData（f
   const url = BGM[key]; if (!url) return;
   bgmLoading[key] = true;
   const done = b => { bgmBuf[key] = b; if (bgmKey === key && !bgmVoice) bgmStart(key, 0); };
-  if (!url.startsWith('data:')) { fetch(url).then(r => r.arrayBuffer()).then(ab => AC.decodeAudioData(ab, done, () => {})).catch(() => {}); return; } // 開発中（src を直接開いたとき）
+  const missingFile = () => { BGM[key] = ''; delete bgmLoading[key]; if (bgmKey === key) { bgmKey = null; sceneBgm(); } }; // 曲のファイルが無い → 代わりの曲へ
+  if (!url.startsWith('data:')) { fetch(url).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); }).then(ab => AC.decodeAudioData(ab, done, missingFile)).catch(missingFile); return; } // 開発中（src を直接開いたとき）
   try {
     const bin = atob(url.slice(url.indexOf(',') + 1)), u8 = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
@@ -1356,7 +1377,7 @@ function sceneBgm() {
   if (!AC || AC.state !== 'running') return;
   for (const k of ['title', 'prep', 'night']) bgmLoad(k); // よく使う曲は先にほどいておく
   let want = null;
-  if (storyOn) want = storyBgm;
+  if (storyOn) want = bgmFor(storyBgm);
   else if (G.state === 'title') want = 'title';
   else if (G.state === 'edit') want = 'prep';
   else if (G.state === 'shop') want = 'shop';
@@ -1443,14 +1464,23 @@ function setMap(i, allowPortrait = true) { // 部屋を切り替える（背景�
   TORCHES = pb ? [[3, 0], [6, 0], [3, 14], [6, 14]] : [[3, 0], [11, 0], [3, 9], [11, 9]];
   buildBg();
 }
+function roomKey() { return ROOM_KEYS[mapIdx] || 'hall'; } // 自作の部屋は大広間の絵
+function roomPat(b, kind) { // 部屋の絵の模様（1マス 96px の絵を 48px のマスに）
+  const k = `room_${roomKey()}_${kind}`; if (!imgReady(k)) return null;
+  const pat = b.createPattern(IMG[k], 'repeat'); pat.setTransform(new DOMMatrix().scale(.5)); return pat;
+}
 function buildBg() {
   bg.width = W * 2; bg.height = H * 2;
   const b = bg.getContext('2d'); b.scale(2, 2);
   let seed = 11; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const floorPat = roomPat(b, 'floor'), wallPat = roomPat(b, 'wall'), propK = `room_${roomKey()}_prop`, prop = imgReady(propK) ? IMG[propK] : null;
+  const floorAt = (px, py) => { b.fillStyle = floorPat || `hsl(252,30%,40%)`; b.fillRect(px, py, T, T); };
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
     const c = MAP[y][x], px = x * T, py = y * T;
     if (c === '.' || c === '^' || c === 'c' || c === 'O' || c === 'S') {
-      if (MAPS[mapIdx].wood) { // 書庫の木の床
+      if (floorPat) { // 部屋の絵の床
+        b.fillStyle = floorPat; b.fillRect(px, py, T, T); r(); r();
+      } else if (MAPS[mapIdx].wood) { // 書庫の木の床
         b.fillStyle = `hsl(26,38%,${44 + r() * 5}%)`; b.fillRect(px, py, T, T);
         b.fillStyle = 'rgba(107,74,74,.35)'; for (let k = 0; k < 4; k++) b.fillRect(px, py + k * 12 + 11, T, 1);
         b.fillRect(px + ((y * 17) % 3) * 16 + 8, py, 1, 12); b.fillRect(px + ((y * 11) % 3) * 16 + 4, py + 24, 1, 12);
@@ -1493,7 +1523,11 @@ function buildBg() {
       }
     } else if (c === '#') {
       const inner = x > 0 && y > 0 && x < COLS - 1 && y < ROWS - 1;
-      if (inner && MAPS[mapIdx].shelves) { // 書庫の本棚
+      if (inner && prop) { // 部屋の絵の置き物（柱・本棚など）。下に床を敷き、影を落とす
+        floorAt(px, py);
+        b.fillStyle = 'rgba(30,25,64,.35)'; b.beginPath(); b.ellipse(px + T / 2 + 3, py + T - 7, 19, 7, 0, 0, 7); b.fill();
+        b.drawImage(prop, px, py, T, T);
+      } else if (inner && MAPS[mapIdx].shelves) { // 書庫の本棚
         b.fillStyle = '#6b4a4a'; b.fillRect(px, py, T, T);
         b.fillStyle = '#9a6a58'; b.fillRect(px + 2, py + 2, T - 4, T - 4);
         for (let k = 0; k < 3; k++) {
@@ -1509,6 +1543,10 @@ function buildBg() {
         b.fillStyle = '#b8aee6'; b.beginPath(); b.arc(px + T / 2, py + T / 2, 18, 0, 7); b.fill();
         b.strokeStyle = '#ffd98a'; b.lineWidth = 3; b.beginPath(); b.arc(px + T / 2, py + T / 2, 15, 0, 7); b.stroke();
         b.fillStyle = '#ddd6f6'; b.beginPath(); b.arc(px + T / 2 - 3, py + T / 2 - 3, 10, 0, 7); b.fill();
+      } else if (wallPat) { // 部屋の絵の外壁
+        b.fillStyle = wallPat; b.fillRect(px, py, T, T);
+        b.fillStyle = 'rgba(30,25,64,.22)'; b.fillRect(px, py, T, T); // 床より少し暗く
+        if (foeWalk(x, y + 1) && y === 0) { b.fillStyle = 'rgba(30,25,64,.35)'; b.fillRect(px, py + T - 14, T, 14); b.fillStyle = 'rgba(242,184,75,.7)'; b.fillRect(px, py + T - 14, T, 2); }
       } else {
         b.fillStyle = '#3d3680'; b.fillRect(px, py, T, T);
         b.strokeStyle = 'rgba(30,25,64,.55)'; b.lineWidth = 1;
@@ -1517,7 +1555,7 @@ function buildBg() {
         if (foeWalk(x, y + 1) && y === 0) { b.fillStyle = '#5a52a0'; b.fillRect(px, py + T - 14, T, 14); b.fillStyle = 'rgba(242,184,75,.7)'; b.fillRect(px, py + T - 14, T, 2); }
       }
     } else if (c === 'D') { // 扉
-      b.fillStyle = '#3d3680'; b.fillRect(px, py, T, T);
+      b.fillStyle = wallPat || '#3d3680'; b.fillRect(px, py, T, T);
       b.fillStyle = '#a8705a'; b.beginPath();
       b.moveTo(px + 6, py + T - 2); b.lineTo(px + 6, py + 18); b.quadraticCurveTo(px + T / 2, py - 2, px + T - 6, py + 18); b.lineTo(px + T - 6, py + T - 2); b.closePath(); b.fill();
       b.strokeStyle = 'rgba(107,74,74,.6)'; for (let k = 14; k < T - 6; k += 8) { b.beginPath(); b.moveTo(px + k + .5, py + 10); b.lineTo(px + k + .5, py + T - 2); b.stroke(); }
@@ -3530,7 +3568,7 @@ const STORY = {
     ['chirin', 'p', $t`よく言ったわ。さあ罠師さん、今夜の鍵番を1人と、呼び覚ます罠を4つ選んでちょうだい！`],
   ] },
   dawn1: { title: $t`はじめての夜明け`, lines: [
-    { bg: 'dawn', bgm: 'title' },
+    { bg: 'dawn', bgm: 'story' },
     ['', '', $t`窓の外のお堀で、騎士たちがぷかぷか浮いている。床の百合の印に、花びらが1枚だけ光った。`],
     ['lily', 'h', $t`朝……！ 鍵束、まだここにあります！`],
     ['chirin', 'p', $t`なかなかの罠さばきだったわ。ほら、印の花びらが1枚。あと4枚で、この部屋の印がともるわ。チリン♪`],
@@ -3541,7 +3579,7 @@ const STORY = {
     ['lily', 'h', $t`ええ。罠師さん、ありがとう。わたしたちが走って、罠師さんが仕掛ける。今夜も、その作戦でお願いしますね`],
   ] },
   ch1e: { title: $t`第1章　大広間の印`, lines: [
-    { bg: 'dawn', bgm: 'title', cg: 'seal:1' },
+    { bg: 'dawn', bgm: 'story', cg: 'seal:1' },
     ['', '', $t`大広間の床に、百合の印がぱっと咲いた。ひとつめの印がともった。`],
     ['chirin', 'p', $t`百合の印がともった！ あと7つよ。チリン♪`],
     { cg: null },
@@ -3558,7 +3596,7 @@ const STORY = {
     ['noel', 'm', $t`お任せください。お掃除のときは、いつも端から端まで走っていますので`],
   ] },
   ch2e: { title: $t`第2章　磨きすぎた床`, lines: [
-    { bg: 'wood dawn', bgm: 'title', cg: 'seal:2' },
+    { bg: 'wood dawn', bgm: 'story', cg: 'seal:2' },
     ['chirin', 'p', $t`ふたつめの印がともった！ あと6つ。チリン♪`],
     { cg: null },
     ['noel', 's', $t`あの……騎士の方々、みなさん同じところで滑っていらっしゃいました`],
@@ -3576,7 +3614,7 @@ const STORY = {
     ['chirin', 'a', $t`……寝ぼけてないで。温室は足場が少ないわ。罠師さん、先回りよ`],
   ] },
   ch3e: { title: $t`第3章　眠らない夜`, lines: [
-    { bg: 'green dawn', bgm: 'title', cg: 'seal:3' },
+    { bg: 'green dawn', bgm: 'story', cg: 'seal:3' },
     ['chirin', 'p', $t`みっつめの印！ あと5つよ。チリン♪`],
     { cg: null },
     ['mina', 'h', $t`見て見て、朝だよぉ。あたし、ひと晩じゅう起きてた！`],
@@ -3592,7 +3630,7 @@ const STORY = {
     ['chirin', 'n', $t`書庫は棚で道が細いわ。罠師さん、通り道を読んで`],
   ] },
   ch4e: { title: $t`第4章　罠の研究ノート`, lines: [
-    { bg: 'wood dawn', bgm: 'title', cg: 'seal:4' },
+    { bg: 'wood dawn', bgm: 'story', cg: 'seal:4' },
     ['chirin', 'p', $t`よっつめの印。半分まで来たわ！`],
     { cg: null },
     ['lily', 's', $t`この棚の奥……おばあさまの字です。『罠の研究ノート』……！`],
@@ -3609,7 +3647,7 @@ const STORY = {
     ['cecil', 'm', $t`ま、いいや。今はこの鉄のかたまりを、お堀に沈めるのが先だね！`],
   ] },
   ch5e: { title: $t`第5章　ボクの家`, lines: [
-    { bg: 'stone dawn', bgm: 'title', cg: 'seal:5' },
+    { bg: 'stone dawn', bgm: 'story', cg: 'seal:5' },
     ['chirin', 'p', $t`いつつめの印！ あと3つ。チリン♪`],
     { cg: null },
     ['cecil', 't', $t`よかった……フラスコ、ひとつも割れてない`],
@@ -3624,7 +3662,7 @@ const STORY = {
     ['baron', 'n', $t`……急いでなどおらん！ ただ、今度こそ、ローザとの約束を……いや、なんでもない！`],
   ] },
   ch6e: { title: $t`第6章　50年の勝負`, lines: [
-    { bg: 'chapel dawn', bgm: 'title', cg: 'seal:6' },
+    { bg: 'chapel dawn', bgm: 'story', cg: 'seal:6' },
     ['chirin', 'p', $t`むっつめの印。あとふたつよ`],
     { cg: null },
     ['baron', 'w', $t`……50年前もな、この礼拝堂だった。わがはいとローザは、ここで勝負を始めたのだ`],
@@ -3642,7 +3680,7 @@ const STORY = {
     ['lily', 'n', $t`罠師さん。今夜は誰が鍵番でも、あなたに任せます`],
   ] },
   ch7e: { title: $t`第7章　誰が鍵番でも`, lines: [
-    { bg: 'wood dawn', bgm: 'title', cg: 'seal:7' },
+    { bg: 'wood dawn', bgm: 'story', cg: 'seal:7' },
     ['chirin', 'p', $t`ななつめの印！ 残るは、大時計の間だけよ`],
     { cg: null },
     ['mina', 'h', $t`あたしも、セシルちゃんも、ちゃんと守れたねぇ`],
@@ -3658,7 +3696,7 @@ const STORY = {
     ['lily', 'n', $t`大丈夫。わたしたちには、罠師さんがいます`],
   ] },
   ch8e: { title: $t`第8章　本当の主`, lines: [
-    { bg: 'clock dawn', bgm: 'title', cg: 'seal:8' },
+    { bg: 'clock dawn', bgm: 'story', cg: 'seal:8' },
     ['', '', $t`8つ目の印がともった瞬間、窓の外がふっと暗くなった。`],
     { bg: 'clock dark', fx: 'shake' },
     ['chirin', '-', $t`……やっと。やっと、ぜんぶ、ともった`],
@@ -3672,7 +3710,7 @@ const STORY = {
     ['mina', 'h', $t`お祝いのケーキ、今度こそ食べていいよねぇ`],
   ] },
   ending: { title: $t`結び　おかえりなさい`, lines: [
-    { bg: 'morning', bgm: 'title', clear: 1 },
+    { bg: 'morning', bgm: 'ending', clear: 1 },
     ['', '', $t`数日後。玄関のベルが鳴った。`],
     ['rosa', '', $t`あっはっは！ ただいま、リリィ！ 立派に主をやってるそうじゃないの`],
     ['lily', 's', $t`おばあさま！ お帰りなさいませ……！`],
@@ -3736,7 +3774,7 @@ const STORY = {
     { choice: [[$t`玄関から入る`, 'endA'], [$t`上から見守る`, 'endB']] },
   ] },
   endA: { title: $t`結末A　お客さま`, true: 1, lines: [
-    { bg: 'outside morning gold', bgm: 'title', clear: 1 },
+    { bg: 'outside morning gold', bgm: 'ending', clear: 1 },
     ['', '', $t`朝日の中、館の玄関が開いている。お茶会のテーブルに、空いた椅子がひとつ。`],
     ['lily', 'h', $t`ようこそ、百合の館へ。……今度は、本当に`],
     ['baron', 'h', $t`むっほ……50年の見張り番も、これでお役ご免か。お茶くらいは付き合ってやろう`],
@@ -3746,7 +3784,7 @@ const STORY = {
     ['', '', $t`――お客さまエンド`],
   ] },
   endB: { title: $t`結末B　見守る人`, true: 1, lines: [
-    { bg: 'outside morning', bgm: 'title', clear: 1 },
+    { bg: 'outside morning', bgm: 'ending', clear: 1 },
     ['', '', $t`朝の館を、真上から見下ろす。中庭で4人が空を見上げて、手を振っている。鍵束はリリィの腰で、もう光っていない。`],
     ['lily', 'n', $t`……そうですか。それが、あなたの答えなのですね`],
     ['lily', 'h', $t`では、これからも上から見ていてください。わたしたちは、ここで暮らしますから`],

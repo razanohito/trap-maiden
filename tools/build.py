@@ -60,7 +60,10 @@ def mute_image(data: bytes, ext: str) -> bytes:
 
 def embed(m: re.Match) -> str:
     """'../art/xxx.webp' や '../art/sprites/xxx.png' を data URI にする（HTML 1 枚で動かすため）"""
-    data = (ROOT / "art" / m.group(1)).read_bytes()
+    path = ROOT / "art" / m.group(1)
+    if not path.exists():  # まだ作っていない絵・曲（部屋の絵・おはなしの曲など）は空にする。ゲームは代わりを使う
+        return "''"
+    data = path.read_bytes()
     ext = m.group(1).rsplit(".", 1)[1]
     if ext in ("webp", "png"):
         data = mute_image(data, ext)
