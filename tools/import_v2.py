@@ -47,21 +47,31 @@ def cut_white(img: Image.Image, drop_side_bits: bool = False) -> Image.Image:
     lab, _ = ndimage.label(white)
     border = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
     bg = np.isin(lab, border[border > 0])
-    # 髪と腕のすき間など、まわりを囲まれた背景も抜く。背景は紙より明るい真っ白（エプロンの白は少し暗い）なので明るさで見分ける
-    pure = a.min(2) > 248
+    # 髪と腕のすき間・巻き髪の内側など、まわりを囲まれた背景も抜く。背景は紙より明るい真っ白（エプロンの白は 243 前後で少し暗い）なので明るさで見分ける
+    pure = a.min(2) > 246
     lab2, n2 = ndimage.label(pure & ~bg)
     if n2:
         idx = np.arange(1, n2 + 1)
         size = ndimage.sum(np.ones_like(lab2), lab2, idx)
         mean = ndimage.mean(a.min(2), lab2, idx)
-        holes = idx[(size > 200) & (mean >= 251.5)]
+        holes = idx[(size > 40) & (mean >= 251)]
         bg |= np.isin(lab2, holes)
+        # 外の背景の近く（40画素以内）にある小さな白（巻き髪の内側の細いすき間）も抜く。顔の中の目の光は外から遠いので残る
+        dist = ndimage.distance_transform_edt(~bg)
+        mind = ndimage.minimum(dist, lab2, idx)
+        small = idx[(size > 6) & (mean >= 249.5) & (mind < 40) & ~np.isin(idx, holes)]
+        bg |= np.isin(lab2, small)
     alpha = np.where(bg, 0, 255).astype(np.uint8)
-    # ふち: 背景のすぐ内側の明るい画素は、明るさに応じて透かす（暗い背景で白い縁が出ないように）
-    near = np.asarray(Image.fromarray(alpha).filter(ImageFilter.MinFilter(5))) < 128
-    edge = near & ~bg
-    light = a.min(2)
-    alpha[edge] = np.clip((255 - light[edge]) * 255 // 50, 0, 255).astype(np.uint8)
+    # ふち（背景から3画素以内）: 白と混ざった画素を「白からどれだけ離れているか」で透かし、混ざった白を色から取り除く。
+    # こうしないと暗い背景の上で髪の先・線の外側に白いふちが残る
+    near = ndimage.binary_dilation(bg, iterations=3) & ~bg
+    light = a.min(2).astype(float)
+    k = np.clip((250 - light) / 70, 0, 1)  # 250 以上は背景と同じ白、180 以下は不透明
+    alpha[near] = (k[near] * 255).astype(np.uint8)
+    rgb = a.astype(float)
+    kk = np.maximum(k, 1e-3)[..., None]
+    un = np.clip((rgb - (1 - kk) * 255) / kk, 0, 255)  # 白を引いて元の色に戻す
+    a = np.where(near[..., None] & (k[..., None] > 0), un, rgb).astype(int)
     if drop_side_bits:
         parts, n = ndimage.label(alpha > 40)
         if n > 1:
