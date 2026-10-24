@@ -29,8 +29,6 @@ PREVIEW = ROOT / "tools" / "sim" / "out" / "pixel48_chars.png"
 F, FOOT = 48, 46
 FLOATING = {"chirin"}  # 足もとをそろえないキャラ（宙に浮いている）
 MIRROR_RIGHT = {"chirin", "lily"}  # 右向きの行だけ小さく描かれていたので、左向きを左右反転して使う
-OUTLINE = {"lily"}  # 歩きのシートに暗いふちどりが無かったキャラ（ほかのシートと見え方をそろえる）
-LINE = (43, 26, 38, 255)  # ふちどりの色
 
 
 def blobs(a: np.ndarray):
@@ -67,15 +65,6 @@ def dehalo(rgba: np.ndarray) -> np.ndarray:
             break
         a[kill] = 0
     return a
-
-
-def outline(im: Image.Image) -> Image.Image:
-    """人物のまわりに1ドットの暗いふちどりを付ける（透明な画素のうち、上下左右が人物に接するところ）"""
-    a = np.asarray(im).copy(); op = a[..., 3] > 30
-    ring = np.zeros_like(op)
-    ring[1:, :] |= op[:-1, :]; ring[:-1, :] |= op[1:, :]; ring[:, 1:] |= op[:, :-1]; ring[:, :-1] |= op[:, 1:]
-    a[ring & ~op] = LINE
-    return Image.fromarray(a, "RGBA")
 
 
 def fix_row(row: Image.Image, floating=False, halo=False) -> list[Image.Image]:
@@ -124,7 +113,7 @@ def enlarge(cells: list[Image.Image], target: int) -> list[Image.Image]:
         return cells
     out = []
     for fig in figs:
-        fig = fig.resize((round(fig.width * k), round(fig.height * k)), Image.NEAREST)
+        fig = fig.resize((round(fig.width * k), round(fig.height * k)), Image.LANCZOS)  # 元の絵がなめらかなので、なめらかに拡大する
         wide = Image.new("RGBA", (F * 2, F * 2))  # はみ出しても困らないよう広い台に置いてから 48x48 を切り出す
         wide.alpha_composite(fig, (F - fig.width // 2, F + FOOT - fig.height))
         out.append(wide.crop((F // 2, F, F // 2 + F, F * 2)))
@@ -135,8 +124,6 @@ def build(name: str) -> Image.Image:
     floating = name in FLOATING
     walk = Image.open(SRC / f"{name}_walk_4dir_48px.png")
     rows = [fix_row(walk.crop((0, r * F, F * 4, r * F + F)), floating, halo=floating) for r in range(4)]
-    if name in OUTLINE:
-        rows = [[outline(im) for im in r] for r in rows]
     if name in MIRROR_RIGHT:
         rows[2] = [im.transpose(Image.FLIP_LEFT_RIGHT) for im in rows[1]]
     rows.append([rows[r][1] for r in range(4)])  # 立ち: 各向きの2コマ目
@@ -146,7 +133,7 @@ def build(name: str) -> Image.Image:
         rows += [fix_row(sheet.crop((0, r * F, F * 4, r * F + F))) for r in range(2)]
     jump = SRC / f"{name}_jump_4frames_48px.png"
     if jump.exists():
-        rows.append([outline(im) for im in enlarge(fix_row(Image.open(jump).crop((0, 0, F * 4, F)), halo=True), target=42)])
+        rows.append(list(enlarge(fix_row(Image.open(jump).crop((0, 0, F * 4, F)), halo=True), target=42)))
     out = Image.new("RGBA", (F * 4, F * len(rows)))
     for r, cells in enumerate(rows):
         for c, im in enumerate(cells):
