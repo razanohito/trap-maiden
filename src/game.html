@@ -1014,21 +1014,13 @@ const CHARS = {
 const CHAR_ORDER = ['lily','mina','noel','cecil'];
 // 新しい絵柄（Nano Banana の絵を tools/import_v2.py で取り込んだもの）。ビルドで data URI に埋め込む。絵の無い子は今までどおりキャンバスで描く
 const ART = { portrait_lily: '../art/portrait_lily.webp', portrait_mina: '../art/portrait_mina.webp', portrait_noel: '../art/portrait_noel.webp',
-  lily_walk: '../art/sprites/lily_walk.webp', lily_idle: '../art/sprites/lily_idle.webp', mina_walk: '../art/sprites/mina_walk.webp', mina_idle: '../art/sprites/mina_idle.webp',
-  noel_walk: '../art/sprites/noel_walk.webp', noel_idle: '../art/sprites/noel_idle.webp', cecil_walk: '../art/sprites/cecil_walk.webp', cecil_idle: '../art/sprites/cecil_idle.webp',
-  lily_hit: '../art/sprites/lily_hit.webp', mina_hit: '../art/sprites/mina_hit.webp', noel_hit: '../art/sprites/noel_hit.webp', cecil_hit: '../art/sprites/cecil_hit.webp',
-  lily_pinch: '../art/sprites/lily_pinch.webp', mina_pinch: '../art/sprites/mina_pinch.webp', noel_pinch: '../art/sprites/noel_pinch.webp', cecil_pinch: '../art/sprites/cecil_pinch.webp',
   fx_warp: '../art/fx/warp.png', fx_soul: '../art/fx/soul.png',
-  icon_bear: '../art/icons/bear.png', icon_spring: '../art/icons/spring.png', icon_rock: '../art/icons/rock.png', icon_fire: '../art/icons/fire.png', icon_ice: '../art/icons/ice.png', icon_warp: '../art/icons/warp.png', icon_blade: '../art/icons/blade.png', icon_bell: '../art/icons/bell.png', icon_caltrop: '../art/icons/caltrop.png', icon_vortex: '../art/icons/vortex.png',
+  icon_bear: '../art/icons/bear.png', icon_spring: '../art/icons/spring.png', icon_rock: '../art/icons/rock.png', icon_fire: '../art/icons/fire.png', icon_ice: '../art/icons/ice.png', icon_warp: '../art/icons/warp.png', icon_blade: '../art/icons/blade.png', icon_bell: '../art/icons/bell.png', icon_caltrop: '../art/icons/caltrop.png', icon_vortex: '../art/icons/vortex.png', icon_keg: '../art/icons/keg.png',
   fx_bell: '../art/fx/bell.png', fx_caltrop: '../art/fx/caltrop.png', fx_vortex: '../art/fx/vortex.png', fx_slash: '../art/fx/slash.png', fx_spear: '../art/fx/spear.png', fx_spike: '../art/fx/spike.png', fx_pit: '../art/fx/pit.png', fx_chandelier: '../art/fx/chandelier.png', fx_bomb: '../art/fx/bomb.png', fx_hurt: '../art/fx/hurt.png', fx_keys: '../art/fx/keys.png', fx_mana: '../art/fx/mana.png',
-  lily_jump: '../art/sprites/lily_jump.webp', mina_jump: '../art/sprites/mina_jump.webp', noel_jump: '../art/sprites/noel_jump.webp', cecil_jump: '../art/sprites/cecil_jump.webp',
   portrait_lily_teary: '../art/portrait_lily_teary.webp', portrait_mina_teary: '../art/portrait_mina_teary.webp', portrait_noel_teary: '../art/portrait_noel_teary.webp', portrait_cecil_teary: '../art/portrait_cecil_teary.webp',
   comic_1: '../art/comic/page01.webp', comic_2: '../art/comic/page02.webp', comic_3: '../art/comic/page03.webp',
   portrait_lily_smug: '../art/portrait_lily_smug.webp', portrait_mina_smug: '../art/portrait_mina_smug.webp', portrait_noel_smug: '../art/portrait_noel_smug.webp', portrait_cecil_smug: '../art/portrait_cecil_smug.webp',
   portrait_lily_happy: '../art/portrait_lily_happy.webp', portrait_mina_happy: '../art/portrait_mina_happy.webp', portrait_noel_happy: '../art/portrait_noel_happy.webp', portrait_cecil_happy: '../art/portrait_cecil_happy.webp',
-  foe_knight_walk: '../art/sprites/foe_knight_walk.webp', foe_knight_idle: '../art/sprites/foe_knight_idle.webp',
-  foe_thief_walk: '../art/sprites/foe_thief_walk.webp', foe_thief_idle: '../art/sprites/foe_thief_idle.webp',
-  foe_heavy_walk: '../art/sprites/foe_heavy_walk.webp', foe_heavy_idle: '../art/sprites/foe_heavy_idle.webp',
   fx_fire: '../art/fx/fire.png', fx_ice: '../art/fx/ice.png', fx_rock: '../art/fx/rock.png', fx_snap: '../art/fx/snap.png', fx_spring: '../art/fx/spring.png', portrait_cecil: '../art/portrait_cecil.webp',
   portrait_lily_surprised: '../art/portrait_lily_surprised.webp', portrait_mina_surprised: '../art/portrait_mina_surprised.webp', portrait_noel_surprised: '../art/portrait_noel_surprised.webp', portrait_cecil_surprised: '../art/portrait_cecil_surprised.webp',
   // おはなしの立ち絵（tools/import_story.py で作る）
@@ -1048,11 +1040,18 @@ Object.assign(ART, {
   room_clock_floor: '../art/rooms/clock_floor.webp', room_clock_wall: '../art/rooms/clock_wall.webp', room_clock_prop: '../art/rooms/clock_prop.webp',
 });
 const ROOM_KEYS = ['hall', 'library', 'gallery', 'greenhouse', 'dungeon', 'chapel', 'attic', 'clock']; // MAPS の順
+// 盤面のドット絵（tools/pixel/*.py で作る）。キャラは 1コマ 32 ドット、部屋は 1マス 24 ドット。盤面には 2倍で描く
+Object.assign(ART, {
+  px_lily: '../art/pixel/lily.png', px_mina: '../art/pixel/mina.png', px_noel: '../art/pixel/noel.png', px_cecil: '../art/pixel/cecil.png',
+  px_foe_knight: '../art/pixel/foe_knight.png', px_foe_thief: '../art/pixel/foe_thief.png', px_foe_heavy: '../art/pixel/foe_heavy.png',
+  px_room_hall: '../art/pixel/room_hall.png', px_room_library: '../art/pixel/room_library.png', px_room_gallery: '../art/pixel/room_gallery.png', px_room_greenhouse: '../art/pixel/room_greenhouse.png',
+  px_room_dungeon: '../art/pixel/room_dungeon.png', px_room_chapel: '../art/pixel/room_chapel.png', px_room_attic: '../art/pixel/room_attic.png', px_room_clock: '../art/pixel/room_clock.png',
+});
 const IMG = {};
 for (const [k, src] of Object.entries(ART)) {
   const im = new Image(); im.decoding = 'async'; IMG[k] = im;
   if (!src) continue; // ビルドで見つからなかった絵（まだ無い部屋の絵など）
-  if (k.startsWith('room_')) im.onload = () => { if (typeof buildBg === 'function' && k.startsWith(`room_${roomKey()}_`)) buildBg(); }; // 部屋の絵が届いたら背景を描き直す
+  if (k.startsWith('room_') || k.startsWith('px_room_')) im.onload = () => { if (typeof buildBg === 'function' && (k.startsWith(`room_${roomKey()}_`) || k === `px_room_${roomKey()}`)) buildBg(); }; // 部屋の絵が届いたら背景を描き直す
   im.src = src;
 }
 const imgReady = k => !!(IMG[k] && IMG[k].complete && IMG[k].naturalWidth > 0);
@@ -1475,9 +1474,45 @@ function roomPat(b, kind) { // 部屋の絵の模様（1マス 96px の絵を 48
   const k = `room_${roomKey()}_${kind}`; if (!imgReady(k)) return null;
   const pat = b.createPattern(IMG[k], 'repeat'); pat.setTransform(new DOMMatrix().scale(.5)); return pat;
 }
+const PXC = 32, PXS = 2; // キャラのドット絵の1コマ（ドット）と、盤面での倍率
+const TILE_IDX = { floorA: 0, floorB: 1, wallTop: 2, wallFace: 3, prop: 4, door: 5, spikes: 6, emblem: 7, pit: 8, statue: 9, carpet: 10, torch: 11, floorA2: 12, floorB2: 13, floorA3: 14, floorB3: 15, wallFace2: 16 }; // tools/pixel/tiles.py のコマの順
+function buildBgPx(b, sh) { // ドット絵の部屋。1マス 24x32 ドットのコマ（下 24 行がマス、上 8 行は背の高い物のはみ出し）
+  b.imageSmoothingEnabled = false;
+  const tile = (k, x, y) => b.drawImage(sh, TILE_IDX[k] * 24, 0, 24, 32, x * T, y * T - T / 3, T, T * 4 / 3);
+  const floorish = c => c === '.' || c === '^' || c === 'c' || c === 'O' || c === 'S';
+  const tall = [];
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    const c = MAP[y][x], inner = x > 0 && y > 0 && x < COLS - 1 && y < ROWS - 1;
+    if (floorish(c) || (c === '#' && inner)) {
+      const v = ['', '', '2', '3'][(x * 7 + y * 13 + mapIdx) % 4]; // 同じ模様が並ばないように
+      tile(((x + y) % 2 ? 'floorB' : 'floorA') + v, x, y);
+      if (MAPS[mapIdx].carpet && c !== '#' && (portraitBoard ? y : x) === 7) { // 絨毯（縦長の盤面では横向き）
+        b.save(); b.translate(x * T + T / 2, y * T + T / 2); if (portraitBoard) b.rotate(Math.PI / 2);
+        b.drawImage(sh, TILE_IDX.carpet * 24, 8, 24, 24, -T / 2, -T / 2, T, T); b.restore();
+      }
+      if (c === '^') tile('spikes', x, y);
+      else if (c === 'c') tile('emblem', x, y);
+      else if (c === 'O') tile('pit', x, y);
+      else if (c === 'S' || c === '#') tall.push([c === 'S' ? 'statue' : 'prop', x, y]);
+    } else if (c === '#' || c === 'D') {
+      tile(y === 0 && y + 1 < ROWS && MAP[y + 1][x] !== '#' ? (x % 3 === 1 && c !== 'D' ? 'wallFace2' : 'wallFace') : 'wallTop', x, y); // 上の壁の正面（3マスに1つ飾り）
+      if (c === 'D') tile('door', x, y);
+    }
+  }
+  for (const [k, x, y] of tall) { // 柱・石像は奥から順に（手前の物が奥の物に重なる）
+    b.fillStyle = 'rgba(20,16,44,.35)'; b.beginPath(); b.ellipse(x * T + T / 2 + 2, y * T + T - 6, 19, 6, 0, 0, 7); b.fill();
+    tile(k, x, y);
+  }
+  for (const [x, y] of TORCHES) { // 燭台（炎は drawTorches で揺らす）。ろうそくの上はしを炎の下に
+    const px = x * T + T / 2, py = y === 0 ? T - 24 : (ROWS - 1) * T + 10;
+    b.drawImage(sh, TILE_IDX.torch * 24, 0, 24, 8, px - 24, py + 2, 48, 16);
+  }
+}
 function buildBg() {
   bg.width = W * 2; bg.height = H * 2;
   const b = bg.getContext('2d'); b.scale(2, 2);
+  const pxRoom = `px_room_${roomKey()}`;
+  if (imgReady(pxRoom)) { buildBgPx(b, IMG[pxRoom]); return; }
   let seed = 11; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const floorPat = roomPat(b, 'floor'), wallPat = roomPat(b, 'wall'), propK = `room_${roomKey()}_prop`, prop = imgReady(propK) ? IMG[propK] : null;
   const floorAt = (px, py) => { b.fillStyle = floorPat || `hsl(252,30%,40%)`; b.fillRect(px, py, T, T); };
@@ -2593,16 +2628,33 @@ function drawTrapIcon(c, type, cx, cy, s, dir, t, closed) {
   }
   c.restore();
 }
+// ドット絵の部屋では、キャンバスで描く図形（置いた罠・シャンデリア）も半分の大きさで描いてから2倍に広げ、ふちをぼかさずドットに見せる
+const pxBuf = document.createElement('canvas'); pxBuf.width = pxBuf.height = 96;
+const pxBc = pxBuf.getContext('2d', { willReadFrequently: true });
+const pxOn = () => imgReady(`px_room_${roomKey()}`);
+function pxShape(cx, cy, size, draw) { // draw(c, x, y, k): 中心 (x, y) に倍率 k で描く
+  if (!pxOn()) { draw(ctx, cx, cy, 1); return; }
+  const n = Math.ceil(size / PXS); pxBc.setTransform(1, 0, 0, 1, 0, 0); pxBc.clearRect(0, 0, n, n);
+  draw(pxBc, n / 2, n / 2, 1 / PXS);
+  const d = pxBc.getImageData(0, 0, n, n), a = d.data;
+  for (let i = 3; i < a.length; i += 4) a[i] = a[i] > 90 ? 255 : 0; // 半分透けたふちは、塗るか消すかに
+  pxBc.putImageData(d, 0, 0);
+  const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(pxBuf, 0, 0, n, n, Math.round(cx / PXS - n / 2) * PXS, Math.round(cy / PXS - n / 2) * PXS, n * PXS, n * PXS);
+  ctx.imageSmoothingEnabled = sm;
+}
 function drawTraps() {
   for (const tr of G.traps.values()) {
     const cx = tr.x * T + T / 2, cy = tr.y * T + T / 2, armed = tr.cd <= 0;
     const pop = tr.anim > 0 ? 1 + tr.anim * .6 : 1;
     ctx.globalAlpha = armed ? 1 : .45;
     if (tr.type === 'fusion') { // 2つの罠を少しずらして重ね、金の輪で囲む
-      drawTrapIcon(ctx, tr.parts[0], cx - 6, cy - 5, pop * .72, tr.dir, G.time, tr.snap > 0);
-      drawTrapIcon(ctx, tr.parts[1], cx + 6, cy + 5, pop * .72, tr.dir, G.time, tr.snap > 0);
+      pxShape(cx, cy, 80, (c, x, y, k) => {
+        drawTrapIcon(c, tr.parts[0], x - 6 * k, y - 5 * k, pop * .72 * k, tr.dir, G.time, tr.snap > 0);
+        drawTrapIcon(c, tr.parts[1], x + 6 * k, y + 5 * k, pop * .72 * k, tr.dir, G.time, tr.snap > 0);
+      });
       ctx.strokeStyle = `rgba(255,210,122,${.55 + .3 * Math.sin(G.time * 4)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 7); ctx.stroke();
-    } else drawTrapIcon(ctx, tr.type, cx, cy, pop, tr.dir, G.time, tr.snap > 0);
+    } else pxShape(cx, cy, 80, (c, x, y, k) => drawTrapIcon(c, tr.type, x, y, pop * k, tr.dir, G.time, tr.snap > 0));
     ctx.globalAlpha = 1;
     if (!armed) { // 再装填の残り
       ctx.strokeStyle = 'rgba(241,217,142,.85)'; ctx.lineWidth = 3;
@@ -2610,16 +2662,17 @@ function drawTraps() {
     }
   }
 }
-function drawChandelier(cx, cy, s, lit) {
-  ctx.save(); ctx.translate(cx, cy); ctx.scale(s, s);
-  ctx.strokeStyle = '#7d5f22'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(0, -6); ctx.stroke();
-  ctx.strokeStyle = '#c9a24a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, 15, 5, 0, 0, 7); ctx.stroke();
+function drawChandelier(cx, cy, s, lit) { pxShape(cx, cy - 8 * s, 96 * s, (c, x, y, k) => chandelierAt(c, x, y + 8 * s * k, s * k, lit)); }
+function chandelierAt(c, cx, cy, s, lit) {
+  c.save(); c.translate(cx, cy); c.scale(s, s);
+  c.strokeStyle = '#7d5f22'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0, -30); c.lineTo(0, -6); c.stroke();
+  c.strokeStyle = '#c9a24a'; c.lineWidth = 3; c.beginPath(); c.ellipse(0, 0, 15, 5, 0, 0, 7); c.stroke();
   for (let i = 0; i < 5; i++) {
     const a = i / 5 * 6.283, x = Math.cos(a) * 15, y = Math.sin(a) * 5;
-    ctx.fillStyle = '#efe4cc'; ctx.fillRect(x - 1.5, y - 7, 3, 6);
-    if (lit) { ctx.fillStyle = '#ffcf6a'; ell(x, y - 9, 1.6, 2.4); }
+    c.fillStyle = '#efe4cc'; c.fillRect(x - 1.5, y - 7, 3, 6);
+    if (lit) { c.fillStyle = '#ffcf6a'; c.beginPath(); c.ellipse(x, y - 9, 1.6, 2.4, 0, 0, 7); c.fill(); }
   }
-  ctx.restore();
+  c.restore();
 }
 function drawDevices() {
   for (const dv of G.devices) {
@@ -2636,7 +2689,9 @@ function drawDevices() {
       }
     } else if (ready) {
       const a = .6 + Math.sin(G.time * 4) * .3;
-      ctx.fillStyle = `rgba(255,70,60,${a})`; ell(cx - 3, cy - 11, 1.6, 1.2); ell(cx + 3, cy - 11, 1.6, 1.2);
+      ctx.fillStyle = `rgba(255,70,60,${a})`;
+      if (imgReady(`px_room_${roomKey()}`)) ctx.fillRect(dv.x * T + 20, dv.y * T, 4, 2); // ドット絵の石像の目
+      else { ell(cx - 3, cy - 11, 1.6, 1.2); ell(cx + 3, cy - 11, 1.6, 1.2); }
     }
     if (ready && G.wave === 1 && G.phase === 0) { // 第1夜の準備中は「押せる」ことを知らせる
       const r = 22 + Math.sin(G.time * 5) * 4;
@@ -2697,33 +2752,45 @@ function drawPreview() {
 
 const WALK_STEP = .34; // 1コマで進む距離（マス）。速さ 3.4 マス/秒で 1コマ約 100ms
 const PIX_ROW = { 2: 0, 3: 1, 1: 2, 0: 3 }; // 向き → スプライトの行（下・左・右・上）
-const SPF = 96; // スプライト1コマの大きさ（盤面には 48px で描く。tools/import_v2.py で作る）
-const HERO_PX = 68; // 盤面での逃げる子の大きさ（マスは 48px）
+const PX_SIL = {}; // ドット絵の白いシルエット（逃げる子のふちどりに使う）
+function pxSil(k) {
+  if (PX_SIL[k]) return PX_SIL[k];
+  const im = IMG[k], c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+  const x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = 'rgba(255,248,240,.9)'; x.fillRect(0, 0, c.width, c.height);
+  return (PX_SIL[k] = c);
+}
+function drawPx(k, col, row, left, top, outline) { // ドット絵の1コマを 2倍で（ぼかさずに）描く。outline: 1ドットの明るいふちどり
+  const s = PXC, D = PXC * PXS, sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
+  if (outline) { const sil = pxSil(k); for (const [dx, dy] of [[-PXS, 0], [PXS, 0], [0, -PXS], [0, PXS]]) ctx.drawImage(sil, col * s, row * s, s, s, left + dx, top + dy, D, D); }
+  ctx.drawImage(IMG[k], col * s, row * s, s, s, left, top, D, D);
+  ctx.imageSmoothingEnabled = sm;
+}
 function drawHero() {
   const h = G.hero, t = G.time;
   const px = h.x * T + T / 2, py = h.y * T + T / 2 + 2;
   if (h.inv > 0 && Math.floor(t * 18) % 2 === 0) ctx.globalAlpha = .35;
   const pk = CH().art;
-  if (pk && imgReady(`${pk}_walk`) && imgReady(`${pk}_idle`)) { // 盤面の絵の歩行（4方向×4コマ、止まると待機姿勢）
-    const footY = Math.round(h.y * T + T / 2 + 18), row = PIX_ROW[h.facing], D = HERO_PX; // 逃げる子はマスより大きく描く（見失わないように）
-    const left = Math.round(px - D / 2) + (h.freeze > 0 ? Math.round(Math.sin(t * 70) * 1.5) : 0), top = Math.round(footY - D * 46 / 48) + (h.doze > 0 ? Math.round(Math.sin(t * 2.4) + 1) : 0) - (h.joy > 0 ? Math.round(Math.abs(Math.sin(t * 9)) * 8) : 0);
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 9 * D / 48, 3 * D / 48);
-    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    ctx.filter = 'drop-shadow(0 0 1.2px rgba(255,248,240,.95)) drop-shadow(0 1px 2px rgba(30,25,64,.7))'; // 明るいふちどりで床から浮かせる
-    const pinch = G.hp <= 1 && imgReady(`${pk}_pinch`); // 体力が残り1: 服がほつれたピンチの姿
-    if ((h.hurt > 0 || h.trip > 0) && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[pinch ? `${pk}_pinch` : `${pk}_hit`], row * SPF, 0, SPF, SPF, left, top, D, D); // 被弾してのけぞる
-    else if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * SPF, row * SPF, SPF, SPF, left, top, D, D);
-    else if (h.joy > 0 && imgReady(`${pk}_jump`)) ctx.drawImage(IMG[`${pk}_jump`], (Math.floor(t * 9) % 4) * SPF, 0, SPF, SPF, left, top, D, D); // 喜びのジャンプ
-    else if (pinch) ctx.drawImage(IMG[`${pk}_pinch`], row * SPF, 0, SPF, SPF, left, top, D, D);
-    else ctx.drawImage(IMG[`${pk}_idle`], row * SPF, 0, SPF, SPF, left, top, D, D);
-    ctx.imageSmoothingEnabled = sm; ctx.globalAlpha = 1; ctx.filter = 'none';
-    drawFlawFx(px, top, footY);
-    if (h.joy > 0) drawJoy(px, top);
-    if (G.hp <= 1) { // ピンチ: 歩いている間も汗の粒で分かるように
-      const k = (G.time * 1.6) % 1; ctx.globalAlpha = 1 - k; ctx.fillStyle = '#bfe6f2'; ctx.strokeStyle = '#1a1220'; ctx.lineWidth = 1;
-      const sx = px + 13 * D / 48, sy = top + 12 * D / 48 + k * 8; ctx.beginPath(); ctx.moveTo(sx, sy - 5); ctx.quadraticCurveTo(sx + 4, sy + 1, sx, sy + 2); ctx.quadraticCurveTo(sx - 4, sy + 1, sx, sy - 5); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
+  if (pk && imgReady(`px_${pk}`)) { // ドット絵（行: 0〜3 歩き 下・左・右・上、4 立ち、5 やられ、6 ピンチ、7 喜びジャンプ）
+    const k = `px_${pk}`, D = PXC * PXS, footY = Math.round(h.y * T + T / 2 + 18), dir = PIX_ROW[h.facing];
+    const left = Math.round(px - D / 2) + (h.freeze > 0 ? (Math.sin(t * 70) > 0 ? PXS : -PXS) : 0);
+    const top = footY - D + 2 + (h.doze > 0 && Math.sin(t * 2.4) > 0 ? PXS : 0) - (h.joy > 0 ? Math.round(Math.abs(Math.sin(t * 9)) * 4) * PXS : 0);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 12, 4);
+    const pinch = G.hp <= 1;
+    let col = dir, row = 4;
+    if (h.hurt > 0 || h.trip > 0) row = 5; // 被弾してのけぞる
+    else if (h.moving) { row = dir; col = Math.floor((h.walk || 0) / WALK_STEP) % 4; }
+    else if (h.joy > 0) { row = 7; col = Math.floor(t * 9) % 4; } // 喜びのジャンプ
+    else if (pinch) row = 6; // 体力が残り1: 涙目でほつれた姿
+    drawPx(k, col, row, left, top, true);
+    ctx.globalAlpha = 1;
+    const head = top + 4 * PXS;
+    drawFlawFx(px, head, footY);
+    if (h.joy > 0) drawJoy(px, head);
+    if (pinch) { // ピンチ: 歩いている間も汗の粒で分かるように
+      const q = (G.time * 1.6) % 1; ctx.globalAlpha = 1 - q; ctx.fillStyle = '#bfe6f2';
+      const sx = Math.round(px + 22), sy = Math.round(head + 8 + q * 8) & ~1; ctx.fillRect(sx, sy, 2, 2); ctx.fillRect(sx - 2, sy + 2, 6, 4); ctx.fillRect(sx, sy + 6, 2, 2); ctx.globalAlpha = 1;
     }
-    drawHeroBubble(px, top - 6 - 6 * (TS - 1));
+    drawHeroBubble(px, top - 6 * (TS - 1));
     return;
   }
   ctx.save(); ctx.translate(px, py);
@@ -2864,31 +2931,30 @@ function drawFoe(f) {
   const t = G.time, px = f.x * T + T / 2, gy = f.y * T + T / 2 + 2, py = gy - f.z;
   const sc = f.type === 'heavy' ? 1.18 : 1;
   const key = `foe_${f.type}`;
-  if (imgReady(`${key}_walk`) && imgReady(`${key}_idle`)) { // 盤面の絵の歩行（4方向×4コマ）
-    const footY = Math.round(f.y * T + T / 2 + 18), size = Math.round(48 * sc), row = PIX_ROW[f.lastDir ?? 2];
-    const left = Math.round(px - size / 2), top = Math.round(footY - 46 * sc - f.z);
+  if (imgReady(`px_${key}`)) { // ドット絵（行: 0〜3 歩き、4 立ち）
+    const k = `px_${key}`, D = PXC * PXS, footY = Math.round(f.y * T + T / 2 + 18), dir = PIX_ROW[f.lastDir ?? 2];
+    const left = Math.round(px - D / 2), top = Math.round(footY - D + 2 - f.z);
     ctx.save();
     if (f.dead) ctx.globalAlpha = Math.max(0, 1 - f.deadT / .5);
     else if (f.down > 0) ctx.globalAlpha = downAlpha(f);
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 11 * sc, 3.5 * sc);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 12 * sc, 4 * sc);
     const walking = f.moving && f.stun <= 0 && !f.fly;
-    const img = walking ? IMG[`${key}_walk`] : IMG[`${key}_idle`];
-    const sx = walking ? (Math.floor((f.walk || 0) / WALK_STEP) % 4) * SPF : row * SPF, sy = walking ? row * SPF : 0;
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    const col = walking ? Math.floor((f.walk || 0) / WALK_STEP) % 4 : dir, row = walking ? dir : 4;
     if (f.dead) { ctx.translate(px, footY); ctx.scale(1 + f.deadT, 1 - f.deadT * 1.2); ctx.translate(-px, -footY); }
     else if (f.down > 0 && !f.fly) { const pv = footY - 8; ctx.translate(px, pv); ctx.rotate((f.face < 0 ? -1 : 1) * Math.PI / 2 * Math.min(1, f.downT * 6)); ctx.translate(-px, -pv); } // 横倒し
-    ctx.drawImage(img, sx, sy, SPF, SPF, left, top, size, size);
-    if (f.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = f.down > 0 ? .25 : .6; ctx.drawImage(img, sx, sy, SPF, SPF, left, top, size, size); }
+    drawPx(k, col, row, left, top, false);
+    if (f.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = f.down > 0 ? .25 : .6; drawPx(k, col, row, left, top, false); }
     ctx.restore();
+    const hy = top + 2 * PXS;
     if (!f.dead && !(f.down > 0) && f.hp < f.maxhp) {
-      const w = 26, x = px - w / 2, y = top + 4;
-      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, y - 1, w + 2, 5);
-      ctx.fillStyle = '#d0503f'; ctx.fillRect(x, y, w * Math.max(0, f.hp / f.maxhp), 3);
+      const w = 26, x = px - w / 2;
+      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, hy - 1, w + 2, 5);
+      ctx.fillStyle = '#d0503f'; ctx.fillRect(x, hy, w * Math.max(0, f.hp / f.maxhp), 3);
     }
-    if (!f.dead && f.slow > 0) { ctx.fillStyle = 'rgba(168,220,239,.8)'; ell(px - 12, top + 14, 2.5, 2.5); ell(px + 12, top + 18, 2, 2); }
+    if (!f.dead && f.slow > 0) { ctx.fillStyle = 'rgba(168,220,239,.8)'; ctx.fillRect(px - 14, hy + 12, 4, 4); ctx.fillRect(px + 10, hy + 16, 4, 4); }
     if (!f.dead && f.stun > 0 && !f.fly) {
       ctx.fillStyle = '#ffe58a';
-      for (let i = 0; i < 3; i++) { const a = t * 5 + i * 2.09; ell(px + Math.cos(a) * 10, top + 6 + Math.sin(a) * 3, 2, 2); }
+      for (let i = 0; i < 3; i++) { const a = t * 5 + i * 2.09; ctx.fillRect(Math.round(px + Math.cos(a) * 10) - 2, Math.round(hy + 4 + Math.sin(a) * 3) - 2, 4, 4); }
     }
     return;
   }
@@ -4468,6 +4534,6 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, lang: LANG, missing: () => [...missing], api: { face: () => faceShown, playStory, storySkip, openStoryList, storyState: () => story && { ids: story.ids.slice(), si: story.si, li: story.li, wait: story.wait }, storySeen: () => Object.assign({}, storySeen), sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, showTrain: () => openTrain(), view: () => ({ VW, VH, VX, VY }), setRun: (m, n) => { runMode = m; runStage = n; }, mapName: () => MAPS[mapIdx].name, editTool: k => { etool = k; }, editAt: (x, y) => editAt({ x, y }), customRow: y => MAPS[CUSTOM_MAP].rows[y], showAch: () => { renderAch(); showOv('ovAch'); }, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, lang: LANG, missing: () => [...missing], api: { face: () => faceShown, playStory, storySkip, openStoryList, storyState: () => story && { ids: story.ids.slice(), si: story.si, li: story.li, wait: story.wait }, storySeen: () => Object.assign({}, storySeen), sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, showTrain: () => openTrain(), view: () => ({ VW, VH, VX, VY }), setMap: i => { setMap(i); }, setRun: (m, n) => { runMode = m; runStage = n; }, mapName: () => MAPS[mapIdx].name, editTool: k => { etool = k; }, editAt: (x, y) => editAt({ x, y }), customRow: y => MAPS[CUSTOM_MAP].rows[y], showAch: () => { renderAch(); showOv('ovAch'); }, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
 })();
 </script>
