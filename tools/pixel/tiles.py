@@ -6,6 +6,7 @@
   0 床A  1 床B（市松のもう片方）  2 壁の上面  3 壁の正面（上の壁で、下が床のとき）  4 部屋の中の置き物（柱・本棚など）
   5 扉  6 トゲ床  7 シャンデリアの真下の紋章  8 奈落  9 槍の石像  10 絨毯  11 燭台（コマの上に置く。ほかと違い下寄せではない）
   12〜15 床A・床Bの別の模様（同じ模様が並ばないよう、ゲームの側でマスごとに選ぶ）  16 壁の正面の飾り（旗・絵・窓など。3マスに1つ）
+  17 ワイン樽（侵入者が立ち止まって飲む仕掛け）
 使い方: python tools/pixel/tiles.py  （確認用 tools/sim/out/pixel_rooms.png も書き出す）
 """
 import math
@@ -24,7 +25,7 @@ OUT = ROOT / 'art' / 'pixel'
 PREVIEW = ROOT / 'tools' / 'sim' / 'out' / 'pixel_rooms.png'
 TS, CH = 24, 32
 ORDER = ('floorA', 'floorB', 'wallTop', 'wallFace', 'prop', 'door', 'spikes', 'emblem', 'pit', 'statue', 'carpet', 'torch',
-         'floorA2', 'floorB2', 'floorA3', 'floorB3', 'wallFace2')
+         'floorA2', 'floorB2', 'floorA3', 'floorB3', 'wallFace2', 'barrel')
 
 
 class Px:
@@ -458,6 +459,7 @@ def make(P):
     f['statue'] = props.statue(**P.get('statue', {}))
     f['carpet'] = carpet(*P.get('carpet', ('#c8487a', '#e0689a', '#9a2e58', '#f4d8a0', '#f2c24a')))
     f['torch'] = torch('#f2c24a', '#a87420', '#f4ead8')
+    f['barrel'] = props.wine_barrel()
     return f
 
 

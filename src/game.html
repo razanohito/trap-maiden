@@ -251,6 +251,7 @@ body.editing .editonly{display:flex}
 .roomcard .lockmsg{position:absolute;inset:0;display:grid;place-items:center;font:800 16px var(--f-display);color:var(--parch);text-shadow:0 2px 4px var(--shade)}
 .medals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-content:center}
 @media (orientation:landscape){.medals{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px;justify-items:center}.medals .stg{width:min(100%,110px)}}
+@media (orientation:landscape) and (max-height:500px){.medals{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 6px}.medals .stg{width:min(100%,72px)}.stg b{font-size:18px}.stg span{font-size:10px}.roomcard h3{margin-top:2px;font-size:16px}}
 .stg{position:relative;aspect-ratio:1;max-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border-radius:50%;
   background:radial-gradient(circle at 50% 32%,#4f2e24,#1a120f 74%);border:2px solid var(--gold);box-shadow:inset 0 0 0 3px var(--walnut-dk),inset 0 0 0 4px rgba(201,162,74,.45),0 3px 0 var(--shade),0 6px 12px rgba(12,8,14,.35);color:var(--parch)}
 .stg b{font:800 clamp(18px,4vmin,28px)/1 var(--f-display);color:var(--gold-hi)}
@@ -866,7 +867,7 @@ const MAPS = [
     'D.^...#.#.c...#',
     '#...c.#.#...^.D',
     '#.............#',
-    '#..#.....O.#..#',
+    '#..W.....O.W..#',
     '#.............#',
     '###############',
   ], doors: [[0, 4], [14, 5], [7, 0]], start: [7, 6], carpet: true },
@@ -915,7 +916,7 @@ const MAPS = [
     '#.^.........^.#',
     '#...##S.S##...#',
     '#...#.....#...#',
-    '#...#..c..#...#',
+    '#...#W.c.W#...#',
     '#######D#######',
   ], doors: [[0, 4], [14, 4], [7, 9]], start: [7, 7] },
   { name: $t`礼拝堂`, rows: [
@@ -999,9 +1000,10 @@ const TRAPS = {
   bell:   { name:$t`誘いの鈴`,   cost:20, cd:10, desc:$t`鳴ると侵入者がしばらく鈴へ向かう` },
   caltrop: { name:$t`まきびし`, cost:10, cd:2, desc:$t`侵入者の足もとにも直接置ける。置いた瞬間に刺さり、痛くて1歩前へ跳ねる。威力は弱い`, direct:true },
   vortex: { name:$t`つむじ風の陣`, cost:30, cd:8, desc:$t`踏まれると周り4マスの侵入者を2マス吸い寄せる。威力は弱い` },
+  cage:   { name:$t`捕獲の檻`, cost:25, cd:8, desc:$t`踏んだ侵入者を4秒閉じ込める（ダメージなし）。檻の侵入者に、飛ばした侵入者や振り子刃を当てると、檻ごと転がって「大玉突き」になる` },
   keg:    { name:$t`火薬樽`, cost:30, cd:7, desc:$t`踏まれて1秒あとに爆発し、周り3x3を大きく吹き飛ばす。逃げる子も巻き込まれると体力が減る。爆発までに侵入者が進むので、先を読んで置く`, delay:1.1 },
 };
-const TRAP_ORDER = ['bear','spring','rock','fire','ice','warp','blade','bell','caltrop','vortex','keg'];
+const TRAP_ORDER = ['bear','spring','rock','fire','ice','warp','blade','bell','caltrop','vortex','keg','cage'];
 const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
 // 逃げる子。数値は自動ボットで全員の到達夜・得点が近くなるように調整した
 const CHARS = {
@@ -1031,7 +1033,7 @@ const CHAR_ORDER = ['lily','mina','noel','cecil'];
 // 新しい絵柄（Nano Banana の絵を tools/import_v2.py で取り込んだもの）。ビルドで data URI に埋め込む。絵の無い子は今までどおりキャンバスで描く
 const ART = { portrait_lily: '../art/bust/portrait_lily.webp', portrait_mina: '../art/bust/portrait_mina.webp', portrait_noel: '../art/bust/portrait_noel.webp',
   fx_warp: '../art/fx/warp.png', fx_soul: '../art/fx/soul.png',
-  icon_bear: '../art/icons/bear.png', icon_spring: '../art/icons/spring.png', icon_rock: '../art/icons/rock.png', icon_fire: '../art/icons/fire.png', icon_ice: '../art/icons/ice.png', icon_warp: '../art/icons/warp.png', icon_blade: '../art/icons/blade.png', icon_bell: '../art/icons/bell.png', icon_caltrop: '../art/icons/caltrop.png', icon_vortex: '../art/icons/vortex.png', icon_keg: '../art/icons/keg.png',
+  icon_bear: '../art/icons/bear.png', icon_spring: '../art/icons/spring.png', icon_rock: '../art/icons/rock.png', icon_fire: '../art/icons/fire.png', icon_ice: '../art/icons/ice.png', icon_warp: '../art/icons/warp.png', icon_blade: '../art/icons/blade.png', icon_bell: '../art/icons/bell.png', icon_caltrop: '../art/icons/caltrop.png', icon_vortex: '../art/icons/vortex.png', icon_keg: '../art/icons/keg.png', icon_cage: '../art/icons/cage.png',
   fx_bell: '../art/fx/bell.png', fx_caltrop: '../art/fx/caltrop.png', fx_vortex: '../art/fx/vortex.png', fx_slash: '../art/fx/slash.png', fx_spear: '../art/fx/spear.png', fx_spike: '../art/fx/spike.png', fx_pit: '../art/fx/pit.png', fx_chandelier: '../art/fx/chandelier.png', fx_bomb: '../art/fx/bomb.png', fx_hurt: '../art/fx/hurt.png', fx_keys: '../art/fx/keys.png', fx_mana: '../art/fx/mana.png',
   portrait_lily_teary: '../art/bust/portrait_lily_teary.webp', portrait_mina_teary: '../art/bust/portrait_mina_teary.webp', portrait_noel_teary: '../art/bust/portrait_noel_teary.webp', portrait_cecil_teary: '../art/bust/portrait_cecil_teary.webp',
   comic_1: '../art/comic/page01.webp', comic_2: '../art/comic/page02.webp', comic_3: '../art/comic/page03.webp',
@@ -1301,7 +1303,7 @@ function makeRun(state, char = 'lily', loadout = DEFAULT_LOADOUT) {
     state, char, loadout: loadout.slice(), wave: 0, score: 0, soul: 0, up, mana: CHARS[char].maxMana, hp: CHARS[char].hp, time: 0,
     lure: null,
     hero: { tx:mapStart()[0], ty:mapStart()[1], nx:mapStart()[0], ny:mapStart()[1], x:mapStart()[0], y:mapStart()[1], prog:0, moving:false, facing:2, inv:0, hurt:0, confused:0, idle:0, think:0, bubble:'', bubbleT:0, spotted:false, goal:null, goalT:0, doze:0, trip:0, freeze:0, joy:0, peek:null },
-    foes: [], traps: new Map(), devices: makeDevices(), fx: [], texts: [], parts: [],
+    foes: [], traps: new Map(), devices: makeDevices(), barrelT: {}, fx: [], texts: [], parts: [],
     combo: 0, lastHit: -99, bestCombo: 0, kills: 0, shake: 0, later: [], items: [], itemT: 8,
     spawnQueue: [], spawnT: 0, clearT: -1, banner: 0, bannerTitle: '', bannerSub: '', hpScale: 1,
     phase: 0, phaseQ: [[], [], []], phaseBonus: 0, nightLen: 60, nightT: 60,
@@ -1498,11 +1500,11 @@ function roomPat(b, kind) { // 部屋の絵の模様（1マス 96px の絵を 48
 }
 const PXS = 2; // 罠などをドット風に描くときの倍率
 const PXC = 48, CHS = 1.5; // キャラのドット絵の1コマ（48ドット）と、盤面での倍率（高解像度の画面ではちょうど3倍になる）
-const TILE_IDX = { floorA: 0, floorB: 1, wallTop: 2, wallFace: 3, prop: 4, door: 5, spikes: 6, emblem: 7, pit: 8, statue: 9, carpet: 10, torch: 11, floorA2: 12, floorB2: 13, floorA3: 14, floorB3: 15, wallFace2: 16 }; // tools/pixel/tiles.py のコマの順
+const TILE_IDX = { floorA: 0, floorB: 1, wallTop: 2, wallFace: 3, prop: 4, door: 5, spikes: 6, emblem: 7, pit: 8, statue: 9, carpet: 10, torch: 11, floorA2: 12, floorB2: 13, floorA3: 14, floorB3: 15, wallFace2: 16, barrel: 17 }; // tools/pixel/tiles.py のコマの順
 function buildBgPx(b, sh) { // ドット絵の部屋。1マス 24x32 ドットのコマ（下 24 行がマス、上 8 行は背の高い物のはみ出し）
   b.imageSmoothingEnabled = false;
   const tile = (k, x, y) => b.drawImage(sh, TILE_IDX[k] * 24, 0, 24, 32, x * T, y * T - T / 3, T, T * 4 / 3);
-  const floorish = c => c === '.' || c === '^' || c === 'c' || c === 'O' || c === 'S';
+  const floorish = c => c === '.' || c === '^' || c === 'c' || c === 'O' || c === 'S' || c === 'W';
   const tall = [];
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
     const c = MAP[y][x], inner = x > 0 && y > 0 && x < COLS - 1 && y < ROWS - 1;
@@ -1516,7 +1518,7 @@ function buildBgPx(b, sh) { // ドット絵の部屋。1マス 24x32 ドット�
       if (c === '^') tile('spikes', x, y);
       else if (c === 'c') tile('emblem', x, y);
       else if (c === 'O') tile('pit', x, y);
-      else if (c === 'S' || c === '#') tall.push([c === 'S' ? 'statue' : 'prop', x, y]);
+      else if (c === 'S' || c === '#' || c === 'W') tall.push([c === 'S' ? 'statue' : c === 'W' ? 'barrel' : 'prop', x, y]);
     } else if (c === '#' || c === 'D') {
       tile(y === 0 && y + 1 < ROWS && MAP[y + 1][x] !== '#' ? (x % 3 === 1 && c !== 'D' ? 'wallFace2' : 'wallFace') : 'wallTop', x, y); // 上の壁の正面（3マスに1つ飾り）
       if (c === 'D') tile('door', x, y);
@@ -1546,7 +1548,7 @@ function buildBg() {
   const floorAt = (px, py) => { b.fillStyle = floorPat || `hsl(252,30%,40%)`; b.fillRect(px, py, T, T); };
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
     const c = MAP[y][x], px = x * T, py = y * T;
-    if (c === '.' || c === '^' || c === 'c' || c === 'O' || c === 'S') {
+    if (c === '.' || c === '^' || c === 'c' || c === 'O' || c === 'S' || c === 'W') {
       if (floorPat) { // 部屋の絵の床
         b.fillStyle = floorPat; b.fillRect(px, py, T, T); r(); r();
       } else if (MAPS[mapIdx].wood) { // 書庫の木の床
@@ -1762,8 +1764,7 @@ function placeTrap(x, y, type) {
   if (G.mana + refund < cost) { say($t`魔力が足りない`); sfx.bad(); return; }
   G.mana = Math.min(stat.maxMana(), G.mana + refund - cost);
   const rm = G.removedCd[key], rmCd = rm ? rm.cd - (G.time - rm.at) : 0;
-  const same = [...G.traps.values()].filter(t => t !== old && (t.type === type || (t.type === 'fusion' && t.parts.includes(type)))).length;
-  const cd = Math.max(.6 + 1.4 * same, old ? old.cd : rmCd); // 同じ罠の2個目からは使えるまで長め（2秒・3.4秒…）。置き直しても前の罠の再装填は引き継ぐ
+  const cd = Math.max(.6, old ? old.cd : rmCd); // 置き直しても（撤去してすぐ置いても）前の罠の再装填は引き継ぐ
   delete G.removedCd[key];
   const bonusCount = [...G.traps.values()].filter(t => t.bonus).length;
   const bonus = old ? old.bonus : G.traps.size >= baseLimit() && bonusCount < G.phaseBonus; // フェイズで増えた枠に置いた罠
@@ -2019,7 +2020,7 @@ function hitFoe(f, base) {
   const aff = (G.hitSrc && AFF[f.type] && AFF[f.type][G.hitSrc]) || 1;
   if (f.down > 0) { // 倒れている侵入者への追い打ち: ダメージは無いが得点が入り、倒れている時間が少し延びる
     const pts = 80 * Math.min(10, Math.max(1, G.combo));
-    G.score += pts; G.oiuchi = (G.oiuchi || 0) + 1; f.flash = .15; f.down = Math.max(f.down, .8); if (addStat('oiuchi') >= 50) achieve('oiuchi');
+    G.score += pts; G.oiuchi = (G.oiuchi || 0) + 1; f.flash = .15; f.down = Math.max(f.down, 1.5); if (addStat('oiuchi') >= 50) achieve('oiuchi');
     addText(f.x, f.y - .6, $t`追い打ち +${pts}`, '#e8c46a', 15); burst(f.x, f.y, '#e8c46a', 6, 90);
     return;
   }
@@ -2053,7 +2054,7 @@ function killFoe(f) {
     addText(f.x, f.y - 1.6, hint ? $t`お嬢ちゃん、そいつから離れ……あーれー` : pick([$t`あーれー`, $t`今日の日当が……`, $t`お堀は冷たい……`]), hint ? '#cfb98e' : '#e8e4f4', 13);
   }
 }
-const DOWN_TIME = 1.5, DOWN_MAX = 3; // 倒れたまま残る秒数（追い打ちで延びるが最大3秒）
+const DOWN_TIME = 3, DOWN_MAX = 5; // 倒れたまま残る秒数（追い打ちで延びるが最大5秒）。倒れた侵入者にも罠を当てて連続を続けられる
 function finishFoe(f) { f.dead = true; f.deadT = 0; f.down = 0; }
 // 絵のエフェクト（8 コマの横長画像）を出す。dy はマスの中心からのずれ（上が負）
 function spr(key, x, y, dur, s = 1, dy = 0, rot = 0) { if (imgReady(`fx_${key}`)) G.fx.push({ type: 'spr', key, x, y, t: 0, dur, s, dy, rot }); }
@@ -2103,14 +2104,16 @@ function foeCrash(f, g, fl) {
   const dir = DIRS.findIndex(([dx, dy]) => dx === Math.sign(Math.round(fl.tx - fl.fx)) && dy === Math.sign(Math.round(fl.ty - fl.fy)));
   if (dir < 0) return;
   trapSuccess(); G.score += 200 * Math.min(10, Math.max(1, G.combo)); G.crashes = (G.crashes || 0) + 1; G.nightCrash = (G.nightCrash || 0) + 1; if (G.nightCrash >= 5) achieve('crash');
-  addText(g.x, g.y - 1.3, $t`玉突き！`, '#ffb38a', 20); G.shake = Math.max(G.shake, 5); sfx.crash();
-  burst(g.x, g.y, '#ffd9a0', 12, 140);
-  hitFoe(g, 12); hitFoe(f, 6);
+  const big = f.caged > 0 || g.caged > 0; // 檻が絡むと大玉突き
+  addText(g.x, g.y - 1.3, big ? $t`大玉突き！` : $t`玉突き！`, '#ffb38a', big ? 24 : 20); G.shake = Math.max(G.shake, big ? 8 : 5); sfx.crash();
+  burst(g.x, g.y, '#ffd9a0', big ? 20 : 12, 140); if (big) G.score += 300 * Math.min(10, Math.max(1, G.combo));
+  hitFoe(g, big ? 26 : 12); hitFoe(f, 6);
   if (!g.dead) shove(g, dir, 2);
 }
 // 罠に当たった侵入者をよろけさせて n マス動かす。着地したマスの罠も連鎖で発動し、奈落なら落ちる
 function shove(f, dir, n = 1) {
   if (f.dead || f.down > 0 || f.fly || dir == null) return; // 倒れた侵入者はその場から動かない
+  if (f.caged > 0) n += 2; // 檻ごと転がる
   const [dx, dy] = DIRS[dir]; let cx = Math.round(f.x), cy = Math.round(f.y), k = 0, fall = false;
   while (k < n) {
     if (tileAt(cx + dx, cy + dy) === 'O') { cx += dx; cy += dy; k++; fall = true; break; }
@@ -2182,7 +2185,7 @@ function fireTrapBody(tr, ty, x, y, f) {
     if (f.dead || f.down > 0) return;
     const [dx, dy] = DIRS[tr.dir]; let cx = x, cy = y, steps = 0, slam = false;
     let fall = false;
-    while (steps < FOES[f.type].push) {
+    while (steps < FOES[f.type].push + (f.caged > 0 ? 2 : 0)) { // 檻ごとなら遠くまで転がる
       if (tileAt(cx + dx, cy + dy) === 'O') { cx += dx; cy += dy; steps++; fall = true; break; } // 奈落へ
       if (!isFloor(cx + dx, cy + dy)) { slam = true; break; }
       cx += dx; cy += dy; steps++;
@@ -2238,6 +2241,10 @@ function fireTrapBody(tr, ty, x, y, f) {
     const hits = G.foes.filter(g => !g.dead && !g.fly && tiles.some(([a, b]) => Math.round(g.x) === a && Math.round(g.y) === b));
     if (hits.length) { trapSuccess(); multiHit(hits); }
     hits.forEach(g => { hitFoe(g, 15); shove(g, tr.dir); });
+  } else if (ty === 'cage') { // 捕獲の檻: 閉じ込めて玉突きの玉にする
+    sfx.bear(); trapSuccess(); burst(x, y, '#a8a4b8', 10, 90);
+    f.caged = 4; f.stun = Math.max(f.stun, 4); f.moving = false; f.lurch = null; G.captures = (G.captures || 0) + 1;
+    addText(x, y - 1.1, $t`捕獲！`, '#e8e4f4', 18);
   } else if (ty === 'bell') {
     sfx.handbell(); spr('bell', x, y, .7, 1.4);
     trapSuccess();
@@ -2437,10 +2444,27 @@ function updateHero(dt) {
   h.x = h.moving ? lerp(h.tx, h.nx, h.prog) : h.tx;
   h.y = h.moving ? lerp(h.ty, h.ny, h.prog) : h.ty;
 }
+// ワイン樽（地図の W）: 隣を通った侵入者が立ち止まって3秒飲み、そのあと千鳥足で遅くなる。樽は12秒で満ちる
+const BARREL_CD = 12, DRINK_TIME = 3;
+function drinkAt(f) {
+  if (f.caged > 0) return false;
+  G.barrelT ||= {};
+  for (const [dx, dy] of DIRS) {
+    const x = f.tx + dx, y = f.ty + dy, k = x + ',' + y;
+    if (tileAt(x, y) !== 'W' || (G.barrelT[k] ?? -99) > G.time) continue;
+    G.barrelT[k] = G.time + BARREL_CD; G.drinks = (G.drinks || 0) + 1;
+    f.stun = Math.max(f.stun, DRINK_TIME); f.slow = Math.max(f.slow, DRINK_TIME + 4); f.face = dx || f.face; f.drink = DRINK_TIME;
+    addText(f.x, f.y - 1.1, $t`ごくごく…`, '#e88a9a', 15); burst(x, y, '#9a2e40', 8, 60);
+    return true;
+  }
+  return false;
+}
 function updateFoe(f, dt) {
   f.flash = Math.max(0, f.flash - dt);
   if (f.dead) { f.deadT += dt; return; }
   if (f.slow > 0) f.slow -= dt;
+  if (f.caged > 0) f.caged -= dt;
+  if (f.drink > 0) f.drink -= dt;
   if (f.poison > 0) {
     f.poison -= dt; f.ptick -= dt;
     if (f.ptick <= 0) { f.ptick = 1; poisonTick(f); if (f.dead) return; }
@@ -2454,6 +2478,7 @@ function updateFoe(f, dt) {
     if (p >= 1) {
       f.tx = f.nx = fl.tx; f.ty = f.ny = fl.ty; f.x = f.tx; f.y = f.ty; f.z = 0; f.fly = null; f.prog = 0;
       f.stun = Math.max(f.stun, .35 * FOES[f.type].stunMul);
+      if (f.caged > 0) { if (fl.bumped.length) { f.caged = 0; f.stun = Math.max(f.stun, .8); burst(f.x, f.y, '#a8a4b8', 12, 120); } else f.stun = Math.max(f.stun, f.caged); } // ぶつかったら檻が壊れる
       if (fl.fall && warded(f)) { trapSuccess(); fl.counted = true; } // 落ちる罠も連続に数えてから結界を確かめる
       if (fl.fall && warded(f)) { // 結界騎士は連続が足りないと奈落の縁で弾き返される
         wardBlock(f); const bx = Math.round(fl.fx), by = Math.round(fl.fy);
@@ -2486,6 +2511,7 @@ function updateFoe(f, dt) {
     terrainAt(f.tx, f.ty, f);
     triggerAt(f.tx, f.ty, f, false);
     if (f.dead || f.stun > 0 || f.fly) return;
+    if (drinkAt(f)) return;
   }
   const here = G.field[f.tx + f.ty * COLS]; let bestD = -1, bd = here < 0 ? 9999 : here;
   const gp = G.guide && G.guide.i <= 4 && G.guide.path, gk = gp ? gp.findIndex(([a, b]) => a === f.tx && b === f.ty) : -1; // チュートリアル中は決めた道を通る
@@ -2726,6 +2752,13 @@ function chandelierAt(c, cx, cy, s, lit) {
   c.restore();
 }
 function drawDevices() {
+  MAP.forEach((row, y) => { for (let x = 0; x < row.length; x++) { // ワイン樽: 満ちるまでの残り
+    if (row[x] !== 'W') continue;
+    const left = ((G.barrelT || {})[x + ',' + y] ?? -99) - G.time, cx = x * T + T / 2, cy = y * T + T / 2;
+    if (left > 0) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 7); ctx.stroke();
+      ctx.strokeStyle = 'rgba(200,74,90,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, 20, -Math.PI / 2, -Math.PI / 2 + 6.283 * (1 - left / BARREL_CD)); ctx.stroke(); }
+    else { ctx.fillStyle = `rgba(200,74,90,${.5 + .3 * Math.sin(G.time * 3 + x)})`; ctx.fillRect(cx - 1, cy + 8, 3, 3); } // 満ちている: 蛇口から一滴
+  } });
   for (const dv of G.devices) {
     const cx = dv.x * T + T / 2, cy = dv.y * T + T / 2, ready = dv.cd <= 0;
     if (dv.type === 'chandelier') {
@@ -3000,6 +3033,14 @@ function drawWard(f, px, cy, D, hy) {
   }
   ctx.restore();
 }
+function drawCage(px, footY, D) { // 捕獲の檻（鉄の格子と丸屋根）
+  const w = D * .62, h = D * .78, x0 = px - w / 2, y0 = footY - h;
+  ctx.save(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#2a2430';
+  const bars = () => { for (let i = 0; i <= 5; i++) { const x = x0 + w * i / 5; ctx.beginPath(); ctx.moveTo(x, y0 + w * .25); ctx.lineTo(x, footY); ctx.stroke(); } ctx.beginPath(); ctx.ellipse(px, y0 + w * .25, w / 2, w * .25, 0, Math.PI, 0); ctx.stroke(); ctx.strokeRect(x0, footY - 4, w, 4); };
+  bars(); ctx.lineWidth = 1.2; ctx.strokeStyle = '#a8a4b8'; ctx.translate(-.8, -.8); bars();
+  ctx.fillStyle = '#c9a24a'; ctx.fillRect(px + w * .18, footY - h * .42, 6, 6);
+  ctx.restore();
+}
 function downAlpha(f) { return f.down < .5 && Math.floor(G.time * 16) % 2 ? .35 : .85; } // 倒れた侵入者は消える前に点滅
 function drawFoe(f) {
   const t = G.time, px = f.x * T + T / 2, gy = f.y * T + T / 2 + 2, py = gy - f.z;
@@ -3026,6 +3067,7 @@ function drawFoe(f) {
       ctx.fillStyle = '#d0503f'; ctx.fillRect(x, hy, w * Math.max(0, f.hp / f.maxhp), 3);
     }
     drawWard(f, px, top + D * .58, D, hy);
+    if (f.caged > 0 && !f.dead && !(f.down > 0)) drawCage(px, footY - f.z, D);
     if (!f.dead && f.slow > 0) { ctx.fillStyle = 'rgba(168,220,239,.8)'; ctx.fillRect(px - 14, hy + 12, 4, 4); ctx.fillRect(px + 10, hy + 16, 4, 4); }
     if (!f.dead && f.stun > 0 && !f.fly) {
       ctx.fillStyle = '#ffe58a';
@@ -3414,13 +3456,13 @@ function miniTile(g, x, y, kind) {
 const HELP = [
   { t: $t`ねらい`, d: $t`夜になると、侵入者が扉から入ってきて逃げる子を追いかける。逃げる子は自分で動くので、あなたは侵入者の通り道に罠を置いて守る。全10夜を守り抜けばクリア。`,
     draw() { const g = miniGrid(9, 3); miniTile(g, 0, 1, 'door'); miniFoe(g, 1, 1); miniTrap(g, 'bear', 4, 1); miniGirl(g, 8, 1); miniArrow(g, [1, 1], [7, 1], '#d0503f', true); } },
-  { t: $t`罠の置き方`, d: $t`下の罠ボタンを選んでから床を押すと置ける（魔力を使う）。同じ罠をもう一度押すと撤去して、魔力が半分戻る。同じ種類の罠は、2個目から使えるようになるまで少し長くかかる（2個目は2秒、3個目は3.4秒）。侵入者の足もとには置けないが、まきびしだけは直接置けて、置いた瞬間に刺さる。矢印のある罠（跳ね床・振り子刃）は、置きたいマスから向けたい方向へ指を払う（フリック。PC はドラッグ）と、その向きで置ける。置いた罠の上でフリックすると向きだけ変わる。ボタンをもう一度押すか Q / E でも回せる。`,
+  { t: $t`罠の置き方`, d: $t`下の罠ボタンを選んでから床を押すと置ける（魔力を使う）。同じ罠をもう一度押すと撤去して、魔力が半分戻る。侵入者の足もとには置けないが、まきびしだけは直接置けて、置いた瞬間に刺さる。矢印のある罠（跳ね床・振り子刃）は、置きたいマスから向けたい方向へ指を払う（フリック。PC はドラッグ）と、その向きで置ける。置いた罠の上でフリックすると向きだけ変わる。ボタンをもう一度押すか Q / E でも回せる。`,
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 2, 1, 1); miniTrap(g, 'blade', 4, 1, 2); miniLabel(g, 2, 0, $t`向き →`); miniLabel(g, 4, 0, $t`向き ↓`); miniLabel(g, 6, 1, $t`押して置く`, '#fff4e0'); } },
   { t: $t`連続で得点アップ`, d: $t`罠を3秒半以内に続けて当てると「連続」。続くほど得点と魂が増え、3連続からは魔力も少し戻る。罠に当たった侵入者はよろけて動く（火柱・まきびしは1歩前、落石は1歩後ろ、トラバサミは抜け出したあと1歩前、振り子刃は刃の向き、槍の石像は外へ）。動いた先に罠を置いておけば連鎖する。`,
     draw() { const g = miniGrid(7, 3); miniFoe(g, 1, 1); miniTrap(g, 'bear', 3, 1); miniTrap(g, 'rock', 5, 1); miniArrow(g, [1, 1], [3, 1]); miniArrow(g, [3, 1], [5, 1]); miniLabel(g, 3, 0, '1'); miniLabel(g, 5, 0, $t`2連続！`); } },
   { t: $t`敵との相性・合成・火薬樽`, d: $t`侵入者には罠との相性がある。騎士は火柱に弱く、振り子刃とまきびしに強い。盗賊はまきびし・トラバサミ・火薬樽に弱く、落石に強い。重装兵は火柱と火薬樽に弱く、落石・振り子刃・まきびしに強い。弱点に当てると「効いた！」。金の鎧の結界騎士は、3連続以上になった罠でないと結界に弾かれる（足止めや飛ばしは効く）。頭の上の菱形が連続の数。置いてある罠の上に別の罠を置くと「合成」になり、2つの罠が1マスで続けて作動する（少し強くなり、罠の数は1つのまま）。火薬樽は踏まれて1秒後に爆発するので、侵入者が進む先を読んで置く。`,
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'fire', 1, 1); miniTrap(g, 'rock', 2, 1); miniArrow(g, [1, 1], [3.3, 1]); miniTrap(g, 'fire', 4, 1); miniTrap(g, 'rock', 4.5, 1.4); miniLabel(g, 4.3, 0, $t`合成「溶岩落とし」`); miniFoe(g, 6, 1); miniLabel(g, 6, 2, $t`効いた！`, '#ff9b5a'); } },
-  { t: $t`巻き込み・玉突き・追い打ち`, d: $t`1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。ダブルヒットと玉突きは得点が大きく増える。倒した侵入者も少しのあいだその場に倒れたまま残り、罠に当てると「追い打ち」で連続が続く（逃げる子には当たらない）。`,
+  { t: $t`巻き込み・玉突き・追い打ち`, d: $t`1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。ダブルヒットと玉突きは得点が大きく増える。倒した侵入者も3秒ほどその場に倒れたまま残り、罠に当てると「追い打ち」で連続が続く（逃げる子には当たらない）。捕獲の檻で閉じ込めた侵入者に、飛ばした侵入者や振り子刃を当てると、檻ごと遠くまで転がって「大玉突き」になる（威力も得点も大きい）。`,
     draw() { const g = miniGrid(9, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniFoe(g, 4, 1); miniTile(g, 7, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniArrow(g, [4, 1], [7, 1], '#ffb38a'); miniLabel(g, 4, 0, $t`玉突き！`, '#ffb38a'); miniLabel(g, 7, 0, $t`奈落へ！`); miniLabel(g, 2.5, 2, $t`飛ばして、ぶつける`, '#fff4e0'); } },
   { t: $t`跳ね床と奈落`, d: $t`跳ね床は踏んだ侵入者を矢印の向きへ3マス（重装兵は2マス）飛ばす。飛んだ先に罠があれば「連鎖」ボーナス。奈落に落とせば一撃で倒せる。壁にぶつけても追加ダメージ。`,
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniTile(g, 4, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniLabel(g, 4, 0, $t`奈落へ！`); miniLabel(g, 2.5, 2, $t`矢印の向きへ飛ぶ`, '#fff4e0'); } },
@@ -3429,7 +3471,7 @@ const HELP = [
       miniTile(g, 0, 2, 'door'); miniTrap(g, 'warp', 5, 2); miniFoe(g, 6, 2); miniArrow(g, [5, 2], [0, 2], '#b8a8c8', true); miniLabel(g, 3, 1, $t`扉へ戻す`, '#b8a8c8'); } },
   { t: $t`誘いの鈴`, d: $t`侵入者が鈴を踏むと鳴り、少しのあいだ侵入者はみんな鈴へ向かう（逃げる子を追わない）。鈴へ向かう道に罠を置いておくと、集まってくる侵入者を次々に引っかけられる（火柱や落石も、踏まれて発動する）。`,
     draw() { const g = miniGrid(9, 3); for (const [x, y] of [[5, 1], [7, 1], [6, 0], [6, 2]]) miniTile(g, x, y, 'fire'); miniTrap(g, 'bell', 4, 1); miniTrap(g, 'bear', 2, 1); miniTrap(g, 'fire', 6, 1); miniFoe(g, 0, 1); miniFoe(g, 8, 1); miniArrow(g, [0, 1], [2, 1]); miniArrow(g, [8, 1], [6, 1]); miniGirl(g, 8, 0); miniLabel(g, 4, 2, $t`鈴へ向かう道に罠`); } },
-  { t: $t`館の仕掛け`, d: $t`シャンデリア（周り3x3）と槍の石像（上下左右）は、押すと発動する。魔力はいらないが、使うとしばらく待つ。トゲ床は踏んだ侵入者を傷つける。侵入者が近づいたら押そう。`,
+  { t: $t`館の仕掛け`, d: $t`シャンデリア（周り3x3）と槍の石像（上下左右）は、押すと発動する。魔力はいらないが、使うとしばらく待つ。トゲ床は踏んだ侵入者を傷つける。侵入者が近づいたら押そう。大広間や地下牢にあるワイン樽の隣を通った侵入者は、立ち止まって3秒ほど飲み、そのあとしばらく千鳥足で遅くなる。飲んでいる間は動かないので、罠を当てる好機。樽は12秒で満ちる（樽のまわりの赤い輪が残り時間）。`,
     draw() { const g = miniGrid(9, 3);
       for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) miniTile(g, x, y, 'glow');
       const [cx, cy] = g.at(1, 1); hc.save(); hc.translate(cx, cy - 10); hc.scale(2, 2); hc.strokeStyle = '#c9a24a'; hc.lineWidth = 3; hc.beginPath(); hc.ellipse(0, 0, 15, 5, 0, 0, 7); hc.stroke(); hc.fillStyle = '#ffcf6a'; for (let i = 0; i < 5; i++) { const a = i / 5 * 6.283; hc.fillRect(Math.cos(a) * 15 - 1.5, Math.sin(a) * 5 - 8, 3, 6); } hc.restore();
@@ -4380,7 +4422,7 @@ function drawRoomThumb(c, mi) { // 部屋の見取り図を、盤面と同じド
     return;
   }
   const sh = IMG[k], tile = (t, x, y) => x2.drawImage(sh, TILE_IDX[t] * 24, 0, 24, 32, x * s, y * s, s, 32); // 上 8 ドットはみ出すので全体を 8 下げる
-  const floorish = ch => ch === '.' || ch === '^' || ch === 'c' || ch === 'O' || ch === 'S', tall = [];
+  const floorish = ch => ch === '.' || ch === '^' || ch === 'c' || ch === 'O' || ch === 'S' || ch === 'W', tall = [];
   x2.fillStyle = '#1a120f'; x2.fillRect(0, 0, c.width, c.height);
   rows.forEach((r, y) => [...r].forEach((ch, x) => {
     const inner = x > 0 && y > 0 && x < 14 && y < 9;
@@ -4388,7 +4430,7 @@ function drawRoomThumb(c, mi) { // 部屋の見取り図を、盤面と同じド
       tile(((x + y) % 2 ? 'floorB' : 'floorA') + ['', '', '2', '3'][(x * 7 + y * 13 + mi) % 4], x, y);
       if (MAPS[mi].carpet && ch !== '#' && x === 7) x2.drawImage(sh, TILE_IDX.carpet * 24, 8, 24, 24, x * s, y * s + 8, s, s);
       if (ch === '^') tile('spikes', x, y); else if (ch === 'c') tile('emblem', x, y); else if (ch === 'O') tile('pit', x, y);
-      else if (ch === 'S' || ch === '#') tall.push([ch === 'S' ? 'statue' : 'prop', x, y]);
+      else if (ch === 'S' || ch === '#' || ch === 'W') tall.push([ch === 'S' ? 'statue' : ch === 'W' ? 'barrel' : 'prop', x, y]);
     } else {
       tile(y === 0 && rows[1][x] !== '#' ? (x % 3 === 1 && ch !== 'D' ? 'wallFace2' : 'wallFace') : 'wallTop', x, y);
       if (ch === 'D') tile('door', x, y);
