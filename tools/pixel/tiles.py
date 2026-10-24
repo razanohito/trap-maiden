@@ -367,6 +367,29 @@ def cell(im):
     return c
 
 
+def gothic(im):
+    """館の色を初期の落ち着いたゴシックの色合いに寄せる（2026-10-24「紫＋ピンクはない」）。
+    青紫は灰色がかったすみれ色に、桃色はワインレッドに、全体は暗く。金と木と緑は色味を残す"""
+    import colorsys
+    px = im.load()
+    for y in range(im.height):
+        for x in range(im.width):
+            r, g, b, a = px[x, y]
+            if not a:
+                continue
+            h, sat, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+            deg = h * 360
+            if 215 <= deg <= 305:  # 青紫・ラベンダー → 灰色のすみれ色の石
+                h, sat, v = 285 / 360, sat * .32, v * .58
+            elif deg >= 305 or deg < 8:  # 桃色 → ワインレッド
+                h, sat, v = 350 / 360, min(1, sat * 1.1), v * .5
+            else:  # 金・木・緑など
+                sat, v = sat * .8, v * .72
+            r2, g2, b2 = colorsys.hsv_to_rgb(h, sat, v)
+            px[x, y] = (round(r2 * 255), round(g2 * 255), round(b2 * 255), a)
+    return im
+
+
 def build(room):
     R = ROOMS[room]
     tiles = R['make']()
@@ -374,7 +397,7 @@ def build(room):
     for i, k in enumerate(ORDER):
         if k in tiles:
             sheet.alpha_composite(cell(tiles[k]), (i * TS, 0))
-    return sheet
+    return gothic(sheet)
 
 
 def stripes(c, c2, hi, w=4):

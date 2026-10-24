@@ -369,7 +369,6 @@ window.TRAP_EN = {
  "開始位置を床に置いてください": "Place the start on a floor tile",
  "歩ける床が少なすぎます（20マス以上）": "Too few walkable tiles (need 20 or more)",
  "扉（{0},{1}）から開始位置へ歩けません": "Can't walk from the door ({0},{1}) to the start",
- "この画面では全画面にできない。スマホを横にすると盤面が大きくなる": "Fullscreen isn't available here. Turn your phone sideways for a bigger board",
  "全画面を終了": "Exit fullscreen",
  "音: 切": "Sound: Off",
  "タイトルへ": "Title",
