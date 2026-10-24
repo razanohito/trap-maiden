@@ -2782,7 +2782,7 @@ function drawHero() {
     else if (h.moving) { row = dir; col = Math.floor((h.walk || 0) / WALK_STEP) % 4; }
     else if (h.joy > 0) { row = 7; col = Math.floor(t * 9) % 4; } // 喜びのジャンプ
     else if (pinch) row = 6; // 体力が残り1: 涙目でほつれた姿
-    drawPx(k, col, row, left, top, true);
+    drawPx(k, col, row, left, top, false); // 白いふちどりは付けない（絵の暗いふちどりだけで見せる）
     ctx.globalAlpha = 1;
     const head = top + 3 * CHS;
     drawFlawFx(px, head, footY);

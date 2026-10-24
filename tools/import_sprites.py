@@ -13,6 +13,7 @@
 - 侵入者は foe_knight / foe_thief / foe_heavy。男爵 baron と鍵の精 chirin も同じ形で作っておく
 - 女の子4人は、もらった絵が細かい色のにじみだらけで盤面でぼやけて見えたので、
   色を32色に絞り、まわりと色の違う1粒の点を消し、1ドットの暗いふちどりを付けて、敵の絵と同じくっきりした見え方にそろえる
+- ミーナ・ノエル・セシルは、最初のドット絵（10/18）の色合いに寄せて色を置きかえる（RULES）
 - チリンは宙に浮いているので、足もとをそろえず上下の揺れをそのまま残す（横の中央だけそろえる）
 - 確認用の拡大図: tools/sim/out/pixel48_chars.png
 
@@ -154,20 +155,64 @@ def clean(sheet: Image.Image) -> Image.Image:
     return Image.fromarray(out, "RGBA")
 
 
+def rgb2hsv(rgb):
+    """0〜1 の RGB 配列 → 色相(度)・彩度・明るさ"""
+    r,g,b=[rgb[...,i] for i in range(3)]
+    mx=rgb.max(-1); mn=rgb.min(-1); d=mx-mn
+    h=np.zeros_like(mx)
+    m=d>1e-6
+    rm=m&(mx==r); gm=m&(mx==g)&~rm; bm=m&~rm&~gm
+    h[rm]=((g-b)[rm]/d[rm])%6; h[gm]=(b-r)[gm]/d[gm]+2; h[bm]=(r-g)[bm]/d[bm]+4
+    h=h*60; s=np.where(mx>0,d/np.maximum(mx,1e-6),0); return h,s,mx
+def hsv2rgb(h,s,v):
+    """rgb2hsv の逆"""
+    c=v*s; x=c*(1-np.abs((h/60)%2-1)); m=v-c
+    z=np.zeros_like(h); k=(h//60).astype(int)%6
+    R=np.choose(k,[c,x,z,z,x,c]); G=np.choose(k,[x,c,c,x,z,z]); B=np.choose(k,[z,z,x,c,c,x])
+    return np.stack([R+m,G+m,B+m],-1)
+# 10/18 に作った最初のドット絵の色合いに寄せる（ミーナは暗いプラム色の服と金のリボン、ノエルは深緑の服、セシルは少し落ち着かせる）
+# (色相の下限, 上限, 彩度の下限, 明るさの下限, 上限, 新しい色相・彩度・明るさを返す式)。上から順に当てはめる
+RULES={
+ # (hue lo, hue hi, s min, v min, v max) -> (new hue, s func, v func)
+ 'mina':[
+   (300,360,0.30,0.0,1.01, lambda h,s,v:(np.full_like(h,40), np.clip(s*0.9,0,1), v*0.85)),   # pink ribbon -> gold
+   (230,288,0.15,0.0,1.01, lambda h,s,v:(np.full_like(h,335), np.clip(s*0.75,0,1), v*0.55)),# purple dress/hat (bluish purple) -> dark plum
+   (288,300,0.10,0.0,1.01, lambda h,s,v:(h+15, s*0.9, v)),                                   # lavender hair (pinkish purple) -> a bit pinker
+ ],
+ 'noel':[
+   (80,190,0.12,0.0,1.01, lambda h,s,v:(np.full_like(h,105), np.clip(s*1.3+0.2,0,0.75), v*0.5)), # mint -> dark green
+ ],
+ 'cecil':[
+   (0,360,0.0,0.0,1.01, lambda h,s,v:(h, s*0.85, v*0.9)),
+ ],
+}
+def recolor(im, name):
+    """RULES に書いた範囲の色だけを置きかえる"""
+    if name not in RULES: return im
+    a=np.asarray(im.convert('RGBA')).astype(float); rgb=a[...,:3]/255
+    h,s,v=rgb2hsv(rgb); done=np.zeros(h.shape,bool); out=rgb.copy()
+    for lo,hi,smin,vmin,vmax,f,*smax in RULES[name]:  # 7つ目があれば彩度の上限
+        m=(h>=lo)&(h<hi)&(s>=smin)&(s<(smax[0] if smax else 2))&(v>=vmin)&(v<vmax)&~done&(a[...,3]>0)
+        if not m.any(): continue
+        nh,ns,nv=f(h[m],s[m],v[m]); out[m]=hsv2rgb(np.asarray(nh)%360,np.clip(ns,0,1),np.clip(nv,0,1)); done|=m
+    a[...,:3]=out*255
+    return Image.fromarray(np.clip(a,0,255).astype(np.uint8),'RGBA')
+
+
 def build(name: str) -> Image.Image:
     floating = name in FLOATING
-    walk = Image.open(SRC / f"{name}_walk_4dir_48px.png")
+    walk = recolor(Image.open(SRC / f"{name}_walk_4dir_48px.png"), name)
     rows = [fix_row(walk.crop((0, r * F, F * 4, r * F + F)), floating, halo=floating) for r in range(4)]
     if name in MIRROR_RIGHT:
         rows[2] = [im.transpose(Image.FLIP_LEFT_RIGHT) for im in rows[1]]
     rows.append([rows[r][1] for r in range(4)])  # 立ち: 各向きの2コマ目
     hit = SRC / f"{name}_hit_critical_4dir_48px.png"
     if hit.exists():
-        sheet = Image.open(hit)
+        sheet = recolor(Image.open(hit), name)
         rows += [fix_row(sheet.crop((0, r * F, F * 4, r * F + F))) for r in range(2)]
     jump = SRC / f"{name}_jump_4frames_48px.png"
     if jump.exists():
-        rows.append(list(enlarge(fix_row(Image.open(jump).crop((0, 0, F * 4, F)), halo=True), target=42)))
+        rows.append(list(enlarge(fix_row(recolor(Image.open(jump), name).crop((0, 0, F * 4, F)), halo=True), target=42)))
     out = Image.new("RGBA", (F * 4, F * len(rows)))
     for r, cells in enumerate(rows):
         for c, im in enumerate(cells):
