@@ -6,7 +6,7 @@ const path = require('path');
   const b = await chromium.launch({ channel: 'chrome', headless: true });
   const errs = [];
   for (const [nm, w, h] of [['p', 393, 852], ['l', 852, 393]]) {
-    const p = await (await b.newContext({ viewport: { width: w, height: h }, hasTouch: true, isMobile: true })).newPage();
+    const p = await (await b.newContext({ locale: 'ja-JP', viewport: { width: w, height: h }, hasTouch: true, isMobile: true })).newPage();
     p.on('pageerror', e => errs.push(nm + ': ' + e));
     await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/index.html');
     await p.evaluate(() => localStorage.clear()); await p.reload(); await p.waitForTimeout(300);

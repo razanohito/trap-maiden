@@ -7,7 +7,7 @@ const VPS = [['p', 393, 852, true], ['s', 320, 568, true], ['l', 852, 393, true]
   const b = await chromium.launch({ channel: 'chrome', headless: true });
   const errs = [], rows = [];
   for (const [nm, w, h, touch] of VPS) {
-    const p = await (await b.newContext({ viewport: { width: w, height: h }, hasTouch: touch, isMobile: touch })).newPage();
+    const p = await (await b.newContext({ locale: 'ja-JP', viewport: { width: w, height: h }, hasTouch: touch, isMobile: touch })).newPage();
     p.on('pageerror', e => errs.push(nm + ': ' + e));
     await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/index.html');
     await p.evaluate(() => { localStorage.clear(); localStorage.setItem('trapoflily-stages', JSON.stringify({ open: 7, rec: { 1: { best: 9000, stars: 3 }, 2: { best: 8000, stars: 2 }, 3: { best: 7000, stars: 1 }, 4: { best: 7000, stars: 2 }, 5: { best: 7000, stars: 1 }, 6: { best: 7000, stars: 1 } } })); localStorage.setItem('trapoflily-ach', JSON.stringify({ night1: '2026-10-21', combo10: '2026-10-21', fusion: '2026-10-21' })); });
@@ -18,7 +18,7 @@ const VPS = [['p', 393, 852, true], ['s', 320, 568, true], ['l', 852, 393, true]
         const ov = [...document.querySelectorAll('.overlay')].find(o => !o.hidden);
         const panel = ov && ov.querySelector('.panel, .title');
         const over = [], W = innerWidth, H = innerHeight;
-        const skip = el => el.tagName === 'IMG' || el.closest('.ph, .cf-ph, .tart, .kv');
+        const skip = el => el.tagName === 'IMG' || el.closest('.ph, .cf-ph, .tart, .kv, .slist'); // おはなし一覧は中だけスクロールする
         const outside = el => { const rc = el.getBoundingClientRect(); return rc.width && rc.height && (rc.left < -1 || rc.top < -1 || rc.right > W + 1 || rc.bottom > H + 1); };
         if (panel) for (const el of panel.querySelectorAll('*')) { if (skip(el)) continue; const rc = el.getBoundingClientRect(); const pr = panel.getBoundingClientRect(); if (rc.height && el.offsetParent && (rc.bottom > pr.bottom + 1 || rc.right > pr.right + 1)) over.push(el.id || el.className || el.tagName); }
         for (const el of document.querySelectorAll('#trapInfo, #charDetail, #helpText, .lesson, .up, .confirm, .rbig, .result, .medals, .achlist')) { if (el.offsetParent && el.scrollHeight > el.clientHeight + 2 && getComputedStyle(el).overflowY !== 'visible') over.push('切れ:' + (el.id || el.className)); else if (el.offsetParent) for (const c of el.children) { if (c.classList.contains('cf-ph')) continue; if (c.offsetParent && c.scrollHeight > c.clientHeight + 2 && getComputedStyle(c).overflow === 'hidden') over.push('切れ:' + (c.id || c.className)); } }
@@ -34,6 +34,7 @@ const VPS = [['p', 393, 852, true], ['s', 320, 568, true], ['l', 852, 393, true]
     await shot('title');
     await click('#btnStage'); await shot('stages');
     await click('#stg-7'); await shot('sel1');
+    await click('#pick-lily'); await shot('sel1dlg');
     await click('#btnNext1'); await shot('sel2');
     await click('#btnNext2'); await shot('sel3');
     await click('#btnBegin'); await p.waitForTimeout(600);
@@ -50,6 +51,13 @@ const VPS = [['p', 393, 852, true], ['s', 320, 568, true], ['l', 852, 393, true]
     await p.evaluate(() => document.querySelector('#editBack').click()); await click('#btnTrain'); await shot('train');
     await click('#btnTrainBack'); await click('#btnHowto'); await shot('help');
     for (let i = 1; i < 11; i++) { await click('#helpNext'); await shot('help' + (i + 1)); }
+    await click('#helpClose'); await click('#btnSettings'); await shot('settings');
+    await click('#btnCredits'); await shot('credits'); await click('#btnCreditsBack'); await click('#btnSetBack');
+    await click('#btnStory'); await shot('storylist');
+    // おはなし（文字は一度に出す）: 立ち絵が3人並ぶ場面と、一枚もの（手紙）の場面
+    await p.evaluate(() => { localStorage.setItem('trapoflily-textspeed', '3'); window.__wanakan.api.playStory('intro1'); });
+    for (let i = 0; i < 8; i++) await p.evaluate(() => document.querySelector('#storyBox').click());
+    await shot('story'); await p.evaluate(() => window.__wanakan.api.playStory('intro1')); await shot('storycg');
   }
   console.log(rows.join('\n'));
   console.log('pageerror:', errs.length ? errs : 'なし');
