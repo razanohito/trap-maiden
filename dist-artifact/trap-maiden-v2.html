@@ -44,6 +44,11 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--gold-hi);outli
   background:radial-gradient(circle at 40% 35%,#7a6fb4,#4b4481);color:var(--gold-hi);font-size:18px;line-height:1}
 .hbtn svg{width:18px;height:18px}
 .hrow{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto}
+.facewin{flex:none;width:44px;height:44px;border-radius:12px;background:linear-gradient(180deg,#fef7fa,#f2dee7);box-shadow:0 0 0 2px var(--gold-dk),0 2px 4px var(--shade)}
+.facewin.pop{animation:fpop .35s ease-out}@keyframes fpop{0%{transform:scale(1.18)}100%{transform:none}}
+body:not(.playing) .facewin{visibility:hidden}
+@media (orientation:landscape) and (min-height:520px){.facewin{width:64px;height:64px;border-radius:14px}}
+@media (orientation:landscape) and (min-width:1100px) and (min-height:650px){.facewin{width:84px;height:84px}}
 .hearts{display:flex;gap:1px;font-size:18px;line-height:1}
 .hearts span{color:var(--heart);text-shadow:0 1px 0 var(--shade)}
 .hearts span.off{color:rgba(233,223,201,.18);text-shadow:none}
@@ -579,6 +584,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
     <div class="hrow editonly"><button class="back light" id="editBack" type="button">タイトルへ</button><b class="edtitle">部屋づくり</b></div>
     <div class="hrow">
       <button class="hbtn" id="btnPause" type="button" aria-label="メニュー（一時停止）"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 10h12M4 15h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+      <canvas class="facewin" id="faceWin" width="128" height="128" aria-hidden="true"></canvas>
       <div class="hearts" id="hearts" aria-label="体力"></div>
       <div class="vial" aria-label="魔力"><div class="bar" id="manaBar"><i id="manaFill"></i></div><b id="manaText">100/100</b></div>
     </div>
@@ -3588,28 +3594,30 @@ function drawPreview() {
 const WALK_STEP = .34; // 1コマで進む距離（マス）。速さ 3.4 マス/秒で 1コマ約 100ms
 const PIX_ROW = { 2: 0, 3: 1, 1: 2, 0: 3 }; // 向き → スプライトの行（下・左・右・上）
 const SPF = 96; // スプライト1コマの大きさ（盤面には 48px で描く。tools/import_v2.py で作る）
+const HERO_PX = 68; // 盤面での逃げる子の大きさ（マスは 48px）
 function drawHero() {
   const h = G.hero, t = G.time;
   const px = h.x * T + T / 2, py = h.y * T + T / 2 + 2;
   if (h.inv > 0 && Math.floor(t * 18) % 2 === 0) ctx.globalAlpha = .35;
   const pk = CH().art;
   if (pk && imgReady(`${pk}_walk`) && imgReady(`${pk}_idle`)) { // 盤面の絵の歩行（4方向×4コマ、止まると待機姿勢）
-    const footY = Math.round(h.y * T + T / 2 + 18), row = PIX_ROW[h.facing];
-    const left = Math.round(px - 24) + (h.freeze > 0 ? Math.round(Math.sin(t * 70) * 1.5) : 0), top = footY - 46 + (h.doze > 0 ? Math.round(Math.sin(t * 2.4) + 1) : 0) - (h.joy > 0 ? Math.round(Math.abs(Math.sin(t * 9)) * 8) : 0);
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 9, 3);
+    const footY = Math.round(h.y * T + T / 2 + 18), row = PIX_ROW[h.facing], D = HERO_PX; // 逃げる子はマスより大きく描く（見失わないように）
+    const left = Math.round(px - D / 2) + (h.freeze > 0 ? Math.round(Math.sin(t * 70) * 1.5) : 0), top = Math.round(footY - D * 46 / 48) + (h.doze > 0 ? Math.round(Math.sin(t * 2.4) + 1) : 0) - (h.joy > 0 ? Math.round(Math.abs(Math.sin(t * 9)) * 8) : 0);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 9 * D / 48, 3 * D / 48);
     const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.filter = 'drop-shadow(0 0 1.2px rgba(254,248,242,.95)) drop-shadow(0 1px 2px rgba(30,26,57,.7))'; // 明るいふちどりで床から浮かせる
     const pinch = G.hp <= 1 && imgReady(`${pk}_pinch`); // 体力が残り1: 服がほつれたピンチの姿
-    if ((h.hurt > 0 || h.trip > 0) && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[pinch ? `${pk}_pinch` : `${pk}_hit`], row * SPF, 0, SPF, SPF, left, top, 48, 48); // 被弾してのけぞる
-    else if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * SPF, row * SPF, SPF, SPF, left, top, 48, 48);
-    else if (h.joy > 0 && imgReady(`${pk}_jump`)) ctx.drawImage(IMG[`${pk}_jump`], (Math.floor(t * 9) % 4) * SPF, 0, SPF, SPF, left, top, 48, 48); // 喜びのジャンプ
-    else if (pinch) ctx.drawImage(IMG[`${pk}_pinch`], row * SPF, 0, SPF, SPF, left, top, 48, 48);
-    else ctx.drawImage(IMG[`${pk}_idle`], row * SPF, 0, SPF, SPF, left, top, 48, 48);
-    ctx.imageSmoothingEnabled = sm; ctx.globalAlpha = 1;
+    if ((h.hurt > 0 || h.trip > 0) && imgReady(`${pk}_hit`)) ctx.drawImage(IMG[pinch ? `${pk}_pinch` : `${pk}_hit`], row * SPF, 0, SPF, SPF, left, top, D, D); // 被弾してのけぞる
+    else if (h.moving && !(h.trip > 0)) ctx.drawImage(IMG[`${pk}_walk`], (Math.floor((h.walk || 0) / WALK_STEP) % 4) * SPF, row * SPF, SPF, SPF, left, top, D, D);
+    else if (h.joy > 0 && imgReady(`${pk}_jump`)) ctx.drawImage(IMG[`${pk}_jump`], (Math.floor(t * 9) % 4) * SPF, 0, SPF, SPF, left, top, D, D); // 喜びのジャンプ
+    else if (pinch) ctx.drawImage(IMG[`${pk}_pinch`], row * SPF, 0, SPF, SPF, left, top, D, D);
+    else ctx.drawImage(IMG[`${pk}_idle`], row * SPF, 0, SPF, SPF, left, top, D, D);
+    ctx.imageSmoothingEnabled = sm; ctx.globalAlpha = 1; ctx.filter = 'none';
     drawFlawFx(px, top, footY);
     if (h.joy > 0) drawJoy(px, top);
     if (G.hp <= 1) { // ピンチ: 歩いている間も汗の粒で分かるように
       const k = (G.time * 1.6) % 1; ctx.globalAlpha = 1 - k; ctx.fillStyle = '#c5e4ed'; ctx.strokeStyle = '#19131e'; ctx.lineWidth = 1;
-      const sx = px + 13, sy = top + 12 + k * 8; ctx.beginPath(); ctx.moveTo(sx, sy - 5); ctx.quadraticCurveTo(sx + 4, sy + 1, sx, sy + 2); ctx.quadraticCurveTo(sx - 4, sy + 1, sx, sy - 5); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
+      const sx = px + 13 * D / 48, sy = top + 12 * D / 48 + k * 8; ctx.beginPath(); ctx.moveTo(sx, sy - 5); ctx.quadraticCurveTo(sx + 4, sy + 1, sx, sy + 2); ctx.quadraticCurveTo(sx - 4, sy + 1, sx, sy - 5); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
     }
     drawHeroBubble(px, top - 6 - 6 * (TS - 1));
     return;
@@ -4003,7 +4011,35 @@ function draw() {
 // ---------- HTML の HUD ----------
 const el = { hearts: $('#hearts'), manaFill: $('#manaFill'), manaText: $('#manaText'), wave: $('#sWave'), score: $('#sScore'), soul: $('#sSoul'), traps: $('#sTraps'), smart: $('#sSmart'), phase: $('#sPhase'), time: $('#sTime') };
 let hudCache = '';
+// 状態帯の顔の窓: 逃げる子の表情（ふつう・笑顔・驚き・涙目・ドヤ顔）を、盤面の小さな絵の代わりに大きく見せる
+const FACE_CROP = { lily: [.5, .07, .42], mina: [.5, .16, .42], noel: [.5, .06, .42], cecil: [.5, .06, .44] }; // 顔の中心 x・上端 y・幅（立ち絵に対する割合）
+let faceShown = '', faceHold = null;
+function faceMood() {
+  const h = G.hero;
+  if (h.hurt > 0 || h.trip > 0 || h.freeze > 0) return '_surprised';
+  if (G.clearT >= 0 || h.joy > 0) return '_happy';
+  if (G.hp <= 1) return '_teary';
+  if (G.combo >= 5 && G.time - G.lastHit <= COMBO_WINDOW) return '_smug';
+  return '';
+}
+function updateFace() {
+  if (G.state !== 'play') return;
+  const ch = CH(), art = ch && ch.art; if (!art) return;
+  let mood = faceMood();
+  if (mood) { faceHold = { mood, until: G.time + 1.2 }; } // 驚き・笑顔などは 1.2 秒は見せる（一瞬で戻ると読めない）
+  else if (faceHold && G.time < faceHold.until) mood = faceHold.mood;
+  let key = `portrait_${art}${mood}`;
+  if (!imgReady(key)) { key = `portrait_${art}`; mood = ''; if (!imgReady(key)) return; }
+  if (key === faceShown) return;
+  const cv2 = $('#faceWin'), c = cv2.getContext('2d'), im = IMG[key], [cx, ty, sw] = FACE_CROP[art] || [.5, .06, .44];
+  const w = im.naturalWidth, side = w * sw;
+  c.clearRect(0, 0, 128, 128); c.imageSmoothingQuality = 'high';
+  c.drawImage(im, cx * w - side / 2, ty * im.naturalHeight, side, side, 0, 0, 128, 128);
+  if (faceShown && faceShown.split('_')[1] === art) { cv2.classList.remove('pop'); void cv2.offsetWidth; cv2.classList.add('pop'); } // 表情が変わったら小さく跳ねる
+  faceShown = key;
+}
 function updateHud() {
+  updateFace();
   const maxHp = stat.maxHp(), mm = stat.maxMana();
   const key = [G.hp, maxHp, Math.floor(G.mana), mm, G.wave, G.score, G.soul, G.traps.size, stat.limit(), G.selected, G.springDir, smartL(), G.char, G.phase, Math.ceil(G.nightT), Math.ceil(G.prepT || 0), G.state].join('|');
   if (G.state === 'over') el.time.textContent = '–';
@@ -5328,6 +5364,6 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, lang: LANG, missing: () => [...missing], api: { playStory, storySkip, openStoryList, storyState: () => story && { ids: story.ids.slice(), si: story.si, li: story.li, wait: story.wait }, storySeen: () => Object.assign({}, storySeen), sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, showTrain: () => openTrain(), view: () => ({ VW, VH, VX, VY }), setRun: (m, n) => { runMode = m; runStage = n; }, mapName: () => MAPS[mapIdx].name, editTool: k => { etool = k; }, editAt: (x, y) => editAt({ x, y }), customRow: y => MAPS[CUSTOM_MAP].rows[y], showAch: () => { renderAch(); showOv('ovAch'); }, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
+if (location.hostname === '127.0.0.1') window.__wanakan = { get G() { return G; }, lang: LANG, missing: () => [...missing], api: { face: () => faceShown, playStory, storySkip, openStoryList, storyState: () => story && { ids: story.ids.slice(), si: story.si, li: story.li, wait: story.wait }, storySeen: () => Object.assign({}, storySeen), sfx, doors: () => DOORS.map(d => d.slice()), activateDevice, deviceReach, update, startRun, startWave, beginDefense, placeTrap, trapCd, isFav, triggerAt, gameOver, showTrain: () => openTrain(), view: () => ({ VW, VH, VX, VY }), setRun: (m, n) => { runMode = m; runStage = n; }, mapName: () => MAPS[mapIdx].name, editTool: k => { etool = k; }, editAt: (x, y) => editAt({ x, y }), customRow: y => MAPS[CUSTOM_MAP].rows[y], showAch: () => { renderAch(); showOv('ovAch'); }, bgm: () => [bgmKey, !!bgmVoice, Object.keys(bgmBuf).join('+'), AC && AC.state].join(' '), setPaused: v => { paused = v; }, UPS, upCost, TRAPS, CHARS, CHAR_ORDER, TRAP_ORDER, trapCost, isFloor, canPlace, foeWalk, bfs, DIRS, stat, smartL } };
 })();
 </script>
