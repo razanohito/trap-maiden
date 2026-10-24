@@ -11,6 +11,8 @@
     女の子:   0〜3行 歩き  4行 立ち（各向きの2コマ目）  5行 やられ  6行 ピンチ  7行 喜びジャンプ
     それ以外: 0〜3行 歩き  4行 立ち
 - 侵入者は foe_knight / foe_thief / foe_heavy。男爵 baron と鍵の精 chirin も同じ形で作っておく
+- 女の子4人は、もらった絵が細かい色のにじみだらけで盤面でぼやけて見えたので、
+  色を32色に絞り、まわりと色の違う1粒の点を消し、1ドットの暗いふちどりを付けて、敵の絵と同じくっきりした見え方にそろえる
 - チリンは宙に浮いているので、足もとをそろえず上下の揺れをそのまま残す（横の中央だけそろえる）
 - 確認用の拡大図: tools/sim/out/pixel48_chars.png
 
@@ -29,6 +31,9 @@ PREVIEW = ROOT / "tools" / "sim" / "out" / "pixel48_chars.png"
 F, FOOT = 48, 46
 FLOATING = {"chirin"}  # 足もとをそろえないキャラ（宙に浮いている）
 MIRROR_RIGHT = {"chirin", "lily"}  # 右向きの行だけ小さく描かれていたので、左向きを左右反転して使う
+CLEAN = {"lily", "mina", "noel", "cecil"}  # 色を絞ってふちどりを付けるキャラ
+COLORS = 32  # 色を絞るときの色数
+LINE = (34, 20, 34)  # ふちどりの色（敵の絵のふちどりに近い、黒に近い紫）
 
 
 def blobs(a: np.ndarray):
@@ -113,11 +118,40 @@ def enlarge(cells: list[Image.Image], target: int) -> list[Image.Image]:
         return cells
     out = []
     for fig in figs:
-        fig = fig.resize((round(fig.width * k), round(fig.height * k)), Image.LANCZOS)  # 元の絵がなめらかなので、なめらかに拡大する
+        fig = fig.resize((round(fig.width * k), round(fig.height * k)), Image.NEAREST)
         wide = Image.new("RGBA", (F * 2, F * 2))  # はみ出しても困らないよう広い台に置いてから 48x48 を切り出す
         wide.alpha_composite(fig, (F - fig.width // 2, F + FOOT - fig.height))
         out.append(wide.crop((F // 2, F, F // 2 + F, F * 2)))
     return out
+
+
+def clean(sheet: Image.Image) -> Image.Image:
+    """シート全体を COLORS 色に絞り、ぽつんと1粒だけ違う色の点をまわりの色にそろえ、コマごとに暗いふちどりを付ける"""
+    a = np.asarray(sheet.convert("RGBA")).copy()
+    op = a[..., 3] > 100
+    pix = Image.fromarray(a[op][:, :3].reshape(-1, 1, 3).astype(np.uint8))
+    pal = pix.quantize(COLORS, method=Image.FASTOCTREE, kmeans=3, dither=Image.NONE)
+    q = Image.fromarray(a[..., :3]).quantize(palette=pal, dither=Image.NONE)
+    idx = np.asarray(q).copy(); P = np.array(q.getpalette()[:COLORS * 3]).reshape(-1, 3)
+    H, W = idx.shape
+    for _ in range(2):
+        new = idx.copy()
+        for y, x in zip(*np.nonzero(op)):
+            nb = [idx[y + dy, x + dx] for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                  if 0 <= y + dy < H and 0 <= x + dx < W and op[y + dy, x + dx]]
+            if len(nb) < 3 or idx[y, x] in nb:
+                continue
+            vals, cnt = np.unique(nb, return_counts=True)
+            if cnt.max() >= 3:
+                new[y, x] = vals[cnt.argmax()]
+        idx = new
+    out = np.zeros_like(a); out[op, :3] = P[idx[op]]; out[op, 3] = 255
+    ring = np.zeros_like(op)  # ふちどり（コマの境目をまたがない）
+    ring[1:, :] |= op[:-1, :]; ring[:-1, :] |= op[1:, :]; ring[:, 1:] |= op[:, :-1]; ring[:, :-1] |= op[:, 1:]
+    ys, xs = np.mgrid[0:H, 0:W]
+    edge = (ys % F == 0) | (ys % F == F - 1) | (xs % F == 0) | (xs % F == F - 1)
+    out[ring & ~op & ~edge] = (*LINE, 255)
+    return Image.fromarray(out, "RGBA")
 
 
 def build(name: str) -> Image.Image:
@@ -138,7 +172,7 @@ def build(name: str) -> Image.Image:
     for r, cells in enumerate(rows):
         for c, im in enumerate(cells):
             out.paste(im, (c * F, r * F))
-    return out
+    return clean(out) if name in CLEAN else out
 
 
 def main():

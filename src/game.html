@@ -2761,7 +2761,7 @@ function pxSil(k) {
   return (PX_SIL[k] = c);
 }
 function drawPx(k, col, row, left, top, outline) { // キャラの絵の1コマを 1.5倍で描く。outline: 1ドットの明るいふちどり
-  const s = PXC, D = PXC * CHS, sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; // 元の絵のなめらかさを残して拡大する
+  const s = PXC, D = PXC * CHS, sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false; // ぼかさずに拡大する（高解像度の画面ではちょうど3倍）
   if (outline) { const sil = pxSil(k); for (const [dx, dy] of [[-CHS, 0], [CHS, 0], [0, -CHS], [0, CHS]]) ctx.drawImage(sil, col * s, row * s, s, s, left + dx, top + dy, D, D); }
   ctx.drawImage(IMG[k], col * s, row * s, s, s, left, top, D, D);
   ctx.imageSmoothingEnabled = sm;
