@@ -1042,8 +1042,8 @@ Object.assign(ART, {
 const ROOM_KEYS = ['hall', 'library', 'gallery', 'greenhouse', 'dungeon', 'chapel', 'attic', 'clock']; // MAPS の順
 // 盤面のドット絵（tools/pixel/*.py で作る）。キャラは 1コマ 32 ドット、部屋は 1マス 24 ドット。盤面には 2倍で描く
 Object.assign(ART, {
-  px_lily: '../art/pixel/lily.png', px_mina: '../art/pixel/mina.png', px_noel: '../art/pixel/noel.png', px_cecil: '../art/pixel/cecil.png',
-  px_foe_knight: '../art/pixel/foe_knight.png', px_foe_thief: '../art/pixel/foe_thief.png', px_foe_heavy: '../art/pixel/foe_heavy.png',
+  px_lily: '../art/pixel48/lily.png', px_mina: '../art/pixel48/mina.png', px_noel: '../art/pixel48/noel.png', px_cecil: '../art/pixel48/cecil.png',
+  px_foe_knight: '../art/pixel48/foe_knight.png', px_foe_thief: '../art/pixel48/foe_thief.png', px_foe_heavy: '../art/pixel48/foe_heavy.png',
   px_room_hall: '../art/pixel/room_hall.png', px_room_library: '../art/pixel/room_library.png', px_room_gallery: '../art/pixel/room_gallery.png', px_room_greenhouse: '../art/pixel/room_greenhouse.png',
   px_room_dungeon: '../art/pixel/room_dungeon.png', px_room_chapel: '../art/pixel/room_chapel.png', px_room_attic: '../art/pixel/room_attic.png', px_room_clock: '../art/pixel/room_clock.png',
 });
@@ -1474,7 +1474,8 @@ function roomPat(b, kind) { // 部屋の絵の模様（1マス 96px の絵を 48
   const k = `room_${roomKey()}_${kind}`; if (!imgReady(k)) return null;
   const pat = b.createPattern(IMG[k], 'repeat'); pat.setTransform(new DOMMatrix().scale(.5)); return pat;
 }
-const PXC = 32, PXS = 2; // キャラのドット絵の1コマ（ドット）と、盤面での倍率
+const PXS = 2; // 罠などをドット風に描くときの倍率
+const PXC = 48, CHS = 1.5; // キャラのドット絵の1コマ（48ドット）と、盤面での倍率（高解像度の画面ではちょうど3倍になる）
 const TILE_IDX = { floorA: 0, floorB: 1, wallTop: 2, wallFace: 3, prop: 4, door: 5, spikes: 6, emblem: 7, pit: 8, statue: 9, carpet: 10, torch: 11, floorA2: 12, floorB2: 13, floorA3: 14, floorB3: 15, wallFace2: 16 }; // tools/pixel/tiles.py のコマの順
 function buildBgPx(b, sh) { // ドット絵の部屋。1マス 24x32 ドットのコマ（下 24 行がマス、上 8 行は背の高い物のはみ出し）
   b.imageSmoothingEnabled = false;
@@ -2760,8 +2761,8 @@ function pxSil(k) {
   return (PX_SIL[k] = c);
 }
 function drawPx(k, col, row, left, top, outline) { // ドット絵の1コマを 2倍で（ぼかさずに）描く。outline: 1ドットの明るいふちどり
-  const s = PXC, D = PXC * PXS, sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
-  if (outline) { const sil = pxSil(k); for (const [dx, dy] of [[-PXS, 0], [PXS, 0], [0, -PXS], [0, PXS]]) ctx.drawImage(sil, col * s, row * s, s, s, left + dx, top + dy, D, D); }
+  const s = PXC, D = PXC * CHS, sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
+  if (outline) { const sil = pxSil(k); for (const [dx, dy] of [[-CHS, 0], [CHS, 0], [0, -CHS], [0, CHS]]) ctx.drawImage(sil, col * s, row * s, s, s, left + dx, top + dy, D, D); }
   ctx.drawImage(IMG[k], col * s, row * s, s, s, left, top, D, D);
   ctx.imageSmoothingEnabled = sm;
 }
@@ -2771,9 +2772,9 @@ function drawHero() {
   if (h.inv > 0 && Math.floor(t * 18) % 2 === 0) ctx.globalAlpha = .35;
   const pk = CH().art;
   if (pk && imgReady(`px_${pk}`)) { // ドット絵（行: 0〜3 歩き 下・左・右・上、4 立ち、5 やられ、6 ピンチ、7 喜びジャンプ）
-    const k = `px_${pk}`, D = PXC * PXS, footY = Math.round(h.y * T + T / 2 + 18), dir = PIX_ROW[h.facing];
-    const left = Math.round(px - D / 2) + (h.freeze > 0 ? (Math.sin(t * 70) > 0 ? PXS : -PXS) : 0);
-    const top = footY - D + 2 + (h.doze > 0 && Math.sin(t * 2.4) > 0 ? PXS : 0) - (h.joy > 0 ? Math.round(Math.abs(Math.sin(t * 9)) * 4) * PXS : 0);
+    const k = `px_${pk}`, D = PXC * CHS, footY = Math.round(h.y * T + T / 2 + 18), dir = PIX_ROW[h.facing];
+    const left = Math.round(px - D / 2) + (h.freeze > 0 ? (Math.sin(t * 70) > 0 ? CHS : -CHS) : 0);
+    const top = footY - D + 2 + (h.doze > 0 && Math.sin(t * 2.4) > 0 ? CHS : 0) - (h.joy > 0 ? Math.round(Math.abs(Math.sin(t * 9)) * 4) * CHS : 0);
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 12, 4);
     const pinch = G.hp <= 1;
     let col = dir, row = 4;
@@ -2783,7 +2784,7 @@ function drawHero() {
     else if (pinch) row = 6; // 体力が残り1: 涙目でほつれた姿
     drawPx(k, col, row, left, top, true);
     ctx.globalAlpha = 1;
-    const head = top + 4 * PXS;
+    const head = top + 3 * CHS;
     drawFlawFx(px, head, footY);
     if (h.joy > 0) drawJoy(px, head);
     if (pinch) { // ピンチ: 歩いている間も汗の粒で分かるように
@@ -2932,7 +2933,7 @@ function drawFoe(f) {
   const sc = f.type === 'heavy' ? 1.18 : 1;
   const key = `foe_${f.type}`;
   if (imgReady(`px_${key}`)) { // ドット絵（行: 0〜3 歩き、4 立ち）
-    const k = `px_${key}`, D = PXC * PXS, footY = Math.round(f.y * T + T / 2 + 18), dir = PIX_ROW[f.lastDir ?? 2];
+    const k = `px_${key}`, D = PXC * CHS, footY = Math.round(f.y * T + T / 2 + 18), dir = PIX_ROW[f.lastDir ?? 2];
     const left = Math.round(px - D / 2), top = Math.round(footY - D + 2 - f.z);
     ctx.save();
     if (f.dead) ctx.globalAlpha = Math.max(0, 1 - f.deadT / .5);
@@ -2945,7 +2946,7 @@ function drawFoe(f) {
     drawPx(k, col, row, left, top, false);
     if (f.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = f.down > 0 ? .25 : .6; drawPx(k, col, row, left, top, false); }
     ctx.restore();
-    const hy = top + 2 * PXS;
+    const hy = top + 2 * CHS;
     if (!f.dead && !(f.down > 0) && f.hp < f.maxhp) {
       const w = 26, x = px - w / 2;
       ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, hy - 1, w + 2, 5);
