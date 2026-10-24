@@ -1,13 +1,21 @@
-"""ChatGPT に作ってもらった 48px のスプライトシートを、ゲーム用に整えて art/sprites/ に入れる。
+"""ChatGPT・Gemini に描いてもらった 48px のスプライトシートを、盤面用の 1 枚のシートにまとめる → art/pixel48/<名前>.png
 
 もらったシートは、コマがマスの境目をまたいでずれていることがあるので、
 1 行ぶん（192x48）から人物のかたまりを4つ取り出し、それぞれをマスの中央・足もと y=46 にそろえ直す。
 
-- 入力: art-src/sprites48/<名前>_walk_4dir_48px.png（4列×4行、行は 下・左・右・上）
-        art-src/sprites48/<名前>_hit_critical_4dir_48px.png（1行目＝被弾、2行目＝ピンチ）
-- 出力: art/sprites/<名前>_walk.png（4列×4行）、<名前>_idle.png（各行の2コマ目を待機姿勢に）、
-        <名前>_hit.png・<名前>_pinch.png（4列×1行。下・左・右・上）、<名前>_jump.png（喜びのジャンプ、正面4コマ）
-- 侵入者は foe_knight / foe_thief / foe_heavy（歩行だけ）
+- 入力（art-src/sprites48/）:
+    <名前>_walk_4dir_48px.png         4列×4行。行は 下・左・右・上 向き、列は歩きの4コマ
+    <名前>_hit_critical_4dir_48px.png  4列×2行。列は 下・左・右・上、1行目＝被弾、2行目＝ピンチ（女の子だけ）
+    <名前>_jump_4frames_48px.png       4列×1行。喜びのジャンプ（女の子だけ）
+- 出力: art/pixel48/<名前>.png（1コマ 48x48、横4コマ）
+    女の子:   0〜3行 歩き  4行 立ち（各向きの2コマ目）  5行 やられ  6行 ピンチ  7行 喜びジャンプ
+    それ以外: 0〜3行 歩き  4行 立ち
+- 侵入者は foe_knight / foe_thief / foe_heavy。男爵 baron と鍵の精 chirin も同じ形で作っておく
+- 女の子4人は、もらった絵が細かい色のにじみだらけで盤面でぼやけて見えたので、
+  色を32色に絞り、まわりと色の違う1粒の点を消し、1ドットの暗いふちどりを付けて、敵の絵と同じくっきりした見え方にそろえる
+- ミーナ・ノエル・セシルは、最初のドット絵（10/18）の色合いに寄せて色を置きかえる（RULES）
+- チリンは宙に浮いているので、足もとをそろえず上下の揺れをそのまま残す（横の中央だけそろえる）
+- 確認用の拡大図: tools/sim/out/pixel48_chars.png
 
 使い方: python tools/import_sprites.py
 """
@@ -19,8 +27,14 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "art-src" / "sprites48"
-OUT = ROOT / "art" / "sprites"
+OUT = ROOT / "art" / "pixel48"
+PREVIEW = ROOT / "tools" / "sim" / "out" / "pixel48_chars.png"
 F, FOOT = 48, 46
+FLOATING = {"chirin"}  # 足もとをそろえないキャラ（宙に浮いている）
+MIRROR_RIGHT = {"chirin", "lily"}  # 右向きの行だけ小さく描かれていたので、左向きを左右反転して使う
+CLEAN = {"lily", "mina", "noel", "cecil"}  # 色を絞ってふちどりを付けるキャラ
+COLORS = 32  # 色を絞るときの色数
+LINE = (34, 20, 34)  # ふちどりの色（敵の絵のふちどりに近い、黒に近い紫）
 
 
 def blobs(a: np.ndarray):
@@ -42,9 +56,28 @@ def blobs(a: np.ndarray):
     return out
 
 
-def fix_row(row: Image.Image) -> list[Image.Image]:
+def dehalo(rgba: np.ndarray) -> np.ndarray:
+    """ふちの白いにじみ（白い縁取り）を取る。透明に接している、白っぽくて色の薄い画素を2周ぶん消す"""
+    a = rgba.copy()
+    for _ in range(2):
+        op = a[..., 3] > 30
+        edge = np.zeros_like(op)
+        edge[1:, :] |= ~op[:-1, :]; edge[:-1, :] |= ~op[1:, :]
+        edge[:, 1:] |= ~op[:, :-1]; edge[:, :-1] |= ~op[:, 1:]
+        rgb = a[..., :3].astype(int)
+        light = (rgb.min(-1) > 100) & (rgb.max(-1) - rgb.min(-1) < 45)
+        kill = op & edge & light
+        if not kill.any():
+            break
+        a[kill] = 0
+    return a
+
+
+def fix_row(row: Image.Image, floating=False, halo=False) -> list[Image.Image]:
     """1行（192x48）から人物を4つ取り出し、48x48 の中央・足もとをそろえて返す"""
     rgba = np.asarray(row.convert("RGBA"))
+    if halo:
+        rgba = dehalo(rgba)
     alpha = rgba[..., 3] > 30
     parts = blobs(alpha)
     big = sorted(parts, key=lambda b: b[0], reverse=True)
@@ -52,6 +85,8 @@ def fix_row(row: Image.Image) -> list[Image.Image]:
     # 小さなかけら（光の粒・持ち物の先など）は、いちばん近い人物に付ける
     groups = [[f] for f in figs]
     for p in big[4:]:  # 人物のすぐそば（4px 以内）のかけらだけ残し、隣のコマからはみ出た切れ端は捨てる
+        if p[1].max() >= F - 1 or p[1].min() <= 0:  # 行の上下のふちに付いた切れ端は、上下のコマからはみ出たもの
+            continue
         def gap(f):
             return max(f[2].min() - p[2].max(), p[2].min() - f[2].max(), f[1].min() - p[1].max(), p[1].min() - f[1].max(), 0)
         k = min(range(4), key=lambda i: gap(figs[i]))
@@ -63,7 +98,10 @@ def fix_row(row: Image.Image) -> list[Image.Image]:
         cell = np.zeros((F, F, 4), np.uint8)
         low = ys >= ys.min() + (ys.max() - ys.min()) * 0.55  # 下半身の中心で左右をそろえる
         cx = int(round(xs[low].mean())) if low.any() else int(round(xs.mean()))
-        dx, dy = 24 - cx, FOOT - ys.max()
+        dx = 24 - cx
+        dy = 0 if floating else FOOT - ys.max()
+        if floating and ys.max() + dy > FOOT:  # 浮いていても、コマの下にはみ出さない
+            dy = FOOT - ys.max()
         for y, x in zip(ys, xs):
             nx, ny = x + dx, y + dy
             if 0 <= nx < F and 0 <= ny < F:
@@ -72,32 +110,134 @@ def fix_row(row: Image.Image) -> list[Image.Image]:
     return cells
 
 
+def enlarge(cells: list[Image.Image], target: int) -> list[Image.Image]:
+    """小さく描かれたコマ（喜びのジャンプは歩きより一回り小さかった）を、いちばん背の高いコマが target ドットになるまで拡大する。
+    どのコマも同じ倍率にして、足もと y=46・横の中央にそろえ直す"""
+    figs = [c.crop(c.getbbox()) for c in cells]
+    k = min(1.4, target / max(f.height for f in figs))
+    if k <= 1.02:
+        return cells
+    out = []
+    for fig in figs:
+        fig = fig.resize((round(fig.width * k), round(fig.height * k)), Image.NEAREST)
+        wide = Image.new("RGBA", (F * 2, F * 2))  # はみ出しても困らないよう広い台に置いてから 48x48 を切り出す
+        wide.alpha_composite(fig, (F - fig.width // 2, F + FOOT - fig.height))
+        out.append(wide.crop((F // 2, F, F // 2 + F, F * 2)))
+    return out
+
+
+def clean(sheet: Image.Image) -> Image.Image:
+    """シート全体を COLORS 色に絞り、ぽつんと1粒だけ違う色の点をまわりの色にそろえ、コマごとに暗いふちどりを付ける"""
+    a = np.asarray(sheet.convert("RGBA")).copy()
+    op = a[..., 3] > 100
+    pix = Image.fromarray(a[op][:, :3].reshape(-1, 1, 3).astype(np.uint8))
+    pal = pix.quantize(COLORS, method=Image.FASTOCTREE, kmeans=3, dither=Image.NONE)
+    q = Image.fromarray(a[..., :3]).quantize(palette=pal, dither=Image.NONE)
+    idx = np.asarray(q).copy(); P = np.array(q.getpalette()[:COLORS * 3]).reshape(-1, 3)
+    H, W = idx.shape
+    for _ in range(2):
+        new = idx.copy()
+        for y, x in zip(*np.nonzero(op)):
+            nb = [idx[y + dy, x + dx] for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                  if 0 <= y + dy < H and 0 <= x + dx < W and op[y + dy, x + dx]]
+            if len(nb) < 3 or idx[y, x] in nb:
+                continue
+            vals, cnt = np.unique(nb, return_counts=True)
+            if cnt.max() >= 3:
+                new[y, x] = vals[cnt.argmax()]
+        idx = new
+    out = np.zeros_like(a); out[op, :3] = P[idx[op]]; out[op, 3] = 255
+    ring = np.zeros_like(op)  # ふちどり（コマの境目をまたがない）
+    ring[1:, :] |= op[:-1, :]; ring[:-1, :] |= op[1:, :]; ring[:, 1:] |= op[:, :-1]; ring[:, :-1] |= op[:, 1:]
+    ys, xs = np.mgrid[0:H, 0:W]
+    edge = (ys % F == 0) | (ys % F == F - 1) | (xs % F == 0) | (xs % F == F - 1)
+    out[ring & ~op & ~edge] = (*LINE, 255)
+    return Image.fromarray(out, "RGBA")
+
+
+def rgb2hsv(rgb):
+    """0〜1 の RGB 配列 → 色相(度)・彩度・明るさ"""
+    r,g,b=[rgb[...,i] for i in range(3)]
+    mx=rgb.max(-1); mn=rgb.min(-1); d=mx-mn
+    h=np.zeros_like(mx)
+    m=d>1e-6
+    rm=m&(mx==r); gm=m&(mx==g)&~rm; bm=m&~rm&~gm
+    h[rm]=((g-b)[rm]/d[rm])%6; h[gm]=(b-r)[gm]/d[gm]+2; h[bm]=(r-g)[bm]/d[bm]+4
+    h=h*60; s=np.where(mx>0,d/np.maximum(mx,1e-6),0); return h,s,mx
+def hsv2rgb(h,s,v):
+    """rgb2hsv の逆"""
+    c=v*s; x=c*(1-np.abs((h/60)%2-1)); m=v-c
+    z=np.zeros_like(h); k=(h//60).astype(int)%6
+    R=np.choose(k,[c,x,z,z,x,c]); G=np.choose(k,[x,c,c,x,z,z]); B=np.choose(k,[z,z,x,c,c,x])
+    return np.stack([R+m,G+m,B+m],-1)
+# 10/18 に作った最初のドット絵の色合いに寄せる（ミーナは暗いプラム色の服と金のリボン、ノエルは深緑の服、セシルは少し落ち着かせる）
+# (色相の下限, 上限, 彩度の下限, 明るさの下限, 上限, 新しい色相・彩度・明るさを返す式)。上から順に当てはめる
+RULES={
+ # (hue lo, hue hi, s min, v min, v max) -> (new hue, s func, v func)
+ 'mina':[
+   (300,360,0.30,0.0,1.01, lambda h,s,v:(np.full_like(h,40), np.clip(s*0.9,0,1), v*0.85)),   # pink ribbon -> gold
+   (230,288,0.15,0.0,1.01, lambda h,s,v:(np.full_like(h,335), np.clip(s*0.75,0,1), v*0.55)),# purple dress/hat (bluish purple) -> dark plum
+   (288,300,0.10,0.0,1.01, lambda h,s,v:(h+15, s*0.9, v)),                                   # lavender hair (pinkish purple) -> a bit pinker
+ ],
+ 'noel':[
+   (80,190,0.12,0.0,1.01, lambda h,s,v:(np.full_like(h,105), np.clip(s*1.3+0.2,0,0.75), v*0.5)), # mint -> dark green
+ ],
+ 'cecil':[
+   (0,360,0.0,0.0,1.01, lambda h,s,v:(h, s*0.85, v*0.9)),
+ ],
+}
+def recolor(im, name):
+    """RULES に書いた範囲の色だけを置きかえる"""
+    if name not in RULES: return im
+    a=np.asarray(im.convert('RGBA')).astype(float); rgb=a[...,:3]/255
+    h,s,v=rgb2hsv(rgb); done=np.zeros(h.shape,bool); out=rgb.copy()
+    for lo,hi,smin,vmin,vmax,f,*smax in RULES[name]:  # 7つ目があれば彩度の上限
+        m=(h>=lo)&(h<hi)&(s>=smin)&(s<(smax[0] if smax else 2))&(v>=vmin)&(v<vmax)&~done&(a[...,3]>0)
+        if not m.any(): continue
+        nh,ns,nv=f(h[m],s[m],v[m]); out[m]=hsv2rgb(np.asarray(nh)%360,np.clip(ns,0,1),np.clip(nv,0,1)); done|=m
+    a[...,:3]=out*255
+    return Image.fromarray(np.clip(a,0,255).astype(np.uint8),'RGBA')
+
+
+def build(name: str) -> Image.Image:
+    floating = name in FLOATING
+    walk = recolor(Image.open(SRC / f"{name}_walk_4dir_48px.png"), name)
+    rows = [fix_row(walk.crop((0, r * F, F * 4, r * F + F)), floating, halo=floating) for r in range(4)]
+    if name in MIRROR_RIGHT:
+        rows[2] = [im.transpose(Image.FLIP_LEFT_RIGHT) for im in rows[1]]
+    rows.append([rows[r][1] for r in range(4)])  # 立ち: 各向きの2コマ目
+    hit = SRC / f"{name}_hit_critical_4dir_48px.png"
+    if hit.exists():
+        sheet = recolor(Image.open(hit), name)
+        rows += [fix_row(sheet.crop((0, r * F, F * 4, r * F + F))) for r in range(2)]
+    jump = SRC / f"{name}_jump_4frames_48px.png"
+    if jump.exists():
+        rows.append(list(enlarge(fix_row(recolor(Image.open(jump), name).crop((0, 0, F * 4, F)), halo=True), target=42)))
+    out = Image.new("RGBA", (F * 4, F * len(rows)))
+    for r, cells in enumerate(rows):
+        for c, im in enumerate(cells):
+            out.paste(im, (c * F, r * F))
+    return clean(out) if name in CLEAN else out
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    sheets = []
     for path in sorted(SRC.glob("*_walk_4dir_48px.png")):
         name = path.name.replace("_walk_4dir_48px.png", "")
-        sheet = Image.open(path)
-        walk = Image.new("RGBA", (F * 4, F * 4)); idle = Image.new("RGBA", (F * 4, F))
-        for r in range(4):
-            cells = fix_row(sheet.crop((0, r * F, F * 4, r * F + F)))
-            for c, im in enumerate(cells):
-                walk.paste(im, (c * F, r * F))
-            idle.paste(cells[1], (r * F, 0))
-        walk.save(OUT / f"{name}_walk.png"); idle.save(OUT / f"{name}_idle.png")
-        hit_path = SRC / f"{name}_hit_critical_4dir_48px.png"
-        if hit_path.exists():  # 1行目＝被弾、2行目＝ピンチ（体力が残り1のとき。服がほつれるだけで肌の露出はない）
-            for r, suffix in ((0, "hit"), (1, "pinch")):
-                row = Image.new("RGBA", (F * 4, F))
-                for c, im in enumerate(fix_row(Image.open(hit_path).crop((0, r * F, F * 4, r * F + F)))):
-                    row.paste(im, (c * F, 0))
-                row.save(OUT / f"{name}_{suffix}.png")
-        jump_path = SRC / f"{name}_jump_4frames_48px.png"
-        if jump_path.exists():  # 喜びのジャンプ（正面4コマ）。足もとをそろえ、跳ねる高さはゲームの中で付ける
-            jump = Image.new("RGBA", (F * 4, F))
-            for c, im in enumerate(fix_row(Image.open(jump_path))):
-                jump.paste(im, (c * F, 0))
-            jump.save(OUT / f"{name}_jump.png")
-        print(name, "ok", "(被弾あり)" if hit_path.exists() else "", "(喜びあり)" if jump_path.exists() else "")
+        sh = build(name)
+        sh.save(OUT / f"{name}.png", optimize=True)
+        sheets.append(sh)
+        print(name, sh.size)
+    W = sum(s.width for s in sheets) + 8 * (len(sheets) + 1)
+    H = max(s.height for s in sheets) + 16
+    pv = Image.new("RGBA", (W, H), (58, 52, 80, 255))
+    x = 8
+    for s in sheets:
+        pv.alpha_composite(s, (x, 8)); x += s.width + 8
+    PREVIEW.parent.mkdir(parents=True, exist_ok=True)
+    pv.resize((W * 3, H * 3), Image.NEAREST).save(PREVIEW)
+    print("確認用:", PREVIEW.relative_to(ROOT).as_posix())
 
 
 if __name__ == "__main__":

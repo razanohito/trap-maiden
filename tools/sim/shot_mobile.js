@@ -5,11 +5,11 @@ const path = require('path');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const errors = [];
   for (const [name, vp] of [['portrait', { width: 393, height: 852 }], ['landscape', { width: 852, height: 393 }], ['landscape_safari', { width: 852, height: 340 }]]) {
-    const ctx = await browser.newContext({ viewport: vp, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    const ctx = await browser.newContext({ locale: 'ja-JP', viewport: vp, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
     const p = await ctx.newPage();
     p.on('pageerror', e => errors.push(String(e)));
     await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/index.html');
-    await p.tap('#btnStart'); await p.tap('#btnNext1'); await p.tap('#btnNext2'); await p.tap('#btnBegin');
+    await p.tap('#btnStart'); await p.tap('#pick-lily'); await p.tap('#btnNext1'); await p.tap('#btnNext2'); await p.tap('#btnBegin');
     await p.waitForTimeout(800);
     await p.screenshot({ path: path.join(__dirname, 'out', `mobile_prep_${name}.png`) });
     await p.evaluate(() => window.__wanakan.api.beginDefense());

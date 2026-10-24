@@ -1,0 +1,20 @@
+"AppBuild"
+{
+	"AppID" "0000000"
+	"Desc" "Trap of Lily Windows build"
+	"ContentRoot" "..\..\desktop\dist\win-unpacked\"
+	"BuildOutput" ".\output\"
+	"Depots"
+	{
+		"0000001"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "*"
+				"DepotPath" "."
+				"recursive" "1"
+			}
+			"FileExclusion" "*.pdb"
+		}
+	}
+}

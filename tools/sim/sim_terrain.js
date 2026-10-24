@@ -2,7 +2,7 @@
 const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
-  const ctx = await browser.newContext({ viewport: { width: 1100, height: 950 } });
+  const ctx = await browser.newContext({ locale: 'ja-JP', viewport: { width: 1100, height: 950 } });
   const p = await ctx.newPage();
   const errors = [];
   p.on('pageerror', e => errors.push(String(e)));

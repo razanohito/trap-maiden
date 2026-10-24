@@ -5,11 +5,11 @@ const path = require('path');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const errors = [];
   for (const [name, vp] of [['320x568', { width: 320, height: 568 }], ['375x667', { width: 375, height: 667 }], ['844x390', { width: 844, height: 390 }]]) {
-    const ctx = await browser.newContext({ viewport: vp, isMobile: true, hasTouch: true });
+    const ctx = await browser.newContext({ locale: 'ja-JP', viewport: vp, isMobile: true, hasTouch: true });
     const p = await ctx.newPage();
     p.on('pageerror', e => errors.push(String(e)));
     await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/index.html');
-    await p.tap('#btnStart'); await p.tap('#btnNext1'); await p.tap('#btnNext2'); await p.tap('#btnBegin'); await p.waitForTimeout(500);
+    await p.tap('#btnStart'); await p.tap('#pick-lily'); await p.tap('#btnNext1'); await p.tap('#btnNext2'); await p.tap('#btnBegin'); await p.waitForTimeout(500);
     await p.tap('#btnPause'); const helpVisible = await p.isVisible('#btnHelp'); // 遊び方はメニューの中
     await p.tap('#btnHelp');
     await p.waitForTimeout(200);
