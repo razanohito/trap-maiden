@@ -35,10 +35,11 @@ const path = require('path');
     // 相性: 重装兵に火柱（1.5倍）と落石（0.6倍）
     G.mana = 999; A.placeTrap(2, 1, 'fire'); G.traps.get('2,1').cd = 0; const h1 = foe('heavy', 2, 1); G.foes.push(h1); A.triggerAt(2, 1, h1, false);
     res.相性_火柱 = 300 - h1.hp; res.表示 = G.texts.map(t => t.text).filter(t => /効いた|いまひとつ/.test(t)).join(',');
-    // 合成: 火柱の上に落石
+    // 合成: 火柱の上に落石（合成はセシルだけ。ここだけセシルに替えて、得意の爆薬が混ざらないよう落石を得意から外して見る）
+    G.char = 'cecil'; const favWas = W.api.CHARS.cecil.fav; W.api.CHARS.cecil.fav = 'none';
     G.mana = 999; A.placeTrap(2, 1, 'rock'); const tr = G.traps.get('2,1'); res.合成 = tr.type + ':' + tr.name + ':' + tr.parts.join('+');
     tr.cd = 0; const h2 = foe('knight', 2, 1); G.foes.push(h2); A.triggerAt(2, 1, h2, false); for (let i = 0; i < 30; i++) A.update(1 / 30);
-    res.合成ダメージ = 300 - h2.hp; G.foes.length = 0;
+    res.合成ダメージ = 300 - h2.hp; G.foes.length = 0; G.char = 'lily'; W.api.CHARS.cecil.fav = favWas;
     // 火薬樽: 踏んだ直後は無傷、1秒後に爆発
     G.mana = 999; A.placeTrap(9, 8, 'keg'); G.traps.get('9,8').cd = 0; const t1 = foe('thief', 9, 8); G.foes.push(t1); A.triggerAt(9, 8, t1, false);
     res.樽_直後 = 300 - t1.hp; for (let i = 0; i < 40; i++) A.update(1 / 30); res.樽_1秒後 = 300 - t1.hp; G.foes.length = 0;

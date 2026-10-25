@@ -395,7 +395,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .soulpill{font:800 15px var(--f-display);color:#574a62;margin-left:auto}
 .shopgrid{flex:1;min-height:0;max-height:380px;width:100%;align-self:center;margin:auto 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(min-content,1fr);gap:10px}
 @media (max-width:360px){.up .d{display:none}#helpDots{gap:3px}#helpDots i{width:6px;height:6px}.howto .nav .btn{padding:6px 10px}}
-@media (max-height:600px),(max-width:360px){.up{padding:5px 8px;gap:1px}.up .d{font-size:11.5px;line-height:1.3}.up .n{font-size:14px}#shopNote{display:none}}
+@media (max-height:600px),(max-width:360px){.up{padding:5px 8px;gap:1px}.up .d{font-size:11.5px;line-height:1.3}.up .n{font-size:14px}#shopNote,#growNote{display:none}}
 @media (orientation:portrait){.shopgrid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;max-height:none;align-content:center}.up{max-height:none}}
 .up{display:flex;flex-direction:column;justify-content:center;gap:4px;max-height:180px;min-height:min-content;min-height:0;padding:8px 10px;cursor:pointer;text-align:left;border-radius:6px;color:var(--parch);
   background:linear-gradient(180deg,var(--iron-hi),var(--iron));border:1px solid rgba(201,162,74,.45)}
@@ -469,6 +469,10 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .comicbar{display:flex;align-items:center;gap:8px;justify-content:flex-end;width:min(720px,100%);margin:0 auto}
 .comicbar #comicSkip{margin-right:auto}
 .comicpg{font:700 12px var(--f-body);color:var(--muted);white-space:nowrap}
+#ovGrow .pfoot .btn{white-space:nowrap;flex:none}#growLeftNote{line-height:1.3}
+@media (orientation:portrait){#growLeftNote{font-size:11px}#ovGrow .up{gap:2px;padding:6px 10px}}
+.growbtn.new{box-shadow:0 0 0 2px #e8c46a,0 0 12px rgba(255,210,122,.7)}
+.up .lv i{font-style:normal;color:var(--gold-hi)}
 .comicbtn{border:1px solid var(--wax);background:#fff;color:var(--berry);border-radius:999px;padding:4px 10px;min-height:32px;font:700 12px var(--f-body);cursor:pointer;margin-right:8px}
 @media (max-width:360px){.comicbar .btn{padding:6px 10px;font-size:13px}}
 
@@ -653,7 +657,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 
 <div class="overlay" id="ovStages" hidden>
   <div class="panel">
-    <div class="phead"><button class="back" id="btnStagesBack" type="button">タイトルへ</button><h2>ステージ</h2><span class="meta" id="stageInfo"></span></div>
+    <div class="phead"><button class="back" id="btnStagesBack" type="button">タイトルへ</button><h2>ステージ</h2><span class="meta"><button class="comicbtn growbtn" id="btnStagesGrow" type="button">育成</button><span id="stageInfo"></span></span></div>
     <div class="pbody" id="stageGrid"></div>
     <div class="chapnav" id="chapNav"></div>
   </div>
@@ -707,6 +711,15 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
   </div>
 </div>
 
+<div class="overlay" id="ovGrow" hidden>
+  <div class="panel">
+    <div class="phead"><button class="back" id="btnGrowBack" type="button">戻る</button><h2>育成</h2><span class="soulpill">ポイント <span id="growPt">0</span></span></div>
+    <p class="sm" id="growNote">ステージの★1つで1ポイント。4人みんなに効き、ステージで遊ぶとき館の備えに上乗せされる。振り直しは何度でもできる。</p>
+    <div class="shopgrid" id="growGrid"></div>
+    <div class="pfoot"><span class="note" id="growLeftNote"></span><button class="btn sub" id="btnGrowReset" type="button">振り直す</button><button class="btn" id="btnGrowDone" type="button">決める</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="ovOver" hidden>
   <div class="panel">
     <div class="phead"><button class="back" id="btnRetry2" type="button" hidden>ステージ一覧</button></div>
@@ -727,7 +740,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
       </div>
       <p class="sm" id="rBest"></p>
     </div>
-    <div class="pfoot"><button class="btn" id="btnRetry" type="button">もう一度</button></div>
+    <div class="pfoot"><button class="btn sub growbtn" id="btnGrow" type="button" hidden>育成</button><button class="btn" id="btnRetry" type="button">もう一度</button></div>
   </div>
 </div>
 
@@ -1008,6 +1021,7 @@ const DEFAULT_LOADOUT = ['bear','spring','rock','fire'];
 // 逃げる子。数値は自動ボットで全員の到達夜・得点が近くなるように調整した
 const CHARS = {
   lily:  { name:$t`リリィ`, title:$t`百合の館の主`, art:'lily', hp:3, speed:3.4, regen:8, maxMana:110, power:1, smart:0,
+           trait:{ name:$t`館の鐘`, desc:$t`捕まりそうになると50%の確率で館の鐘が鳴り、侵入者が仕掛けのそばへ引き寄せられる（1ステージ1回）` },
            profile:$t`芯のあるお嬢さま。14歳で館の仮の主になった。体力・足・魔力はどれも平均的`, flawName:$t`強がり`, flaw:$t`侵入者がすぐ近くに来ると、平気なふりをして一瞬立ち止まる`,
            lure:[$t`こちらへどうぞ`, $t`足もとにお気をつけて`, $t`ついていらして`], lureFav:$t`扉までお帰りくださいませ`, ready:$t`館の主として、引きません`, joy:[$t`朝です。鍵束も無事です`, $t`お見事でした、罠師さん`, $t`ふふっ、当然の結果です`], win:$t`館の主として、当然の結果です。……ふふっ`, lose:$t`……口惜しい。もう一度、お願いします`,
            caught:$t`放しなさい！`, nice:[$t`お見事です、罠師さん`, $t`さすがです`, $t`今のは見事でした`], help:$t`罠師さん、今です！`, fav:'warp', passive:{ name:$t`館の鍵番`, cd:3, desc:$t`送り返しの陣の再装填が3秒、威力が約2倍になり、送り返した侵入者は扉の前で2秒半動けない` },
@@ -1019,11 +1033,13 @@ const CHARS = {
            caught:$t`やだぁ、はなしてぇ`, nice:[$t`わぁ、ナイスだよぉ`, $t`ぽかぽか燃えたねぇ`, $t`罠師さん、すごぉい`], help:$t`罠師さぁん、たすけてぇ`, fav:'fire', passive:{ name:$t`炎の見習い`, desc:$t`火柱の十字が2マスずつ伸び（9マス）、威力も1.5倍になる` },
            look:{ hair:'#c9b4ec', hairD:'#9f86d0', dress:'#a48ad8', ribbon:'#f08aa8', eye:'#4fa88e' } },
   noel:  { name:$t`ノエル`, title:$t`お姉さんメイド`, art:'noel', hp:4, speed:3.0, regen:6.8, maxMana:100, power:1, smart:0,
+           trait:{ name:$t`ついでのお掃除`, desc:$t`歩くと、ときどき通ったマスを磨いて、1回きりの氷床を置いていく（魔力いらず・罠の数に入らない）` },
            profile:$t`館のメイド。丈夫で体力が多い。足は少し遅く、魔力も溜まりにくい`, flawName:$t`ドジ`, flaw:$t`侵入者から逃げて走っていると、たまにつまずいて止まる`,
            lure:[$t`お客さま、こちらへ`, $t`お足元にご注意を`, $t`お通りはこちらです`], lureFav:$t`床は磨いてありますので`, ready:$t`お支度、整いました`, joy:[$t`お片付け完了です！`, $t`お屋敷は無事です！`, $t`お嬢さま、朝でございます`], win:$t`お屋敷、ぴかぴかのまま守れました！`, lose:$t`し、失礼いたしました……次こそは……！`,
            caught:$t`お手をお離しください！`, nice:[$t`さすがでございます！`, $t`お見事です！`, $t`きれいに片付きました`], help:$t`罠師さま、お願いいたします！`, fav:'ice', passive:{ name:$t`磨き上げた床`, cost:10, desc:$t`氷床の魔力が10になり、滑って壁にぶつかった侵入者は大ダメージを受けて1秒半目を回す` },
            look:{ hair:'#a8744e', hairD:'#7e5236', dress:'#8fd0b0', ribbon:'#ecdfc3', eye:'#6a9a5a' } },
   cecil: { name:$t`セシル`, title:$t`ボクっ娘錬金術師`, art:'cecil', hp:3, speed:3.4, regen:5.6, maxMana:100, power:1, smart:0,
+           trait:{ name:$t`罠の錬成`, desc:$t`置いた罠の上に別の罠を重ねて「合成」できる（合成はセシルだけの技）` },
            profile:$t`地下の実験室を借りている錬金術師。爆薬の扱いが得意。体力・足は平均的で、魔力は溜まりにくい`, flawName:$t`好奇心`, flaw:$t`暇だと扉や仕掛けを覗きに行ってしまう（侵入者の来る扉に近づくことも）`,
            lure:[$t`ほらほら、こっち！`, $t`ボクの実験に付き合ってよ`, $t`そこ踏んでみて！`], lureFav:$t`上、気をつけてね`, ready:$t`よーし、ボクの実験開始だね！`, joy:[$t`大成功！`, $t`この仕掛け、すてきだね！`, $t`ふふん、計算どおり！`], win:$t`実験は大成功！ 次はもっと派手にいこうね！`, lose:$t`あれ？ ボクの計算、ちょっと違ったかな……`,
            caught:$t`ボク、つかまらないよ！`, nice:[$t`いいね、計算どおり！`, $t`今の、きれいに決まったね！`, $t`どーん！`], help:$t`ねえ、そろそろ出番だよ！`, fav:'rock', passive:{ name:$t`爆薬仕込み`, cost:30, desc:$t`落石の魔力が30になり、爆薬入りで威力1.5倍。落ちた場所の周り3x3もまとめて吹き飛ばす` },
@@ -1178,8 +1194,8 @@ const LESSONS = [
     text: $t`跳ね床の矢印を奈落へ向けるか、氷床で奈落まで滑らせれば一撃。つむじ風で奈落の近くへ寄せるのも手。` },
   { id: 'chain', short: $t`連鎖3回`, name: $t`スムーズに運ぼう`, goal: $t`飛ばした先の罠を作動させる（連鎖）を3回`, kind: 'chains', n: 3, traps: ['spring', 'ice', 'bear', 'fire'], keep: 4,
     text: $t`跳ね床や氷床で飛ばした先に罠を置いておくと「連鎖」。運んだ先で止めて、焼く流れを作ろう。` },
-  { id: 'fusion', short: $t`合成を3回`, name: $t`罠を合成しよう`, goal: $t`合成した罠を3回作動させる`, kind: 'fusionFired', n: 3, traps: ['bear', 'rock', 'fire', 'caltrop'], keep: 4,
-    text: $t`置いた罠の上に別の罠を置くと合成。1マスで2つの罠が続けて作動し、少し強くなる。火柱＋落石＝溶岩落とし。` },
+  { id: 'fusion', short: $t`合成を3回`, name: $t`罠を合成しよう`, goal: $t`合成した罠を3回作動させる`, kind: 'fusionFired', n: 3, traps: ['bear', 'rock', 'fire', 'caltrop'], keep: 4, char: 'cecil',
+    text: $t`合成はセシルだけの技。置いた罠の上に別の罠を置くと合成。1マスで2つの罠が続けて作動し、少し強くなる。火柱＋落石＝溶岩落とし。` },
   { id: 'weak', short: $t`効いた！を5回`, name: $t`弱点を突こう`, goal: $t`「効いた！」を5回出す`, kind: 'weakHits', n: 5, traps: ['fire', 'caltrop', 'bear', 'keg'], keep: 4,
     text: $t`騎士は火柱、盗賊はまきびし・トラバサミ、重装兵は火柱と火薬樽に弱い。来る侵入者に合わせて罠を選ぶ。` },
   { id: 'crash', short: $t`玉突き3回`, name: $t`玉突きを決めよう`, goal: $t`飛ばした侵入者を別の侵入者にぶつける（玉突き）を3回`, kind: 'crashes', n: 3, traps: ['spring', 'ice', 'bell', 'bear'], keep: 5,
@@ -1268,7 +1284,7 @@ function openTrain() { // 練習の一覧
   audio();
   $('#lessonList').innerHTML = LESSONS.map((L, i) => $t`<button type="button" class="lesson${lessonDoneRec[L.id] ? ' done' : ''}" data-i="${i}"><b>${lessonDoneRec[L.id] ? '✓ ' : ''}${L.name}</b><span class="lg">目標: ${L.goal}</span><span class="ls">${L.short}</span><span class="lt">${L.text}</span></button>`).join('')
     + $t`<button type="button" class="lesson free" id="lessonFree"><b>自由に練習</b><span class="lg">逃げる子と罠を選んで、好きなだけ試す</span><span class="ls">好きなだけ試す</span><span class="lt">魔力は無限、逃げる子は傷つかない。メニューから部屋も変えられる。</span></button>`;
-  $('#lessonList').querySelectorAll('.lesson[data-i]').forEach(b => b.onclick = () => { lesson = LESSONS[+b.dataset.i]; runMode = 'training'; startRun(sel.char, lesson.traps, true); });
+  $('#lessonList').querySelectorAll('.lesson[data-i]').forEach(b => b.onclick = () => { lesson = LESSONS[+b.dataset.i]; runMode = 'training'; startRun(lesson.char || sel.char, lesson.traps, true); });
   $('#lessonFree').onclick = () => { lesson = null; runMode = 'training'; openSelect(); };
   $('#trainCount').textContent = $t`クリア ${LESSONS.filter(L => lessonDoneRec[L.id]).length} / ${LESSONS.length}`;
   showOv('ovTrain');
@@ -1282,9 +1298,41 @@ const stageWave = n => Math.min(10, 1 + Math.floor((n - 1) * 9 / 39)); // 侵入
 let stageRec = { open: 1, rec: {} };
 try { const v = JSON.parse(localStorage.getItem('trapoflily-stages') || 'null'); if (v && v.open) stageRec = v; } catch (e) {}
 function saveStages() { try { localStorage.setItem('trapoflily-stages', JSON.stringify(stageRec)); } catch (e) {} }
+// 育成: ステージの★1つで1ポイント。好きな能力に振り、ステージで遊ぶとき館の備えに上乗せする（4人共通・振り直し自由）
+let growth = { up: {} };
+try { const v = JSON.parse(localStorage.getItem('trapoflily-growth') || 'null'); if (v && v.up) growth = v; } catch (e) {}
+function saveGrowth() { try { localStorage.setItem('trapoflily-growth', JSON.stringify(growth)); } catch (e) {} }
+const growCost = lv => 1 + Math.floor(lv / 2); // 1,1,2,2,3,3 ポイント
+const growEarned = () => Object.values(stageRec.rec).reduce((a, r) => a + (r.stars || 0), 0);
+const growSpent = () => UPS.reduce((a, u) => { for (let i = 0; i < (growth.up[u.id] || 0); i++) a += growCost(i); return a; }, 0);
+const growLeft = () => growEarned() - growSpent();
+let growBack = null;
+function openGrow(back) { growBack = back; renderGrow(); showOv('ovGrow'); }
+function renderGrow() {
+  const left = growLeft();
+  $('#growPt').textContent = left;
+  $('#growLeftNote').textContent = $t`集めた★ ${growEarned()}　使ったポイント ${growSpent()}`;
+  const grid = $('#growGrid'); grid.innerHTML = '';
+  for (const u of UPS) {
+    const lv = growth.up[u.id] || 0, maxed = lv >= u.max, cost = growCost(lv);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'up'; b.id = 'grow-' + u.id;
+    b.disabled = maxed || left < cost;
+    b.innerHTML = $t`<span class="n">${u.name}</span><span class="d">${u.desc}</span><span class="lv">段階 <i>${lv}</i> / ${u.max}</span><span class="c">${maxed ? $t`これ以上は強くできない` : $t`ポイント ` + cost}</span>`;
+    b.addEventListener('click', () => {
+      if (maxed || growLeft() < cost) return;
+      growth.up[u.id] = lv + 1; saveGrowth(); sfx.kill(); renderGrow();
+      const again = $('#grow-' + u.id); if (again && !again.disabled) again.focus();
+    });
+    grid.append(b);
+  }
+  $('#btnGrowReset').disabled = !growSpent();
+  refreshGrowBtns();
+}
+function refreshGrowBtns() { const n = UPS.some(u => (growth.up[u.id] || 0) < u.max && growCost(growth.up[u.id] || 0) <= growLeft()); $('#btnGrow').classList.toggle('new', n); $('#btnStagesGrow').classList.toggle('new', n); }
 const smartL = () => Math.min(5, G.up.smart + CH().smart);
 // 得意な罠（逃げる子ごとのパッシブ）。魔力・再装填が変わるものは passive.cost / passive.cd に書く
 const isFav = type => CH().fav === type;
+const trapCount = () => { let n = 0; for (const t of G.traps.values()) if (!t.free) n++; return n; }; // ノエルが置いていく氷床は数えない
 const trapCost = type => isFav(type) && CH().passive.cost ? CH().passive.cost : TRAPS[type].cost;
 const trapCd = type => (isFav(type) && CH().passive.cd ? CH().passive.cd : TRAPS[type].cd) * stat.cd();
 function favText(x, y) { addText(x, y - 1.6, CH().passive.name, '#f1d98e', 14); }
@@ -1744,14 +1792,15 @@ function placeTrap(x, y, type) {
   const def = TRAPS[type];
   if (G.guide && runMode === 'training') { const st = GUIDE[G.guide.i]; const want = st && st.hl.tile && G.guide[st.hl.tile]; if (G.guide.i < 3 && (!want || want[0] !== x || want[1] !== y || type !== st.hl.slot && G.guide.i === 2 || G.guide.i === 1 && type !== 'bear')) { say($t`光っているマスに置こう`); sfx.bad(); return; } }
   if (!canPlace(x, y)) { say($t`そこには置けない`); sfx.bad(); return; }
-  const key = x + ',' + y, old = G.traps.get(key);
+  const key = x + ',' + y; let old = G.traps.get(key);
+  if (old && old.free) { G.traps.delete(key); old = null; } // ノエルの氷床の上には、ふつうに置ける
   if (old && (old.type === type || (old.type === 'fusion' && old.parts.includes(type)))) {
     const back = Math.floor(old.paid / 2);
     G.traps.delete(key); G.removedCd[key] = { cd: old.cd, at: G.time }; G.mana = Math.min(stat.maxMana(), G.mana + back);
     say($t`${old.type === 'fusion' ? old.name : def.name}を撤去した（魔力 +${back}）`); sfx.bad(); return;
   }
   if (old && old.type === 'fusion') { say($t`合成した罠には、もう重ねられない（入っている罠のボタンで撤去）`); sfx.bad(); return; }
-  if (old) { // 合成: 2つの罠が1マスで続けて作動する（少し強くなり、罠の数は1つのまま）
+  if (old && G.char === 'cecil') { // 合成（セシルだけ）: 2つの罠が1マスで続けて作動する（少し強くなり、罠の数は1つのまま）
     const cost = trapCost(type);
     if (G.mana < cost) { say($t`魔力が足りない`); sfx.bad(); return; }
     G.mana -= cost;
@@ -1764,15 +1813,15 @@ function placeTrap(x, y, type) {
   }
   const under = G.foes.find(f => !f.dead && !(f.down > 0) && !f.fly && Math.round(f.x) === x && Math.round(f.y) === y);
   if (under && !def.direct) { say(G.loadout.includes('caltrop') ? $t`侵入者の足もとには置けない（まきびしなら置ける）` : $t`侵入者の足もとには置けない`); sfx.bad(); return; }
-  if (!old && G.traps.size >= stat.limit()) { say($t`罠は${stat.limit()}個まで。同じ罠を押すと撤去できる`); sfx.bad(); return; }
+  if (!old && trapCount() >= stat.limit()) { say($t`罠は${stat.limit()}個まで。同じ罠を押すと撤去できる`); sfx.bad(); return; }
   const refund = old ? Math.floor(old.paid / 2) : 0, cost = trapCost(type);
   if (G.mana + refund < cost) { say($t`魔力が足りない`); sfx.bad(); return; }
   G.mana = Math.min(stat.maxMana(), G.mana + refund - cost);
   const rm = G.removedCd[key], rmCd = rm ? rm.cd - (G.time - rm.at) : 0;
-  const cd = Math.max(.6, old ? old.cd : rmCd); // 置き直しても（撤去してすぐ置いても）前の罠の再装填は引き継ぐ
+  const cd = Math.max(isFav(type) ? .3 : .6, old ? old.cd : rmCd); // 得意な罠は早く置ける // 置き直しても（撤去してすぐ置いても）前の罠の再装填は引き継ぐ
   delete G.removedCd[key];
   const bonusCount = [...G.traps.values()].filter(t => t.bonus).length;
-  const bonus = old ? old.bonus : G.traps.size >= baseLimit() && bonusCount < G.phaseBonus; // フェイズで増えた枠に置いた罠
+  const bonus = old ? old.bonus : trapCount() >= baseLimit() && bonusCount < G.phaseBonus; // フェイズで増えた枠に置いた罠
   G.traps.set(key, { type, x, y, dir: G.springDir, cd, cdMax: cd, snap: 0, anim: .25, at: G.time, bonus, paid: cost });
   if (def.direct && under && !old && rmCd <= 0) { G.traps.get(key).cd = 0; triggerAt(x, y, under, false); G.directHits = (G.directHits || 0) + 1; } // 足もとに直接置いたら、すぐ刺さる（撤去したばかりの場所は再装填を待つ）
   sfx.place();
@@ -1836,6 +1885,7 @@ function banner(title, sub) { G.bannerTitle = title; G.bannerSub = sub; G.banner
 function startWave(n, opt = {}) {
   Object.assign(G.hero, { doze: 0, peek: null, trip: 0, freeze: 0, confused: 0, idle: 0 }); // 弱点や混乱を次の夜に持ち越さない
   G.wave = n; G.hpScale = 1 + .13 * (n - 1);
+  G.lilyBell = false; // リリィの館の鐘は夜（ステージ）ごとに1回
   const mi = opt.map ?? Math.floor((n - 1) / 5) % 2; // チャレンジは大広間と東の書庫
   let moved = false;
   if (mi !== mapIdx) { // 部屋を移る: 罠は置き直し
@@ -2137,6 +2187,7 @@ function triggerAt(x, y, f, chained) {
   tr.cdMax = tr.cd = tr.type === 'fusion' ? Math.max(trapCd(tr.parts[0]), trapCd(tr.parts[1])) * 1.15 : trapCd(tr.type); tr.anim = .35;
   if (chained) { G.score += 50 * Math.max(1, G.combo); G.chains = (G.chains || 0) + 1; addText(x, y - 1.1, $t`連鎖！`, '#f1d98e', 22); }
   const it = G.items.find(i => i.x === x && i.y === y); if (it) takeItem(it, true); // 罠でアイテムを取ると2倍
+  if (tr.free) G.traps.delete(x + ',' + y); // ノエルの氷床は1回きり
   if (tr.type !== 'fusion') { fireTrap(tr, tr.type, x, y, f); return; }
   addText(x, y - 1.7, tr.name, '#e8c46a', 16); G.fusionFired = (G.fusionFired || 0) + 1; if (addStat('fusionFired') >= 20) achieve('fusion20');
   fireTrap(tr, tr.parts[0], x, y, f, 1.3);
@@ -2430,7 +2481,9 @@ function updateHero(dt) {
     const stepLen = dt * stat.speed() * (h.confused > 0 ? .8 : 1);
     h.prog += stepLen; h.walk = (h.walk || 0) + stepLen; h.stillT = 0;
     if (h.prog >= 1) {
+      const px = h.tx, py = h.ty;
       h.tx = h.nx; h.ty = h.ny; h.prog -= 1; h.moving = false;
+      if (G.char === 'noel') noelPolish(px, py);
       if (G.char === 'noel' && fdist(h.tx, h.ty) <= 6 && Math.random() < .035) { h.trip = .7; h.prog = 0; heroBubble($t`わわっ`, .9); flawShow(); } // ノエルのドジ
     }
   }
@@ -2448,6 +2501,39 @@ function updateHero(dt) {
   }
   h.x = h.moving ? lerp(h.tx, h.nx, h.prog) : h.tx;
   h.y = h.moving ? lerp(h.ty, h.ny, h.prog) : h.ty;
+}
+// ノエルの特性: 歩いたあとのマスに、ときどき1回きりの氷床を置いていく（魔力いらず・罠の数に入らない）
+const POLISH_CHANCE = .15, POLISH_CD = 4, POLISH_LIFE = 15;
+function noelPolish(x, y) {
+  if (G.phase <= 0 || G.state !== 'play' || runMode === 'training' || G.time < (G.polishT || 0) || Math.random() >= POLISH_CHANCE) return;
+  if (!canPlace(x, y) || G.traps.has(x + ',' + y) || G.foes.some(f => !f.dead && Math.round(f.x) === x && Math.round(f.y) === y)) return;
+  G.polishT = G.time + POLISH_CD; G.polished = (G.polished || 0) + 1;
+  G.traps.set(x + ',' + y, { type: 'ice', x, y, dir: 0, cd: .3, cdMax: .3, snap: 0, anim: .25, at: G.time, bonus: false, paid: 0, free: true, life: POLISH_LIFE });
+  addText(x, y - .9, $t`ぴかぴか`, '#d6f0fa', 13); burst(x, y, '#d6f0fa', 8, 60);
+}
+// リリィの特性: 捕まりそうになると、50%で館の鐘が鳴って侵入者を仕掛けのそばへ集める（1ステージ1回）
+const BELL_CHANCE = .5, BELL_RETRY = 2.5, BELL_TIME = 4;
+function lilyBell() {
+  const h = G.hero;
+  if (G.lilyBell || G.phase <= 0 || G.state !== 'play' || runMode === 'training' || h.inv > 0 || G.time < (G.bellRollT || 0)) return;
+  const near = G.foes.filter(f => !f.dead && !(f.down > 0) && !f.fly && Math.hypot(f.x - h.x, f.y - h.y) < 1.5);
+  if (!near.length) return;
+  G.bellRollT = G.time + BELL_RETRY;
+  if (Math.random() >= BELL_CHANCE) return;
+  // 鳴らす場所: 逃げる子から離れた仕掛け（押せるシャンデリアを優先）。仕掛けが無い部屋は遠くの床
+  const hx = Math.round(h.x), hy = Math.round(h.y), spots = [];
+  for (const dv of G.devices) {
+    const tiles = foeWalk(dv.x, dv.y) ? [[dv.x, dv.y]] : DIRS.map(([dx, dy]) => [dv.x + dx, dv.y + dy]).filter(([a, b]) => foeWalk(a, b));
+    for (const [a, b] of tiles) spots.push({ x: a, y: b, w: Math.abs(a - hx) + Math.abs(b - hy) + (dv.type === 'chandelier' && !dv.cd ? 4 : 0) });
+  }
+  MAP.forEach((row, y) => [...row].forEach((c, x) => { if (c === 'W') for (const [dx, dy] of DIRS) if (foeWalk(x + dx, y + dy)) spots.push({ x: x + dx, y: y + dy, w: Math.abs(x + dx - hx) + Math.abs(y + dy - hy) }); }));
+  let best = spots.filter(p => p.w >= 4).sort((a, b) => b.w - a.w)[0];
+  if (!best) { const far = []; MAP.forEach((row, y) => [...row].forEach((c, x) => { if (foeWalk(x, y) && Math.abs(x - hx) + Math.abs(y - hy) >= 5) far.push({ x, y }); })); best = far.length ? pick(far) : null; }
+  if (!best) return;
+  G.lilyBell = true; G.lure = { x: best.x, y: best.y, t: BELL_TIME };
+  for (const f of near) { f.stun = Math.max(f.stun, .6); if (f.moving) { [f.tx, f.nx] = [f.nx, f.tx]; [f.ty, f.ny] = [f.ny, f.ty]; f.prog = 1 - f.prog; } } // 鐘の音に振り向いて、来た方へ戻りはじめる
+  sfx.handbell(); spr('bell', best.x, best.y, .9, 1.8); G.shake = Math.max(G.shake, 3);
+  addText(best.x, best.y - 1.2, $t`館の鐘`, '#f1d98e', 18); heroBubble($t`今のうちに！`, 1.2);
 }
 // ワイン樽（地図の W）: 隣を通った侵入者が立ち止まって3秒飲み、そのあと千鳥足で遅くなる。樽は12秒で満ちる
 const BARREL_CD = 12, DRINK_TIME = 3;
@@ -2552,6 +2638,7 @@ function update(dt) {
   G.foes = G.foes.filter(f => !f.dead || f.deadT < .5);
 
   for (const dv of G.devices) { const was = dv.cd; dv.cd = Math.max(0, dv.cd - dt); if (was > 0 && !dv.cd && dv.type === 'chandelier' && G.phase > 0 && runMode !== 'training' && G.time - (G.devTalkT ?? -99) > 30) { G.devTalkT = G.time; chirinSay($t`シャンデリア、また押せるわよ。罠師さん`, 2.4); } }
+  for (const [k, tr] of G.traps) if (tr.free && (tr.life -= dt) <= 0) { G.traps.delete(k); burst(tr.x, tr.y, '#d6f0fa', 6, 50); } // 置いてから時間がたつと溶ける
   for (const tr of G.traps.values()) { tr.cd = Math.max(0, tr.cd - dt);
     tr.snap = Math.max(0, tr.snap - dt); tr.anim = Math.max(0, tr.anim - dt); }
   for (const fx of G.fx) {
@@ -2584,6 +2671,7 @@ function update(dt) {
   G.shake = Math.max(0, G.shake - dt * 20);
   G.msgT = Math.max(0, G.msgT - dt); G.banner = Math.max(0, G.banner - dt);
 
+  if (G.char === 'lily') lilyBell();
   // 接触したらダメージ
   if (h.inv <= 0) {
     for (const f of G.foes) {
@@ -2729,16 +2817,17 @@ function drawTraps() {
   for (const tr of G.traps.values()) {
     const cx = tr.x * T + T / 2, cy = tr.y * T + T / 2, armed = tr.cd <= 0;
     const pop = tr.anim > 0 ? 1 + tr.anim * .6 : 1;
-    ctx.globalAlpha = armed ? 1 : .45;
+    ctx.globalAlpha = (armed ? 1 : .45) * (tr.free ? Math.min(.8, tr.life / 3) : 1); // ノエルの氷床は少し薄く、溶けかけは消えていく
     if (tr.type === 'fusion') { // 2つの罠を少しずらして重ね、金の輪で囲む
       pxShape(cx, cy, 80, (c, x, y, k) => {
         drawTrapIcon(c, tr.parts[0], x - 6 * k, y - 5 * k, pop * .72 * k, tr.dir, G.time, tr.snap > 0);
         drawTrapIcon(c, tr.parts[1], x + 6 * k, y + 5 * k, pop * .72 * k, tr.dir, G.time, tr.snap > 0);
       });
       ctx.strokeStyle = `rgba(255,210,122,${.55 + .3 * Math.sin(G.time * 4)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 7); ctx.stroke();
-    } else pxShape(cx, cy, 80, (c, x, y, k) => drawTrapIcon(c, tr.type, x, y, pop * k, tr.dir, G.time, tr.snap > 0));
+    } else pxShape(cx, cy, 80, (c, x, y, k) => drawTrapIcon(c, tr.type, x, y, pop * k * (tr.free ? .8 : 1), tr.dir, G.time, tr.snap > 0));
     ctx.globalAlpha = 1;
-    if (!armed) { // 再装填の残り
+    if (tr.free) { const a = G.time * 3 + tr.x; ctx.fillStyle = `rgba(240,250,255,${.5 + .4 * Math.sin(a * 2)})`; ctx.fillRect(cx + Math.cos(a) * 12 - 1.5, cy + Math.sin(a) * 8 - 1.5, 3, 3); } // きらり
+    if (!armed && !tr.free) { // 再装填の残り
       ctx.strokeStyle = 'rgba(241,217,142,.85)'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(cx, cy, 19, -Math.PI / 2, -Math.PI / 2 + 6.283 * (1 - tr.cd / tr.cdMax)); ctx.stroke();
     }
@@ -3335,7 +3424,7 @@ function updateFace() {
 function updateHud() {
   updateFace();
   const maxHp = stat.maxHp(), mm = stat.maxMana();
-  const key = [G.hp, maxHp, Math.floor(G.mana), mm, G.wave, G.score, G.soul, G.traps.size, stat.limit(), G.selected, G.springDir, smartL(), G.char, G.phase, Math.ceil(G.nightT), Math.ceil(G.prepT || 0), G.state].join('|');
+  const key = [G.hp, maxHp, Math.floor(G.mana), mm, G.wave, G.score, G.soul, trapCount(), stat.limit(), G.selected, G.springDir, smartL(), G.char, G.phase, Math.ceil(G.nightT), Math.ceil(G.prepT || 0), G.state].join('|');
   if (G.state === 'over') el.time.textContent = '–';
   if (key === hudCache) return; hudCache = key;
   const hk = G.hp + '/' + maxHp;
@@ -3348,7 +3437,7 @@ function updateHud() {
   if (runMode === 'challenge') el.wave.textContent = Math.max(1, G.wave);
   el.score.textContent = G.score.toLocaleString(NUM);
   el.soul.textContent = G.soul.toLocaleString(NUM);
-  el.traps.textContent = `${G.traps.size}/${stat.limit()}`;
+  el.traps.textContent = `${trapCount()}/${stat.limit()}`;
   el.smart.textContent = `Lv${smartL() + 1}`;
   el.phase.textContent = G.state === 'over' ? $t`終わり` : G.state === 'shop' ? $t`夜明け` : G.phase ? $t`フェイズ${G.phase}/3` : $t`準備`;
   if (runMode === 'training' && G.state === 'play') { $('#btnGo').hidden = false; $('#goSec').textContent = G.foes.filter(f => !f.dead).length; $('#goRing').style.setProperty('--p', '100%'); }
@@ -3413,7 +3502,7 @@ buildPalette();
 
 // ---------- 画面切り替え ----------
 const stage = $('#stage');
-const OVS = ['ovTitle', 'ovSelect', 'ovHelp', 'ovShop', 'ovOver', 'ovPause', 'ovStages', 'ovAch', 'ovTrain', 'ovSettings', 'ovCredits', 'ovStoryList'];
+const OVS = ['ovTitle', 'ovSelect', 'ovHelp', 'ovShop', 'ovOver', 'ovPause', 'ovStages', 'ovAch', 'ovTrain', 'ovSettings', 'ovCredits', 'ovStoryList', 'ovGrow'];
 function showOv(id) {
   OVS.forEach(o => $('#' + o).hidden = o !== id);
   if (id === 'ovTitle') refreshTitle();
@@ -3467,7 +3556,7 @@ const HELP = [
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 2, 1, 1); miniTrap(g, 'blade', 4, 1, 2); miniLabel(g, 2, 0, $t`向き →`); miniLabel(g, 4, 0, $t`向き ↓`); miniLabel(g, 6, 1, $t`押して置く`, '#fff4e0'); } },
   { t: $t`連続で得点アップ`, d: $t`罠を3秒半以内に続けて当てると「連続」。続くほど得点と魂が増え、3連続からは魔力も少し戻る。罠に当たった侵入者はよろけて動く（火柱・まきびしは1歩前、落石は1歩後ろ、トラバサミは抜け出したあと1歩前、振り子刃は刃の向き、槍の石像は外へ）。動いた先に罠を置いておけば連鎖する。`,
     draw() { const g = miniGrid(7, 3); miniFoe(g, 1, 1); miniTrap(g, 'bear', 3, 1); miniTrap(g, 'rock', 5, 1); miniArrow(g, [1, 1], [3, 1]); miniArrow(g, [3, 1], [5, 1]); miniLabel(g, 3, 0, '1'); miniLabel(g, 5, 0, $t`2連続！`); } },
-  { t: $t`敵との相性・合成・火薬樽`, d: $t`侵入者には罠との相性がある。騎士は火柱に弱く、振り子刃とまきびしに強い。盗賊はまきびし・トラバサミ・火薬樽に弱く、落石に強い。重装兵は火柱と火薬樽に弱く、落石・振り子刃・まきびしに強い。弱点に当てると「効いた！」。金の鎧の結界騎士は、3連続以上になった罠でないと結界に弾かれる（足止めや飛ばしは効く）。頭の上の菱形が連続の数。置いてある罠の上に別の罠を置くと「合成」になり、2つの罠が1マスで続けて作動する（少し強くなり、罠の数は1つのまま）。火薬樽は踏まれて1秒後に爆発するので、侵入者が進む先を読んで置く。`,
+  { t: $t`敵との相性・合成・火薬樽`, d: $t`侵入者には罠との相性がある。騎士は火柱に弱く、振り子刃とまきびしに強い。盗賊はまきびし・トラバサミ・火薬樽に弱く、落石に強い。重装兵は火柱と火薬樽に弱く、落石・振り子刃・まきびしに強い。弱点に当てると「効いた！」。金の鎧の結界騎士は、3連続以上になった罠でないと結界に弾かれる（足止めや飛ばしは効く）。頭の上の菱形が連続の数。セシルだけは、置いてある罠の上に別の罠を置くと「合成」になり、2つの罠が1マスで続けて作動する（少し強くなり、罠の数は1つのまま）。ほかの子が別の罠を重ねると置き換えになる。火薬樽は踏まれて1秒後に爆発するので、侵入者が進む先を読んで置く。`,
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'fire', 1, 1); miniTrap(g, 'rock', 2, 1); miniArrow(g, [1, 1], [3.3, 1]); miniTrap(g, 'fire', 4, 1); miniTrap(g, 'rock', 4.5, 1.4); miniLabel(g, 4.3, 0, $t`合成「溶岩落とし」`); miniFoe(g, 6, 1); miniLabel(g, 6, 2, $t`効いた！`, '#ff9b5a'); } },
   { t: $t`巻き込み・玉突き・追い打ち`, d: $t`1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。ダブルヒットと玉突きは得点が大きく増える。倒した侵入者も3秒ほどその場に倒れたまま残り、罠に当てると「追い打ち」で連続が続く（逃げる子には当たらない）。捕獲の檻で閉じ込めた侵入者に、飛ばした侵入者や振り子刃を当てると、檻ごと遠くまで転がって「大玉突き」になる（威力も得点も大きい）。`,
     draw() { const g = miniGrid(9, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniFoe(g, 4, 1); miniTile(g, 7, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniArrow(g, [4, 1], [7, 1], '#ffb38a'); miniLabel(g, 4, 0, $t`玉突き！`, '#ffb38a'); miniLabel(g, 7, 0, $t`奈落へ！`); miniLabel(g, 2.5, 2, $t`飛ばして、ぶつける`, '#fff4e0'); } },
@@ -4284,6 +4373,7 @@ function startRun(char = sel.char, loadout = sel.traps, noSave = false) {
   if (runMode === 'stage') { // ステージが進むほど、館の備えも少し強くしておく
     const k = runStage - 1;
     Object.assign(G.up, { limit: Math.min(3, Math.floor(k / 8)), smart: Math.min(5, Math.floor(k / 6)), regen: Math.min(3, Math.floor(k / 9)), power: Math.min(2, Math.floor(k / 14)), hp: k >= 16 && k < 24 ? 1 : 0 }); // 書庫（16〜20）は少し体力を足す
+    for (const u of UPS) G.up[u.id] = Math.min(u.max, G.up[u.id] + (growth.up[u.id] || 0)); // 育成で振った分を上乗せ
     G.hp = stat.maxHp();
     G.mana = stat.maxMana();
   }
@@ -4306,6 +4396,7 @@ function openShop() {
   G.foes = []; G.fx = []; G.texts = []; G.parts = []; $('#btnGo').hidden = true;
   G.banner = 0; G.combo = 0; G.msgT = 0; G.removedCd = {}; G.lure = null; G.intro = null;
   G.phaseBonus = 0;
+  for (const [k, t] of G.traps) if (t.free) G.traps.delete(k);
   const extra = [...G.traps.entries()].sort((a, b) => (b[1].bonus - a[1].bonus) || (b[1].at - a[1].at)).slice(0, Math.max(0, G.traps.size - stat.limit()));
   extra.forEach(([k]) => G.traps.delete(k));
   for (const tr of G.traps.values()) { tr.cd = 0; tr.snap = 0; }
@@ -4336,7 +4427,7 @@ function renderShop() {
 function gameOver(won) {
   if (runMode !== 'challenge') { stageResult(won); return; }
   G.state = 'over'; $('#btnGo').hidden = true;
-  $('#btnRetry').textContent = $t`もう一度`; $('#rWaveL').textContent = $t`たどり着いた夜`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
+  $('#btnGrow').hidden = true; $('#btnRetry').textContent = $t`もう一度`; $('#rWaveL').textContent = $t`たどり着いた夜`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
   if (won) { achieve('challenge'); clearedBy(); }
   const hpBonus = won ? G.hp * 2000 : 0;
   G.score += hpBonus;
@@ -4376,9 +4467,10 @@ function stageResult(won) {
   if (runMode === 'endless') { endlessResult(); return; }
   G.state = 'over'; $('#btnGo').hidden = true;
   const n = runStage, stars = won ? 1 + (G.hpLost ? 0 : 1) + (G.bestCombo >= 8 + Math.floor(n / 5) ? 1 : 0) : 0;
-  let newBest = false;
+  let newBest = false, gain = 0;
   if (runMode === 'stage') {
     const r = stageRec.rec[n] || { best: 0, stars: 0 };
+    gain = won ? Math.max(0, stars - r.stars) : 0; // 新しく取った★の数だけ育成ポイント
     if (won) { newBest = G.score > r.best; r.best = Math.max(r.best, G.score); r.stars = Math.max(r.stars, stars); stageRec.rec[n] = r; stageRec.open = Math.max(stageRec.open, Math.min(STAGE_COUNT, n + 1)); saveStages(); clearedBy(); }
     if (won && n >= 10) achieve('stage10'); if (won && n >= 20) achieve('stage20'); if (won && n >= 40) achieve('stage40');
   } else if (won) { achieve('editor'); clearedBy(); }
@@ -4396,7 +4488,8 @@ function stageResult(won) {
   $('#rComboBest').className = '';
   $('#rOiuchi').textContent = $t`${G.oiuchi || 0}回`; $('#rMulti').textContent = $t`${G.multiHits || 0}回`; $('#rCrash').textContent = $t`${G.crashes || 0}回`; $('#rItems').textContent = $t`${G.itemsGot || 0}個`;
   $('#rKills').textContent = G.kills;
-  $('#rBest').textContent = (won ? '' : rewindLine() + '　') + (runMode === 'stage' && won ? (newBest ? $t`このステージの最高得点を更新！　` : $t`このステージの最高得点 ${stageRec.rec[n].best.toLocaleString(NUM)}　`) : '') + $t`★の条件: クリア／体力を減らさない／${8 + Math.floor(n / 5)}連続以上`;
+  $('#rBest').textContent = (won ? '' : rewindLine() + '　') + (runMode === 'stage' && won ? (newBest ? $t`このステージの最高得点を更新！　` : $t`このステージの最高得点 ${stageRec.rec[n].best.toLocaleString(NUM)}　`) : '') + $t`★の条件: クリア／体力を減らさない／${8 + Math.floor(n / 5)}連続以上` + (gain ? $t`　新しい★で育成ポイント +${gain}` : '');
+  $('#btnGrow').hidden = runMode !== 'stage'; refreshGrowBtns();
   const next = runMode === 'stage' && won && n < STAGE_COUNT;
   G.goNext = next;
   $('#btnRetry').textContent = runMode === 'edit' ? $t`部屋づくりに戻る` : next ? $t`ステージ${n + 1}へ` : won ? $t`もう一度` : $t`時を戻してやり直す`;
@@ -4421,7 +4514,7 @@ function endlessResult() {
   const sec = Math.floor(G.time); $('#rTime').textContent = $t`${Math.floor(sec / 60)}分${sec % 60}秒`;
   $('#rOiuchi').textContent = $t`${G.oiuchi || 0}回`; $('#rMulti').textContent = $t`${G.multiHits || 0}回`; $('#rCrash').textContent = $t`${G.crashes || 0}回`; $('#rItems').textContent = $t`${G.itemsGot || 0}個`; $('#rKills').textContent = G.kills;
   $('#rBest').textContent = $t`最高得点 ${endlessRec.score.toLocaleString(NUM)}${newS ? $t`（更新！）` : ''}　侵入者は倒れないので、罠をつなげて連続を伸ばす`;
-  G.goNext = false; $('#btnRetry').textContent = $t`もう一度`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
+  G.goNext = false; $('#btnGrow').hidden = true; $('#btnRetry').textContent = $t`もう一度`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
   if (bgmBuf.dawn) { bgmKey = null; playBgm('dawn'); } else sfx.dawn();
   setTimeout(() => showOv('ovOver'), 300);
 }
@@ -4478,7 +4571,7 @@ function renderStages() {
   nav.querySelectorAll('.dots i').forEach(i => i.onclick = () => { chapter = +i.dataset.i; renderStages(); });
   $('#stageInfo').textContent = $t`星 ${total} / ${STAGE_COUNT * 3}`;
 }
-function openStages() { audio(); chapter = Math.min(STAGE_COUNT / 5 - 1, Math.floor((Math.min(stageRec.open, STAGE_COUNT) - 1) / 5)); renderStages(); showOv('ovStages'); }
+function openStages() { audio(); refreshGrowBtns(); chapter = Math.min(STAGE_COUNT / 5 - 1, Math.floor((Math.min(stageRec.open, STAGE_COUNT) - 1) / 5)); renderStages(); showOv('ovStages'); }
 // ---------- エディット ----------
 const ETOOLS = [['.', $t`床`], ['#', $t`壁`], ['O', $t`奈落`], ['^', $t`トゲ床`], ['c', $t`シャンデリア`], ['S', $t`槍の石像`], ['D', $t`扉`], ['start', $t`開始位置`]];
 let etool = '#';
@@ -4558,7 +4651,7 @@ function setPause(p) {
   showOv(p ? 'ovPause' : null);
   $('#btnRoom').hidden = runMode !== 'training' || !!lesson;
   $('#btnSkipTut').hidden = !storyTut;
-  if (p) $('#pStats').innerHTML = $t`罠 <b>${G.traps.size}/${stat.limit()}</b>　かしこさ <b>Lv${smartL() + 1}</b>　魂 <b>${G.soul}</b>`;
+  if (p) $('#pStats').innerHTML = $t`罠 <b>${trapCount()}/${stat.limit()}</b>　かしこさ <b>Lv${smartL() + 1}</b>　魂 <b>${G.soul}</b>`;
 }
 $('#btnStart').addEventListener('click', () => { runMode = 'challenge'; openSelect(); });
 $('#btnTrain').addEventListener('click', openTrain);
@@ -4574,6 +4667,12 @@ $('#btnRetry').addEventListener('click', () => {
 $('#btnRetry2').addEventListener('click', () => { if (runMode === 'stage') openStages(); else { G = makeRun('title'); showOv('ovTitle'); } });
 $('#btnStage').addEventListener('click', () => { audio(); if (!storySeen.intro1 && STORY_AUTO) startIntro0(); else openStages(); }); // はじめてなら導入のおはなしから
 $('#btnStagesBack').addEventListener('click', () => showOv('ovTitle'));
+$('#btnGrow').addEventListener('click', () => openGrow('ovOver'));
+$('#btnStagesGrow').addEventListener('click', () => openGrow('ovStages'));
+const closeGrow = () => { if (growBack === 'ovStages') renderStages(); showOv(growBack || 'ovTitle'); };
+$('#btnGrowBack').addEventListener('click', closeGrow);
+$('#btnGrowDone').addEventListener('click', closeGrow);
+$('#btnGrowReset').addEventListener('click', () => { growth.up = {}; saveGrowth(); sfx.bad(); renderGrow(); });
 $('#btnAch').addEventListener('click', () => { renderAch(); showOv('ovAch'); });
 $('#btnAchBack').addEventListener('click', () => showOv('ovTitle'));
 $('#btnRetry').textContent = $t`支度をして、もう一度`;
