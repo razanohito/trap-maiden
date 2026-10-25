@@ -24,6 +24,13 @@ def bust(src: Path):
     im = Image.open(src).convert("RGBA")
     h = round(im.height * BOTTOM[who(src.stem)])
     im = im.crop((0, 0, im.width, h))
+    rgb = im.load()  # 白い背景から切り抜いたふちの白いにじみを、半透明のところだけ暗くして消す
+    for y in range(h):
+        for x in range(im.width):
+            r, g, b, al = rgb[x, y]
+            if 0 < al < 250:
+                k = .45 + .55 * al / 255
+                rgb[x, y] = (round(r * k), round(g * k), round(b * k), al)
     a = im.getchannel("A"); px = a.load(); fh = max(1, round(h * FADE))
     for y in range(h - fh, h):
         k = (h - y) / fh
