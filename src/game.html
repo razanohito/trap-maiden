@@ -3617,22 +3617,32 @@ const COMIC_STEPS = COMIC.flatMap((pg, pi) => pg.panels.map((pn, ni) => ({ pi, n
 let comicI = 0, comicDone = null;
 const comicCv = $('#comicCv'), cc = comicCv.getContext('2d');
 const COMIC_ROT = 'ー…〜～—―（）「」『』()‥：'; // 縦書きで横に寝かせる文字
+const COMIC_NOHEAD = '、。，．」』）)！？!?ーっゃゅょぁぃぅぇぉッャュョァィゥェォ…‥～〜'; // 列の頭に来てはいけない字（前の列の終わりにぶら下げる）
+function vertCols(chars, per) { // 縦書きの列分け。列の頭に句読点などが来るときは、前の列にぶら下げる
+  const cols = [[]];
+  for (const ch of chars) {
+    const cur = cols[cols.length - 1];
+    if (cur.length < per || (COMIC_NOHEAD.includes(ch) && cur.length <= per + 1)) cur.push(ch); // 「……」のように続くときは2字までぶら下げる
+    else cols.push([ch]);
+  }
+  return cols;
+}
 function vertText(c, text, x, y, w, h) { // 戻り値は使った字の大きさ // 吹き出しの中に縦書き（右の列から）。入る一番大きい字で
   if (LANG !== 'ja') return horzText(c, text, x, y, w, h); // 英語は横書き
   const chars = [...text];
-  let size = Math.floor(Math.min(w, h) / 2);
-  for (; size > 6; size--) { const per = Math.floor(h / size), cols = Math.ceil(chars.length / Math.max(1, per)); if (per >= 1 && cols * size * 1.18 <= w) break; }
-  const per = Math.max(1, Math.floor(h / size)), cols = Math.ceil(chars.length / per);
-  const total = cols * size * 1.18 - size * .18, x0 = x + (w + total) / 2 - size / 2;
-  const colH = Math.min(per, chars.length) * size, y0 = y + (h - colH) / 2;
+  let size = Math.floor(Math.min(w, h) / 2), cols;
+  for (; size > 6; size--) { const per = Math.floor(h / size); if (per < 1) continue; cols = vertCols(chars, per); if (cols.length * size * 1.18 <= w && Math.max(...cols.map(l => l.length)) * size <= h + size * .6) break; }
+  cols = vertCols(chars, Math.max(1, Math.floor(h / size)));
+  const total = cols.length * size * 1.18 - size * .18, x0 = x + (w + total) / 2 - size / 2;
+  const colH = Math.min(Math.floor(h / size), Math.max(...cols.map(l => l.length))) * size, y0 = y + (h - colH) / 2;
   c.font = `700 ${size}px "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif`; c.fillStyle = '#4a3434'; c.textAlign = 'center'; c.textBaseline = 'middle';
-  chars.forEach((ch, i) => {
-    const col = Math.floor(i / per), row = i % per, cx = x0 - col * size * 1.18, cy = y0 + row * size + size / 2;
+  cols.forEach((line, col) => line.forEach((ch, row) => {
+    const cx = x0 - col * size * 1.18, cy = y0 + row * size + size / 2;
     if (COMIC_ROT.includes(ch)) { c.save(); c.translate(cx, cy); c.rotate(Math.PI / 2); c.fillText(ch, 0, 0); c.restore(); }
-    else if ('、。'.includes(ch)) c.fillText(ch, cx + size * .32, cy - size * .3);
+    else if ('、。，．'.includes(ch)) c.fillText(ch, cx + size * .6, cy - size * .58); // 横書き用の字は左下にあるので、縦書きの位置（右上）へ
     else if ('っゃゅょぁぃぅぇぉッャュョァィゥェォ'.includes(ch)) c.fillText(ch, cx + size * .1, cy - size * .08);
     else c.fillText(ch, cx, cy);
-  });
+  }));
   return size;
 }
 function horzText(c, text, x, y, w, h) { // 英語の吹き出し: 横書きで折り返し、入る一番大きい字で
@@ -3702,6 +3712,8 @@ addEventListener('keydown', e => {
 const STORY = {
   intro1: { title: $t`導入　鍵束と男爵`, lines: [
     { bg: 'morning', bgm: 'title', cg: 'letter' },
+    ['', '', $t`ここは百合の館。罠の名人だったおばあさま・ローザが、旅に出るまえに守ってきたお屋敷。`],
+    ['', '', $t`14歳の誕生日に、孫娘のリリィは館の鍵束を受けとった。手紙には、まだ続きがある。`],
     ['letter', '', $t`ただし、今はまだ『仮の主』。館の8つの部屋にある百合の印を全部ともしたら、あなたは本当の主になれます。`],
     ['letter', '', $t`それと、もしあのうるさい男爵が来たら……`],
     { cg: null },
@@ -3739,14 +3751,10 @@ const STORY = {
     ['chirin', 'n', $t`いい？ 夜の鍵束は、こうやって光って鳴るの。どこに隠しても、館じゅうで丸聞こえ。侵入者はまっすぐここへ来るわ`],
     ['cecil', 't', $t`うっ……それじゃ金庫ごと持っていかれるじゃん……`],
     ['lily', 'n', $t`でしたら、わたしたちで追い返します`],
-    ['', '', $t`リリィは壁に飾ってあった剣を持ち上げようとした。……びくともしない。`],
-    ['lily', 't', $t`……重いです。とても`],
     ['chirin', 'a', $t`相手は大人の雇われ兵よ。あなたたちが戦って勝てるわけないでしょ。……だから、ローザはこの館を『罠』で守ってきたの`],
     ['chirin', 'n', $t`床の下にも壁の中にも、ローザのからくりが眠ってる。ただし動くのは、鍵束を持った子がいる部屋だけ。手放したら、罠はぜーんぶ止まるわ`],
     ['noel', 's', $t`つまり……鍵束を持ったまま、侵入者から逃げる、ということですか？`],
     ['chirin', 'p', $t`そう。ただ逃げるんじゃないわ。追ってくる相手を、罠の上へ連れていくの。ローザの若いころと同じよ`],
-    ['lily', 'm', $t`……おばあさまの罠。絵本でしか見たことのない、あの罠が、本当に。`],
-    ['mina', 'h', $t`リリィちゃん、目がきらきらしてるねぇ`],
     { cg: 'crest', clear: 1 },
     ['', '', $t`リリィが鍵束を掲げると、百合の紋章が広がった。みんなが、こちらを見上げる。`],
     ['chirin', 'p', $t`……来た。鍵束が呼んだ人。ようこそ、罠師さん。チリン♪`],
@@ -3754,12 +3762,12 @@ const STORY = {
     ['lily', 's', $t`……どなたもいらっしゃいませんけれど？`],
     ['chirin', 'n', $t`上よ、上。罠師さんは館の中には入れないの。鍵束をとおして、館をまるごと上から見下ろしてるのよ。お人形の家をのぞきこむみたいにね`],
     ['lily', 'n', $t`はじめまして、罠師さん。百合の館の主、リリィです。……今はまだ、仮ですけれど`],
-    ['cecil', 'm', $t`へえ、上から全部見えてるんだ。ボクの散らかった実験室も？ ……見なかったことにして`],
     ['chirin', 'n', $t`いい？ ここが大事。ローザのからくりは、あなたたちには見えないし、動かせない。どこに仕掛けて、いつ動かすか。それがわかるのは、館を上から見ている罠師さんだけ`],
     ['noel', 's', $t`では、わたくしたちは何を……？`],
     ['chirin', 'n', $t`走るの。鍵束を持って、侵入者を罠師さんの罠の上まで連れていく。罠師さんは館に入れないから鍵束を運べないし、あなたたちは罠が見えない。……ふたりでひとつ、ってわけ`],
     ['lily', 'm', $t`わたしたちが走って、罠師さんが仕掛ける。……おばあさまの若いころと同じ、ですね`],
     ['chirin', 'p', $t`そう。ローザにも、ずっと罠師さんがついていたのよ`],
+    ['chirin', 'n', $t`まとめるわね。① 鍵番の子は、鍵束を持って侵入者から逃げる。② 罠師さんは罠を置いて、侵入者をお堀へ落とす。③ 夜明けまで鍵束を守りきれば、その夜は勝ち！`],
     { fx: 'shake', bgm: 'night' },
     ['', '', $t`ガシャーン！ 窓が割れて、ピカピカ騎士団の見習いが1人、転がり込んできた。`],
     ['knight', 'n', $t`へへっ、一番乗りで鍵束をいただけば、日当ボーナスだ！`],
