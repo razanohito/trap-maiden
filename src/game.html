@@ -1500,11 +1500,10 @@ function roomPat(b, kind) { // 部屋の絵の模様（1マス 96px の絵を 48
 }
 const PXS = 2; // 罠などをドット風に描くときの倍率
 const PXC = 48, CHS = 1.5; // キャラのドット絵の1コマ（48ドット）と、盤面での倍率（高解像度の画面ではちょうど3倍になる）
-const HI_SC = .7; // 高精細な絵（1コマ 128px、足もと y=120、背丈 約100px）の盤面での倍率。背丈が約70pxになる
-function pxGeo(k) { // キャラの絵の1コマの大きさ（s）・盤面での大きさ（D）・倍率（sc）・足もとまで（foot）・頭まで（head）。横4コマのシートの幅から 48px か 128px かを見分ける
+function pxGeo(k) { // キャラの絵の1コマの大きさ（s）・盤面での大きさ（D）・倍率（sc）・足もとまで（foot）・頭まで（head）。横4コマのシートの幅から 48px の絵か高精細な絵かを見分ける
   const s = (IMG[k] && IMG[k].naturalWidth / 4) || PXC;
-  if (s <= PXC) return { s: PXC, D: PXC * CHS, sc: CHS, foot: PXC * CHS - 2, head: 3 * CHS, hi: false };
-  const sc = HI_SC * 128 / s; return { s, D: s * sc, sc, foot: Math.round(s * 120 / 128 * sc), head: Math.round(s * 20 / 128 * sc), hi: true };
+  if (s <= PXC) return { s: PXC, D: PXC * CHS, sc: CHS, foot: PXC * CHS - 2, head: 3 * CHS };
+  return { s, D: s, sc: 1, foot: Math.round(s * 15 / 16), head: Math.round(s * 3 / 16) }; // 高精細な絵（tools/import_hires.py。1コマ 96px・足もと y=90・背丈 72ドット）は1ドット＝1ピクセル（高解像度の画面ではちょうど2倍）
 }
 const TILE_IDX = { floorA: 0, floorB: 1, wallTop: 2, wallFace: 3, prop: 4, door: 5, spikes: 6, emblem: 7, pit: 8, statue: 9, carpet: 10, torch: 11, floorA2: 12, floorB2: 13, floorA3: 14, floorB3: 15, wallFace2: 16, barrel: 17 }; // tools/pixel/tiles.py のコマの順
 function buildBgPx(b, sh) { // ドット絵の部屋。1マス 24x32 ドットのコマ（下 24 行がマス、上 8 行は背の高い物のはみ出し）
@@ -2849,9 +2848,8 @@ function pxSil(k) {
   const x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = 'rgba(255,248,240,.9)'; x.fillRect(0, 0, c.width, c.height);
   return (PX_SIL[k] = c);
 }
-function drawPx(k, col, row, left, top, outline) { // キャラの絵の1コマを 1.5倍で描く（高精細な絵は HI_SC 倍）。outline: 1ドットの明るいふちどり
-  const g = pxGeo(k), s = g.s, D = g.D, sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = g.hi; // 48px の絵はぼかさずに拡大（高解像度の画面ではちょうど3倍）。高精細な絵はなめらかに縮める
-  if (g.hi) ctx.imageSmoothingQuality = 'high';
+function drawPx(k, col, row, left, top, outline) { // キャラの絵の1コマを描く（48px の絵は 1.5倍、高精細な絵は等倍）。outline: 1ドットの明るいふちどり
+  const g = pxGeo(k), s = g.s, D = g.D, sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false; // ぼかさずに描く
   if (outline) { const sil = pxSil(k); for (const [dx, dy] of [[-CHS, 0], [CHS, 0], [0, -CHS], [0, CHS]]) ctx.drawImage(sil, col * s, row * s, s, s, left + dx, top + dy, D, D); }
   ctx.drawImage(IMG[k], col * s, row * s, s, s, left, top, D, D);
   ctx.imageSmoothingEnabled = sm;
