@@ -155,8 +155,6 @@ window.TRAP_EN = {
  "かしこさ +1（逃げ方が上手に）": "Wits +1 (runs away better)",
  "魔力の泉": "Mana Spring",
  "魔力の回復 +20%": "Mana regen +20%",
- "魔力の器": "Mana Vessel",
- "魔力の上限 +20": "Max mana +20",
  "罠の鋭さ": "Sharper Traps",
  "罠の威力 +20%": "Trap power +20%",
  "からくり油": "Clockwork Oil",
@@ -918,5 +916,7 @@ window.TRAP_EN = {
  "<span class=\"n\">{0}</span><span class=\"d\">{1}</span><span class=\"lv\">段階 <i>{2}</i> / {3}</span><span class=\"c\">{4}</span>": "<span class=\"n\">{0}</span><span class=\"d\">{1}</span><span class=\"lv\">Level <i>{2}</i> / {3}</span><span class=\"c\">{4}</span>",
  "ぴかぴか": "Sparkle!",
  "今のうちに！": "Now's my chance!",
- "　新しい★で育成ポイント +{0}": "　New stars: +{0} growth points"
+ "　新しい★で育成ポイント +{0}": "　New stars: +{0} growth points",
+ "手早い設置": "Quick Setup",
+ "罠を置いてから使えるまで 15%速く": "Traps get ready 15% sooner after placing"
 };

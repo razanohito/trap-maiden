@@ -65,7 +65,7 @@ const LOADOUTS = {
             if (type === 'blade' && st) { const back = A.DIRS.findIndex(([a, b]) => a === -st[0] && b === -st[1]); G.springDir = back >= 0 ? back : 1; }
             G.selected = type; A.placeTrap(x, y, type);
           };
-          const PRI = ['limit', 'smart', 'power', 'regen', 'cd', 'hp', 'maxMana', 'speed'];
+          const PRI = ['limit', 'smart', 'power', 'regen', 'cd', 'hp', 'arm', 'speed'];
           while (G.state !== 'over' && guard++ < 30 * 60 * 25) {
             if (G.state === 'shop') {
               let bought = true;
@@ -75,7 +75,7 @@ const LOADOUTS = {
                   const u = A.UPS.find(u => u.id === id), lv = G.up[id];
                   if (lv >= u.max) continue;
                   const cost = A.upCost(u, lv);
-                  if (G.soul >= cost) { G.soul -= cost; G.up[id]++; if (id === 'hp') G.hp++; if (id === 'maxMana') G.mana = A.stat.maxMana(); bought = true; break; }
+                  if (G.soul >= cost) { G.soul -= cost; G.up[id]++; if (id === 'hp') G.hp++; bought = true; break; }
                 }
               }
               A.startWave(G.wave + 1); continue;

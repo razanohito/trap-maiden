@@ -1100,7 +1100,7 @@ const warded = f => !!FOES[f.type].ward && !(G.combo >= FOES[f.type].ward && G.t
 const UPS = [
   { id:'smart',   name:$t`逃げ方の勉強`, desc:$t`かしこさ +1（逃げ方が上手に）`, base:35, max:5 },
   { id:'regen',   name:$t`魔力の泉`,   desc:$t`魔力の回復 +20%`,   base:30, max:6 },
-  { id:'maxMana', name:$t`魔力の器`,   desc:$t`魔力の上限 +20`,    base:25, max:6 },
+  { id:'arm',     name:$t`手早い設置`, desc:$t`罠を置いてから使えるまで 15%速く`, base:25, max:5 },
   { id:'power',   name:$t`罠の鋭さ`,   desc:$t`罠の威力 +20%`,     base:40, max:6 },
   { id:'cd',      name:$t`からくり油`, desc:$t`罠の再装填 12%速く`, base:35, max:5 },
   { id:'limit',   name:$t`罠箱の拡張`, desc:$t`置ける罠 +1`,       base:45, max:5 },
@@ -1338,7 +1338,8 @@ const trapCd = type => (isFav(type) && CH().passive.cd ? CH().passive.cd : TRAPS
 function favText(x, y) { addText(x, y - 1.6, CH().passive.name, '#f1d98e', 14); }
 const stat = {
   regen:   () => CH().regen * (1 + .2 * G.up.regen),
-  maxMana: () => CH().maxMana + 20 * G.up.maxMana,
+  maxMana: () => CH().maxMana,
+  arm:     () => Math.pow(.85, G.up.arm), // 置いてから使えるまでの時間
   power:   () => CH().power * (1 + .2 * G.up.power) * (1 + (CH().rage || 0) * Math.max(0, stat.maxHp() - G.hp)), // ミーナは体力が減るほど強い
   cd:      () => Math.pow(.88, G.up.cd),
   limit:   () => baseLimit() + G.phaseBonus,
@@ -1805,7 +1806,7 @@ function placeTrap(x, y, type) {
     if (G.mana < cost) { say($t`魔力が足りない`); sfx.bad(); return; }
     G.mana -= cost;
     const a = old.type, name = fusionName(a, type);
-    Object.assign(old, { type: 'fusion', parts: [a, type], name, paid: old.paid + cost, cd: Math.max(old.cd, .6), cdMax: Math.max(old.cd, .6), anim: .45 });
+    Object.assign(old, { type: 'fusion', parts: [a, type], name, paid: old.paid + cost, cd: Math.max(old.cd, .6 * stat.arm()), cdMax: Math.max(old.cd, .6 * stat.arm()), anim: .45 });
     if (TRAPS[type].dir) old.dir = G.springDir;
     G.fusions = (G.fusions || 0) + 1; achieve('fusion');
     say($t`合成！ ${TRAPS[a].name}＋${TRAPS[type].name} ＝「${name}」`, 3); sfx.place(); burst(x, y, '#e8c46a', 18, 140);
@@ -1818,7 +1819,7 @@ function placeTrap(x, y, type) {
   if (G.mana + refund < cost) { say($t`魔力が足りない`); sfx.bad(); return; }
   G.mana = Math.min(stat.maxMana(), G.mana + refund - cost);
   const rm = G.removedCd[key], rmCd = rm ? rm.cd - (G.time - rm.at) : 0;
-  const cd = Math.max(isFav(type) ? .3 : .6, old ? old.cd : rmCd); // 得意な罠は早く置ける // 置き直しても（撤去してすぐ置いても）前の罠の再装填は引き継ぐ
+  const cd = Math.max((isFav(type) ? .3 : .6) * stat.arm(), old ? old.cd : rmCd); // 得意な罠は早く置ける // 置き直しても（撤去してすぐ置いても）前の罠の再装填は引き継ぐ
   delete G.removedCd[key];
   const bonusCount = [...G.traps.values()].filter(t => t.bonus).length;
   const bonus = old ? old.bonus : trapCount() >= baseLimit() && bonusCount < G.phaseBonus; // フェイズで増えた枠に置いた罠
@@ -4417,7 +4418,6 @@ function renderShop() {
       if (G.soul < cost || maxed) return;
       G.soul -= cost; G.up[u.id]++;
       if (u.id === 'hp') G.hp++;
-      if (u.id === 'maxMana') G.mana = stat.maxMana();
       sfx.kill(); hudCache = ''; renderShop();
       const again = $('#up-' + u.id); if (again && !again.disabled) again.focus();
     });
