@@ -2841,6 +2841,7 @@ function drawPreview() {
 
 const WALK_STEP = .34; // 1コマで進む距離（マス）。速さ 3.4 マス/秒で 1コマ約 100ms
 const PIX_ROW = { 2: 0, 3: 1, 1: 2, 0: 3 }; // 向き → スプライトの行（下・左・右・上）
+const PX_ANIM = new Set(['noel']); // やられ・ピンチの行が4コマの動きになっている絵（tools/import_hires.py のノエル）。ほかは向きごとに1コマ
 const PX_SIL = {}; // ドット絵の白いシルエット（逃げる子のふちどりに使う）
 function pxSil(k) {
   if (PX_SIL[k]) return PX_SIL[k];
@@ -2866,10 +2867,11 @@ function drawHero() {
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(px, footY, 12, 4);
     const pinch = G.hp <= 1;
     let col = dir, row = 4;
-    if (h.hurt > 0 || h.trip > 0) row = 5; // 被弾してのけぞる
+    const anim = PX_ANIM.has(pk); // やられ・ピンチが向きごとではなく4コマの動きの絵
+    if (h.hurt > 0 || h.trip > 0) { row = 5; if (anim) col = Math.min(3, Math.floor(t * 6) % 4); } // 被弾してのけぞる
     else if (h.moving) { row = dir; col = Math.floor((h.walk || 0) / WALK_STEP) % 4; }
     else if (h.joy > 0) { row = 7; col = Math.floor(t * 9) % 4; } // 喜びのジャンプ
-    else if (pinch) row = 6; // 体力が残り1: 涙目でほつれた姿
+    else if (pinch) { row = 6; if (anim) col = Math.floor(t * 3) % 4; } // 体力が残り1: 涙目でほつれた姿
     drawPx(k, col, row, left, top, false); // 白いふちどりは付けない（絵の暗いふちどりだけで見せる）
     ctx.globalAlpha = 1;
     const head = top + g.head;
