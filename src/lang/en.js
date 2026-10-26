@@ -918,5 +918,6 @@ window.TRAP_EN = {
  "今のうちに！": "Now's my chance!",
  "　新しい★で育成ポイント +{0}": "　New stars: +{0} growth points",
  "手早い設置": "Quick Setup",
- "罠を置いてから使えるまで 15%速く": "Traps get ready 15% sooner after placing"
+ "罠を置いてから使えるまで 15%速く": "Traps get ready 15% sooner after placing",
+ "{0}・前の罠の並びをそのまま置いた（動かすのも自由）": "{0}: your traps from last time are back in place (move them freely)"
 };

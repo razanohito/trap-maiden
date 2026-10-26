@@ -1748,7 +1748,8 @@ window.TRAP_EN = {
  "今のうちに！": "Now's my chance!",
  "　新しい★で育成ポイント +{0}": "　New stars: +{0} growth points",
  "手早い設置": "Quick Setup",
- "罠を置いてから使えるまで 15%速く": "Traps get ready 15% sooner after placing"
+ "罠を置いてから使えるまで 15%速く": "Traps get ready 15% sooner after placing",
+ "{0}・前の罠の並びをそのまま置いた（動かすのも自由）": "{0}: your traps from last time are back in place (move them freely)"
 };
 </script>
 <script>
@@ -2230,6 +2231,25 @@ const growEarned = () => Object.values(stageRec.rec).reduce((a, r) => a + (r.sta
 const growSpent = () => UPS.reduce((a, u) => { for (let i = 0; i < (growth.up[u.id] || 0); i++) a += growCost(i); return a; }, 0);
 const growLeft = () => growEarned() - growSpent();
 let growBack = null;
+// ステージの罠の並び: 部屋ごとに覚えておき、同じ部屋のステージ（次のステージ・やり直し）ではそのまま置いて始める
+let layouts = {};
+try { layouts = JSON.parse(localStorage.getItem('trapoflily-layout') || '{}') || {}; } catch (e) {}
+function saveLayout() {
+  layouts[mapIdx] = [...G.traps.values()].filter(t => !t.free).map(t => ({ type: t.type, parts: t.parts, name: t.name, x: t.x, y: t.y, dir: t.dir }));
+  try { localStorage.setItem('trapoflily-layout', JSON.stringify(layouts)); } catch (e) {}
+}
+function restoreLayout() {
+  let n = 0;
+  for (const t of layouts[mapIdx] || []) {
+    let { type, parts } = t;
+    if (type === 'fusion' && (G.char !== 'cecil' || !parts.every(p => G.loadout.includes(p)))) { type = parts.find(p => G.loadout.includes(p)); parts = null; } // 合成はセシルだけ。ほかの子は持っている方の罠を1つ置く
+    if (!type || (type !== 'fusion' && !G.loadout.includes(type)) || !canPlace(t.x, t.y) || G.traps.has(t.x + ',' + t.y) || trapCount() >= stat.limit()) continue;
+    const paid = type === 'fusion' ? parts.reduce((a, p) => a + trapCost(p), 0) : trapCost(type);
+    G.traps.set(t.x + ',' + t.y, { type, parts: parts || undefined, name: type === 'fusion' ? t.name : undefined, x: t.x, y: t.y, dir: t.dir, cd: 0, cdMax: .6, snap: 0, anim: .25, at: G.time, bonus: false, paid });
+    n++;
+  }
+  return n;
+}
 function openGrow(back) { growBack = back; renderGrow(); showOv('ovGrow'); }
 function renderGrow() {
   const left = growLeft();
@@ -5302,7 +5322,7 @@ function startRun(char = sel.char, loadout = sel.traps, noSave = false) {
     G.mana = stat.maxMana();
   }
   $('#editBar').hidden = true; buildPalette(); showOv(null);
-  if (runMode === 'stage') startWave(stageWave(runStage), { map: mi, stage: runStage, intro: (runStage - 1) % 5 === 0 });
+  if (runMode === 'stage') { startWave(stageWave(runStage), { map: mi, stage: runStage, intro: (runStage - 1) % 5 === 0 }); const kept = restoreLayout(); if (kept) banner($t`ステージ${runStage}`, $t`${MAPS[mi].name}・前の罠の並びをそのまま置いた（動かすのも自由）`); }
   else if (runMode === 'edit') startWave(editLv, { map: mi, intro: true });
   else if (runMode === 'training') { G.up.limit = 3; startWave(4, { map: lesson ? 0 : mi, training: true }); G.prepT = Infinity; $('#goText').textContent = $t`侵入者を呼ぶ`; endGuide(); if (lesson) { banner(lesson.name, $t`目標: ${lesson.goal}`); $('#dockHint').textContent = $t`目標: ${lesson.goal}`; if (lesson.kind === 'guide') { G.banner = 0; initGuide(); } } }
   else if (runMode === 'endless') {
@@ -5389,6 +5409,7 @@ function clearedBy() { // 4人全員でクリアした実績
 function stageResult(won) {
   if (runMode === 'endless') { endlessResult(); return; }
   G.state = 'over'; $('#btnGo').hidden = true;
+  if (runMode === 'stage') saveLayout(); // 次のステージ・やり直しで同じ罠の並びから始める
   const n = runStage, stars = won ? 1 + (G.hpLost ? 0 : 1) + (G.bestCombo >= 8 + Math.floor(n / 5) ? 1 : 0) : 0;
   let newBest = false, gain = 0;
   if (runMode === 'stage') {
