@@ -471,6 +471,22 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .comicpg{font:700 12px var(--f-body);color:var(--muted);white-space:nowrap}
 #ovGrow .pfoot .btn{white-space:nowrap;flex:none}#growLeftNote{line-height:1.3}
 @media (orientation:portrait){#growLeftNote{font-size:11px}#ovGrow .up{gap:2px;padding:6px 10px}}
+.endrow{display:flex;gap:8px;width:100%}.endrow:not(:has(> :not([hidden]))){display:none}.endrow #btnEndless{flex:1;min-width:0}
+.tmenu .btn.rankbtn{flex:none;width:auto;min-width:0;padding:4px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}.rankbtn i{font-style:normal;font-size:22px;line-height:1}.rankbtn small{white-space:nowrap}
+.rankbody{display:flex;flex-direction:column;gap:10px;overflow:auto}
+.rankform{display:grid;grid-template-columns:auto 1fr auto;gap:8px 14px;align-items:end;padding:10px 12px;border-radius:8px;background:rgba(58,40,46,.08);border:1px solid rgba(107,74,74,.25)}
+.rf-score span,.rf-name span{display:block;font-size:11px;color:var(--ink-soft)}
+.rf-score b{font:800 24px var(--f-display);color:var(--berry)}.rf-score small{margin-left:6px;font-size:12px;color:var(--ink-soft)}
+.rf-name input{width:100%;min-height:40px;padding:6px 10px;border-radius:6px;border:1px solid #c9a38a;font:700 15px var(--f-body);background:#fffaf2;color:var(--ink)}
+.rf-note{grid-column:1/-1;margin:0;font-size:11px;line-height:1.5;color:var(--ink-soft)}
+.rankmsg{margin:0;font-size:13px;color:var(--ink-soft);min-height:1em}.rankmsg:empty{display:none}
+.ranklist{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.ranklist li{display:grid;grid-template-columns:2.6em 1fr auto 4.2em;gap:10px;align-items:center;padding:6px 10px;border-radius:6px;background:linear-gradient(180deg,#3a2c36,#2a2028);color:var(--parch);font-size:14px}
+.ranklist li .rk{font:800 16px var(--f-display);color:var(--gold-hi);text-align:center}
+.ranklist li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ranklist li .nm small{margin-left:6px;font-size:11px;color:#b8a8c8}
+.ranklist li .sc{font:800 16px var(--f-display);color:#f1d98e;text-align:right}.ranklist li .cb{font-size:12px;color:#b8a8c8;text-align:right}
+.ranklist li.me{box-shadow:0 0 0 2px #e8c46a}
+@media (orientation:portrait),(max-width:560px){.rankform{grid-template-columns:1fr}.ranklist li{grid-template-columns:2.2em 1fr auto;font-size:13px}.ranklist li .cb{display:none}}
 .growbtn.new{box-shadow:0 0 0 2px #e8c46a,0 0 12px rgba(255,210,122,.7)}
 .up .lv i{font-style:normal;color:var(--gold-hi)}
 .comicbtn{border:1px solid var(--wax);background:#fff;color:var(--berry);border-radius:999px;padding:4px 10px;min-height:32px;font:700 12px var(--f-body);cursor:pointer;margin-right:8px}
@@ -640,7 +656,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
     <div class="tmenu">
       <button class="btn" id="btnStage" type="button">ステージ<small>部屋を順に守る　全40</small></button>
       <button class="btn" id="btnStart" type="button">チャレンジ<small>10夜を続けて守り、ハイスコアを競う</small></button>
-      <button class="btn endless" id="btnEndless" type="button" hidden>無限の夜<small>全40クリアで開いた隠しモード</small></button>
+      <div class="endrow"><button class="btn endless" id="btnEndless" type="button" hidden>無限の夜<small>120秒のスコアチャレンジ</small></button><button class="btn endless rankbtn" id="btnRankT" type="button" hidden><i>♛</i><small>ランキング</small></button></div>
       <div class="tminor">
         <button id="btnTrain" type="button"><i>⚑</i>トレーニング</button>
         <button id="btnEdit" type="button"><i>✎</i>部屋を作る</button>
@@ -720,6 +736,22 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
   </div>
 </div>
 
+<div class="overlay" id="ovRank" hidden>
+  <div class="panel">
+    <div class="phead"><button class="back" id="btnRankBack" type="button">戻る</button><h2>ランキング</h2><span class="meta">無限の夜・120秒</span></div>
+    <div class="pbody rankbody">
+      <form class="rankform" id="rankForm" hidden>
+        <div class="rf-score"><span>今回の得点</span><b id="rfScore">0</b><small id="rfCombo"></small></div>
+        <label class="rf-name"><span>名前（12文字まで）</span><input id="rfName" maxlength="12" autocomplete="nickname" required></label>
+        <button class="btn" id="rfSend" type="submit">ランキングに送る</button>
+        <p class="rf-note">送るもの: 名前・得点・最大連続・逃げる子・持っていった罠と作動した回数・遊んだ時間・遊んだ環境（Windows／ブラウザなど）・言語・端末ごとの番号。ランキングの表示と、ゲームの調整（罠の使われ方など）に使います。名前に個人情報は入れないでください。</p>
+      </form>
+      <p class="rankmsg" id="rankMsg"></p>
+      <ol class="ranklist" id="rankList"></ol>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="ovOver" hidden>
   <div class="panel">
     <div class="phead"><button class="back" id="btnRetry2" type="button" hidden>ステージ一覧</button></div>
@@ -740,7 +772,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
       </div>
       <p class="sm" id="rBest"></p>
     </div>
-    <div class="pfoot"><button class="btn sub growbtn" id="btnGrow" type="button" hidden>育成</button><button class="btn" id="btnRetry" type="button">もう一度</button></div>
+    <div class="pfoot"><button class="btn sub growbtn" id="btnGrow" type="button" hidden>育成</button><button class="btn sub growbtn" id="btnRank" type="button" hidden>ランキング</button><button class="btn" id="btnRetry" type="button">もう一度</button></div>
   </div>
 </div>
 
@@ -1293,6 +1325,71 @@ const ENDLESS_TIME = 120;
 let endlessRec = { combo: 0, score: 0 };
 try { const v = JSON.parse(localStorage.getItem('trapoflily-endless') || 'null'); if (v) endlessRec = v; } catch (e) {}
 const endlessOpen = () => !!(stageRec.rec && stageRec.rec[40]);
+// ---------- ランキング（無限の夜の得点を自前のサーバー Supabase に送る） ----------
+// 送り先はビルドのとき rank-config.json から書き込む（無いときはランキングを出さない）。key は公開してよい publishable／anon キー
+const GAME_VERSION = '1.0.0';
+const RANK = { url: '__RANK_URL__', key: '__RANK_KEY__' };
+const rankOn = () => /^https:\/\//.test(RANK.url) && !!RANK.key && !RANK.key.startsWith('__');
+let rankPending = null, rankBack = 'ovTitle';
+function rankPlayer() { // 端末ごとの番号（名前や個人の情報とは結びつかない）
+  let id = ''; try { id = localStorage.getItem('trapoflily-player') || ''; } catch (e) {}
+  if (!/^[0-9a-f-]{36}$/.test(id)) { id = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16)); try { localStorage.setItem('trapoflily-player', id); } catch (e) {} }
+  return id;
+}
+function rankPlatform() { const u = navigator.userAgent; return /Electron/.test(u) ? (/Windows/.test(u) ? 'win-app' : /Mac/.test(u) ? 'mac-app' : 'app') : /iPhone|iPad|Android/.test(u) ? 'mobile-web' : 'web'; }
+function rankPayload() {
+  return { score: G.score, combo: G.bestCombo, girl: G.char, loadout: G.loadout.slice(), fired: Object.assign({}, G.fired || {}),
+    kills: G.kills || 0, pits: G.pitFalls || 0, crashes: G.crashes || 0, chains: G.chains || 0, multi: G.multiHits || 0,
+    duration: Math.round(G.time * 10) / 10, version: GAME_VERSION, platform: rankPlatform(), lang: LANG };
+}
+async function rankFetch(path, body) {
+  const ac = new AbortController(), t = setTimeout(() => ac.abort(), 8000);
+  try {
+    const r = await fetch(RANK.url.replace(/\/$/, '') + '/rest/v1/' + path, { method: 'POST', signal: ac.signal,
+      headers: { apikey: RANK.key, Authorization: 'Bearer ' + RANK.key, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text().catch(() => String(r.status)));
+    const txt = await r.text(); return txt ? JSON.parse(txt) : null;
+  } finally { clearTimeout(t); }
+}
+function openRank(back) {
+  rankBack = back; showOv('ovRank');
+  const f = $('#rankForm'); f.hidden = !rankPending;
+  if (rankPending) {
+    $('#rfScore').textContent = rankPending.score.toLocaleString(NUM); $('#rfCombo').textContent = $t`最大 ${rankPending.combo}連続`;
+    let nm = ''; try { nm = localStorage.getItem('trapoflily-name') || ''; } catch (e) {} $('#rfName').value = nm; $('#rfSend').disabled = false;
+  }
+  loadRank();
+}
+async function loadRank() {
+  const list = $('#rankList'); $('#rankMsg').textContent = $t`読み込み中…`;
+  try {
+    const rows = await rankFetch('rpc/top_scores', { lim: 50 }) || [], me = rankPlayer().slice(0, 8);
+    list.innerHTML = '';
+    for (const r of rows) {
+      const li = document.createElement('li'); if (r.player_tag === me) li.className = 'me';
+      const ch = CHARS[r.girl] ? CHARS[r.girl].name : '';
+      li.innerHTML = `<span class="rk">${r.rank}</span><span class="nm"></span><span class="sc">${Number(r.score).toLocaleString(NUM)}</span><span class="cb">${$t`${r.combo}連続`}</span>`;
+      li.querySelector('.nm').textContent = r.name; const sm = document.createElement('small'); sm.textContent = ch; li.querySelector('.nm').append(sm); // 名前は文字として入れる（HTMLとして読まない）
+      list.append(li);
+    }
+    $('#rankMsg').textContent = rows.length ? '' : $t`まだ誰も記録していない。最初の1人になろう`;
+  } catch (e) { list.innerHTML = ''; $('#rankMsg').textContent = $t`ランキングを読み込めなかった（ネットにつながっているか確かめてね）`; }
+}
+async function sendRank(ev) {
+  ev.preventDefault();
+  const name = $('#rfName').value.trim().slice(0, 12);
+  if (!name || !rankPending) return;
+  try { localStorage.setItem('trapoflily-name', name); } catch (e) {}
+  $('#rfSend').disabled = true; $('#rankMsg').textContent = $t`送っています…`;
+  try {
+    await rankFetch('scores', Object.assign({ name, player: rankPlayer() }, rankPending));
+    rankPending = null; $('#rankForm').hidden = true; $('#btnRank').classList.remove('new'); sfx.kill();
+    await loadRank(); if (!$('#rankMsg').textContent) $('#rankMsg').textContent = $t`送った！`;
+  } catch (e) {
+    $('#rfSend').disabled = false;
+    $('#rankMsg').textContent = /too many/.test(String(e.message)) ? $t`少し時間をおいてから送ってね` : $t`送れなかった（ネットにつながっているか確かめてね）`;
+  }
+}
 const stageMap = n => STAGE_MAPS[Math.floor((n - 1) / 5)];
 const stageWave = n => Math.min(10, 1 + Math.floor((n - 1) * 9 / 39)); // 侵入者の強さ（チャレンジの第何夜に当たるか）
 let stageRec = { open: 1, rec: {} };
@@ -2236,6 +2333,7 @@ function hurtHero(line) {
 }
 function fireTrapBody(tr, ty, x, y, f) {
   const fav = isFav(ty);
+  G.fired ||= {}; G.fired[ty] = (G.fired[ty] || 0) + 1; // 罠ごとの作動回数（ランキングと一緒に送って、調整に使う）
   if (fav && G.time - (tr.favT ?? -99) > 6) { tr.favT = G.time; favText(x, y); }
   if (ty === 'keg') { // 火薬樽: 導火線が燃えてから爆発
     sfx.place(); G.fx.push({ type: 'fuse', x, y, t: 0, dur: TRAPS.keg.delay }); addText(x, y - 1, $t`ジジ…`, '#ffb35a', 14);
@@ -3522,7 +3620,7 @@ buildPalette();
 
 // ---------- 画面切り替え ----------
 const stage = $('#stage');
-const OVS = ['ovTitle', 'ovSelect', 'ovHelp', 'ovShop', 'ovOver', 'ovPause', 'ovStages', 'ovAch', 'ovTrain', 'ovSettings', 'ovCredits', 'ovStoryList', 'ovGrow'];
+const OVS = ['ovTitle', 'ovSelect', 'ovHelp', 'ovShop', 'ovOver', 'ovPause', 'ovStages', 'ovAch', 'ovTrain', 'ovSettings', 'ovCredits', 'ovStoryList', 'ovGrow', 'ovRank'];
 function showOv(id) {
   OVS.forEach(o => $('#' + o).hidden = o !== id);
   if (id === 'ovTitle') refreshTitle();
@@ -4446,7 +4544,7 @@ function renderShop() {
 function gameOver(won) {
   if (runMode !== 'challenge') { stageResult(won); return; }
   G.state = 'over'; $('#btnGo').hidden = true;
-  $('#btnGrow').hidden = true; $('#btnRetry').textContent = $t`もう一度`; $('#rWaveL').textContent = $t`たどり着いた夜`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
+  $('#btnGrow').hidden = true; $('#btnRank').hidden = true; $('#btnRetry').textContent = $t`もう一度`; $('#rWaveL').textContent = $t`たどり着いた夜`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
   if (won) { achieve('challenge'); clearedBy(); }
   const hpBonus = won ? G.hp * 2000 : 0;
   G.score += hpBonus;
@@ -4509,7 +4607,7 @@ function stageResult(won) {
   $('#rOiuchi').textContent = $t`${G.oiuchi || 0}回`; $('#rMulti').textContent = $t`${G.multiHits || 0}回`; $('#rCrash').textContent = $t`${G.crashes || 0}回`; $('#rItems').textContent = $t`${G.itemsGot || 0}個`;
   $('#rKills').textContent = G.kills;
   $('#rBest').textContent = (won ? '' : rewindLine() + '　') + (runMode === 'stage' && won ? (newBest ? $t`このステージの最高得点を更新！　` : $t`このステージの最高得点 ${stageRec.rec[n].best.toLocaleString(NUM)}　`) : '') + $t`★の条件: クリア／体力を減らさない／${8 + Math.floor(n / 5)}連続以上` + (gain ? $t`　新しい★で育成ポイント +${gain}` : '');
-  $('#btnGrow').hidden = runMode !== 'stage'; refreshGrowBtns();
+  $('#btnGrow').hidden = runMode !== 'stage'; $('#btnRank').hidden = true; refreshGrowBtns();
   const next = runMode === 'stage' && won && n < STAGE_COUNT;
   G.goNext = next;
   $('#btnRetry').textContent = runMode === 'edit' ? $t`部屋づくりに戻る` : next ? $t`ステージ${n + 1}へ` : won ? $t`もう一度` : $t`時を戻してやり直す`;
@@ -4535,6 +4633,7 @@ function endlessResult() {
   $('#rOiuchi').textContent = $t`${G.oiuchi || 0}回`; $('#rMulti').textContent = $t`${G.multiHits || 0}回`; $('#rCrash').textContent = $t`${G.crashes || 0}回`; $('#rItems').textContent = $t`${G.itemsGot || 0}個`; $('#rKills').textContent = G.kills;
   $('#rBest').textContent = $t`最高得点 ${endlessRec.score.toLocaleString(NUM)}${newS ? $t`（更新！）` : ''}　侵入者は倒れないので、罠をつなげて連続を伸ばす`;
   G.goNext = false; $('#btnGrow').hidden = true; $('#btnRetry').textContent = $t`もう一度`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
+  rankPending = rankOn() && G.score > 0 ? rankPayload() : null; $('#btnRank').hidden = !rankOn(); $('#btnRank').classList.toggle('new', !!rankPending);
   if (bgmBuf.dawn) { bgmKey = null; playBgm('dawn'); } else sfx.dawn();
   setTimeout(() => showOv('ovOver'), 300);
 }
@@ -4677,7 +4776,11 @@ $('#btnStart').addEventListener('click', () => { runMode = 'challenge'; openSele
 $('#btnTrain').addEventListener('click', openTrain);
 $('#btnTrainBack').addEventListener('click', () => showOv('ovTitle'));
 $('#btnEndless').addEventListener('click', () => { runMode = 'endless'; openSelect(); });
-function refreshTitle() { $('#btnEndless').hidden = !endlessOpen(); $('#btnTrain').classList.toggle('new', !lessonDoneRec.guide); $('#btnStory').classList.toggle('new', !!storySeen.ending && !storySeen.endA && !storySeen.endB); $('#btnStory').classList.add('story'); }
+$('#btnRankT').addEventListener('click', () => { audio(); rankPending = null; openRank('ovTitle'); });
+$('#btnRank').addEventListener('click', () => openRank('ovOver'));
+$('#btnRankBack').addEventListener('click', () => showOv(rankBack));
+$('#rankForm').addEventListener('submit', sendRank);
+function refreshTitle() { $('#btnEndless').hidden = !endlessOpen(); $('#btnRankT').hidden = !(endlessOpen() && rankOn()); $('#btnTrain').classList.toggle('new', !lessonDoneRec.guide); $('#btnStory').classList.toggle('new', !!storySeen.ending && !storySeen.endA && !storySeen.endB); $('#btnStory').classList.add('story'); }
 refreshTitle();
 $('#btnRetry').addEventListener('click', () => {
   if (runMode === 'edit') { openEditor(); return; }

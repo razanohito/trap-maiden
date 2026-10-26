@@ -79,6 +79,15 @@ src = re.sub(r"\b(rgba?)\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*([,)])"
 en_js = (ROOT / "src" / "lang" / "en.js").read_text(encoding="utf-8")
 src = src.replace('<script src="lang/en.js"></script>', "<script>\n" + en_js.strip() + "\n</script>")
 
+# ランキングの送り先（rank-config.json: {"url": "https://xxxx.supabase.co", "key": "公開用の publishable／anon キー"}）。無ければランキングは出ない
+rank_cfg = ROOT / "rank-config.json"
+if rank_cfg.exists():
+    import json
+    cfg = json.loads(rank_cfg.read_text(encoding="utf-8"))
+    if "service_role" in cfg.get("key", "") or cfg.get("key", "").startswith("sb_secret_"):
+        raise SystemExit("rank-config.json の key に秘密のキーが入っています。公開用（publishable／anon）のキーにしてください")
+    src = src.replace("'__RANK_URL__'", json.dumps(cfg["url"])).replace("'__RANK_KEY__'", json.dumps(cfg["key"]))
+
 src = re.sub(r"'\.\./art/([\w/-]+\.(?:webp|png|mp3|woff2))'", embed, src)
 
 page = ROOT / "v2" / "index.html"
