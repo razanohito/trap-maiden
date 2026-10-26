@@ -32,6 +32,8 @@ contextBridge.exposeInMainWorld('trapHost', {
   lang: info.lang || '',
   steam: !!info.steam,
   achieve: id => { ipcRenderer.send('ach', String(id)); flush(false); },
+  board: info.board ? { upload: (score, details) => ipcRenderer.invoke('board:upload', score, details), entries: kind => ipcRenderer.invoke('board:entries', kind) } : null,
+  addStats: add => ipcRenderer.send('stats:add', add),
   quit: () => { flush(true); ipcRenderer.send('quit'); },
   toggleFullscreen: () => ipcRenderer.send('fullscreen'),
 });

@@ -17,7 +17,7 @@ const launch = () => electron.launch({ args: [path.join(__dirname, '..'), '--no-
   r.タイトル = await w.title();
   // 設定で音量を変える → 数秒で save.json に出る
   await w.click('#btnSettings');
-  r.終了ボタンが見える = await w.evaluate(() => !document.getElementById('setQuitRow').hidden);
+  r.終了ボタンが見える = await w.evaluate(() => !document.getElementById('setExitRow').hidden);
   await w.fill('#volSfx', '3'); await w.dispatchEvent('#volSfx', 'input');
   await w.waitForTimeout(3600);
   const f = saveFile(); r.セーブの場所 = f && f.replace(home, '~');
@@ -39,7 +39,7 @@ const launch = () => electron.launch({ args: [path.join(__dirname, '..'), '--no-
   // 終了ボタン
   await w.click('#btnSettings');
   const closed = new Promise(res => app.process().on('exit', () => res(true)));
-  await w.click('#btnQuit');
+  await w.click('#btnExit');
   r.終了した = await Promise.race([closed, new Promise(res => setTimeout(() => res(false), 5000))]);
   console.log(JSON.stringify(r, null, 1));
   fs.rmSync(home, { recursive: true, force: true });

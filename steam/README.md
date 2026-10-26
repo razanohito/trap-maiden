@@ -6,6 +6,7 @@
 |---|---|
 | `store_text.md` | ストアページの文章（日本語・英語）、AI 生成コンテンツの開示文、タグ、システム要件 |
 | `achievements.md` | 実績 23 個の API 名・名前・説明（日本語・英語） |
+| `leaderboard.md` | 無限の夜のランキング（自動で作られる）と、任意の遊び方の統計 |
 | `achievements/` | 実績アイコン（256×256、取った絵と灰色の絵）。`python tools/make_ach_icons.py` で作り直せる |
 | `capsules/` | ストアとライブラリの画像（下の表）。`python tools/make_capsules.py` で作り直せる |
 | `screenshots/` | スクリーンショット 1920×1080（`en_*` 英語・`ja_*` 日本語、9 枚ずつ。9 枚目はおはなし）。`python tools/build.py` のあと `node tools/sim/shot_store.js` で撮り直せる（ビルドした v2/index.html を撮る） |
@@ -28,6 +29,7 @@
 ## 3. Steamworks の設定
 
 - **実績**: 「アプリ管理 → 統計と実績」で `achievements.md` の 23 個を作る。API 名は表のとおり（`ACH_NIGHT1` など）。アイコンは `achievements/`
+- **ランキング**: 作業はいらない（ゲームが `ENDLESS_SCORE` を自動で作る）。罠の使われ方を集計したいときだけ、`leaderboard.md` の統計を作る
 - **Steam クラウド**: 「アプリ管理 → Steam クラウド」で、1 ユーザーあたり 1 MB・ファイル数 10 にして、Auto-Cloud に次の 1 行を足す
   - ルート: `WinAppDataRoaming`、サブディレクトリ: `TrapOfLily`、パターン: `save.json`、OS: Windows
   - （ゲームは `%APPDATA%\TrapOfLily\save.json` にセーブを書く。`desktop/main.js`）

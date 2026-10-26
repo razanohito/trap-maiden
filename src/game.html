@@ -474,10 +474,10 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .endrow{display:flex;gap:8px;width:100%}.endrow:not(:has(> :not([hidden]))){display:none}.endrow #btnEndless{flex:1;min-width:0}
 .tmenu .btn.rankbtn{flex:none;width:auto;min-width:0;padding:4px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}.rankbtn i{font-style:normal;font-size:22px;line-height:1}.rankbtn small{white-space:nowrap}
 .rankbody{display:flex;flex-direction:column;gap:10px;overflow:auto}
-.rankform{display:grid;grid-template-columns:auto 1fr auto;gap:8px 14px;align-items:end;padding:10px 12px;border-radius:8px;background:rgba(58,40,46,.08);border:1px solid rgba(107,74,74,.25)}
-.rf-score span,.rf-name span{display:block;font-size:11px;color:var(--ink-soft)}
+.rankform{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:end;padding:10px 12px;border-radius:8px;background:rgba(58,40,46,.08);border:1px solid rgba(107,74,74,.25)}
+.rf-score span{display:block;font-size:11px;color:var(--ink-soft)}
 .rf-score b{font:800 24px var(--f-display);color:var(--berry)}.rf-score small{margin-left:6px;font-size:12px;color:var(--ink-soft)}
-.rf-name input{width:100%;min-height:40px;padding:6px 10px;border-radius:6px;border:1px solid #c9a38a;font:700 15px var(--f-body);background:#fffaf2;color:var(--ink)}
+.ranktabs{display:flex;gap:6px}.ranktabs button{flex:1;min-height:36px;border-radius:999px;border:1px solid #c9a38a;background:#fffaf2;color:var(--ink);font:700 13px var(--f-body);cursor:pointer}.ranktabs button.on{background:var(--berry);border-color:var(--berry);color:#fff}
 .rf-note{grid-column:1/-1;margin:0;font-size:11px;line-height:1.5;color:var(--ink-soft)}
 .rankmsg{margin:0;font-size:13px;color:var(--ink-soft);min-height:1em}.rankmsg:empty{display:none}
 .ranklist{list-style:none;margin:0;padding:0;display:grid;gap:4px}
@@ -742,10 +742,10 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
     <div class="pbody rankbody">
       <form class="rankform" id="rankForm" hidden>
         <div class="rf-score"><span>今回の得点</span><b id="rfScore">0</b><small id="rfCombo"></small></div>
-        <label class="rf-name"><span>名前（12文字まで）</span><input id="rfName" maxlength="12" autocomplete="nickname" required></label>
-        <button class="btn" id="rfSend" type="submit">ランキングに送る</button>
-        <p class="rf-note">送るもの: 名前・得点・最大連続・逃げる子・持っていった罠と作動した回数・遊んだ時間・遊んだ環境（Windows／ブラウザなど）・言語・端末ごとの番号。ランキングの表示と、ゲームの調整（罠の使われ方など）に使います。名前に個人情報は入れないでください。</p>
+        <button class="btn" id="rfSend" type="submit">Steamのランキングに送る</button>
+        <p class="rf-note">Steam の名前で載ります。得点のほかに、最大連続・逃げる子・持っていった罠と作動した回数・遊んだ時間も一緒に送り、ゲームの調整に使います。自己ベストより低い得点は、送っても順位は変わりません。</p>
       </form>
+      <div class="ranktabs" id="rankTabs"><button type="button" data-k="global">全体</button><button type="button" data-k="around">自分の周り</button><button type="button" data-k="friends">フレンド</button></div>
       <p class="rankmsg" id="rankMsg"></p>
       <ol class="ranklist" id="rankList"></ol>
     </div>
@@ -1325,70 +1325,55 @@ const ENDLESS_TIME = 120;
 let endlessRec = { combo: 0, score: 0 };
 try { const v = JSON.parse(localStorage.getItem('trapoflily-endless') || 'null'); if (v) endlessRec = v; } catch (e) {}
 const endlessOpen = () => !!(stageRec.rec && stageRec.rec[40]);
-// ---------- ランキング（無限の夜の得点を自前のサーバー Supabase に送る） ----------
-// 送り先はビルドのとき rank-config.json から書き込む（無いときはランキングを出さない）。key は公開してよい publishable／anon キー
-const GAME_VERSION = '1.0.0';
-const RANK = { url: '__RANK_URL__', key: '__RANK_KEY__' };
-const rankOn = () => /^https:\/\//.test(RANK.url) && !!RANK.key && !RANK.key.startsWith('__');
-let rankPending = null, rankBack = 'ovTitle';
-function rankPlayer() { // 端末ごとの番号（名前や個人の情報とは結びつかない）
-  let id = ''; try { id = localStorage.getItem('trapoflily-player') || ''; } catch (e) {}
-  if (!/^[0-9a-f-]{36}$/.test(id)) { id = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16)); try { localStorage.setItem('trapoflily-player', id); } catch (e) {} }
-  return id;
+// ---------- ランキング（無限の夜の得点を Steam のリーダーボードに送る。Steam 版だけ） ----------
+// 名前は Steam の名前。得点のほかに、最大連続・逃げる子・罠ごとの作動回数などを「詳細」として一緒に送り、調整に使う
+const RANK_LAYOUT = 1; // details の並びの版。並びを変えたら上げる（steam/leaderboard.md に並びを書いてある）
+const rankOn = () => !!(host && host.steam && host.board);
+let rankPending = null, rankBack = 'ovTitle', rankKind = 'global';
+function rankDetails() { // [版, 最大連続, 逃げる子, 撃退, 奈落, 玉突き, 連鎖, ダブルヒット, 秒, 持っていった罠(ビット), 罠ごとの作動回数 × TRAP_ORDER]
+  const mask = TRAP_ORDER.reduce((m, t, i) => m | (G.loadout.includes(t) ? 1 << i : 0), 0);
+  return [RANK_LAYOUT, G.bestCombo, CHAR_ORDER.indexOf(G.char), G.kills || 0, G.pitFalls || 0, G.crashes || 0, G.chains || 0, G.multiHits || 0, Math.round(G.time), mask,
+    ...TRAP_ORDER.map(t => (G.fired && G.fired[t]) || 0)];
 }
-function rankPlatform() { const u = navigator.userAgent; return /Electron/.test(u) ? (/Windows/.test(u) ? 'win-app' : /Mac/.test(u) ? 'mac-app' : 'app') : /iPhone|iPad|Android/.test(u) ? 'mobile-web' : 'web'; }
-function rankPayload() {
-  return { score: G.score, combo: G.bestCombo, girl: G.char, loadout: G.loadout.slice(), fired: Object.assign({}, G.fired || {}),
-    kills: G.kills || 0, pits: G.pitFalls || 0, crashes: G.crashes || 0, chains: G.chains || 0, multi: G.multiHits || 0,
-    duration: Math.round(G.time * 10) / 10, version: GAME_VERSION, platform: rankPlatform(), lang: LANG };
-}
-async function rankFetch(path, body) {
-  const ac = new AbortController(), t = setTimeout(() => ac.abort(), 8000);
-  try {
-    const r = await fetch(RANK.url.replace(/\/$/, '') + '/rest/v1/' + path, { method: 'POST', signal: ac.signal,
-      headers: { apikey: RANK.key, Authorization: 'Bearer ' + RANK.key, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) });
-    if (!r.ok) throw new Error(await r.text().catch(() => String(r.status)));
-    const txt = await r.text(); return txt ? JSON.parse(txt) : null;
-  } finally { clearTimeout(t); }
+// 遊び方の集計（Steam の統計）。夜が終わるたびに、罠ごとの作動回数・持っていった回数・逃げる子ごとの回数を足す。統計が無い名前は Steam 側で無視される
+function sendUsage() {
+  if (!host || !host.addStats || runMode === 'training' || G.usageSent) return;
+  G.usageSent = true; const add = { ['RUNS_' + G.char.toUpperCase()]: 1 };
+  for (const t of TRAP_ORDER) { const n = (G.fired && G.fired[t]) || 0; if (n) add['FIRED_' + t.toUpperCase()] = n; if (G.loadout.includes(t)) add['PICKED_' + t.toUpperCase()] = 1; }
+  try { host.addStats(add); } catch (e) {}
 }
 function openRank(back) {
   rankBack = back; showOv('ovRank');
   const f = $('#rankForm'); f.hidden = !rankPending;
-  if (rankPending) {
-    $('#rfScore').textContent = rankPending.score.toLocaleString(NUM); $('#rfCombo').textContent = $t`最大 ${rankPending.combo}連続`;
-    let nm = ''; try { nm = localStorage.getItem('trapoflily-name') || ''; } catch (e) {} $('#rfName').value = nm; $('#rfSend').disabled = false;
-  }
+  if (rankPending) { $('#rfScore').textContent = rankPending.score.toLocaleString(NUM); $('#rfCombo').textContent = $t`最大 ${rankPending.details[1]}連続`; $('#rfSend').disabled = false; }
   loadRank();
 }
 async function loadRank() {
   const list = $('#rankList'); $('#rankMsg').textContent = $t`読み込み中…`;
+  document.querySelectorAll('#rankTabs button').forEach(b => b.classList.toggle('on', b.dataset.k === rankKind));
   try {
-    const rows = await rankFetch('rpc/top_scores', { lim: 50 }) || [], me = rankPlayer().slice(0, 8);
+    const rows = await host.board.entries(rankKind) || [];
     list.innerHTML = '';
     for (const r of rows) {
-      const li = document.createElement('li'); if (r.player_tag === me) li.className = 'me';
-      const ch = CHARS[r.girl] ? CHARS[r.girl].name : '';
-      li.innerHTML = `<span class="rk">${r.rank}</span><span class="nm"></span><span class="sc">${Number(r.score).toLocaleString(NUM)}</span><span class="cb">${$t`${r.combo}連続`}</span>`;
-      li.querySelector('.nm').textContent = r.name; const sm = document.createElement('small'); sm.textContent = ch; li.querySelector('.nm').append(sm); // 名前は文字として入れる（HTMLとして読まない）
+      const li = document.createElement('li'); if (r.me) li.className = 'me';
+      const d = r.details || [], ch = d[0] === RANK_LAYOUT && CHARS[CHAR_ORDER.at(d[2])] ? CHARS[CHAR_ORDER.at(d[2])].name : '';
+      li.innerHTML = `<span class="rk">${r.rank}</span><span class="nm"></span><span class="sc">${Number(r.score).toLocaleString(NUM)}</span><span class="cb">${d[0] === RANK_LAYOUT ? $t`${d[1]}連続` : ''}</span>`;
+      li.querySelector('.nm').textContent = r.name || '—'; const sm = document.createElement('small'); sm.textContent = ch; li.querySelector('.nm').append(sm); // 名前は文字として入れる（HTMLとして読まない）
       list.append(li);
     }
-    $('#rankMsg').textContent = rows.length ? '' : $t`まだ誰も記録していない。最初の1人になろう`;
-  } catch (e) { list.innerHTML = ''; $('#rankMsg').textContent = $t`ランキングを読み込めなかった（ネットにつながっているか確かめてね）`; }
+    $('#rankMsg').textContent = rows.length ? '' : rankKind === 'friends' ? $t`フレンドの記録はまだない` : $t`まだ誰も記録していない。最初の1人になろう`;
+  } catch (e) { list.innerHTML = ''; $('#rankMsg').textContent = $t`ランキングを読み込めなかった（Steam につながっているか確かめてね）`; }
 }
 async function sendRank(ev) {
   ev.preventDefault();
-  const name = $('#rfName').value.trim().slice(0, 12);
-  if (!name || !rankPending) return;
-  try { localStorage.setItem('trapoflily-name', name); } catch (e) {}
+  if (!rankPending) return;
   $('#rfSend').disabled = true; $('#rankMsg').textContent = $t`送っています…`;
   try {
-    await rankFetch('scores', Object.assign({ name, player: rankPlayer() }, rankPending));
+    const r = await host.board.upload(rankPending.score, rankPending.details);
+    if (!r || !r.ok) throw new Error('upload');
     rankPending = null; $('#rankForm').hidden = true; $('#btnRank').classList.remove('new'); sfx.kill();
-    await loadRank(); if (!$('#rankMsg').textContent) $('#rankMsg').textContent = $t`送った！`;
-  } catch (e) {
-    $('#rfSend').disabled = false;
-    $('#rankMsg').textContent = /too many/.test(String(e.message)) ? $t`少し時間をおいてから送ってね` : $t`送れなかった（ネットにつながっているか確かめてね）`;
-  }
+    await loadRank(); $('#rankMsg').textContent = r.changed ? $t`送った！ 自己ベストを更新（${r.rank}位）` : $t`送った！ 自己ベストはこれより上なので、順位はそのまま`;
+  } catch (e) { $('#rfSend').disabled = false; $('#rankMsg').textContent = $t`送れなかった（Steam につながっているか確かめてね）`; }
 }
 const stageMap = n => STAGE_MAPS[Math.floor((n - 1) / 5)];
 const stageWave = n => Math.min(10, 1 + Math.floor((n - 1) * 9 / 39)); // 侵入者の強さ（チャレンジの第何夜に当たるか）
@@ -4543,7 +4528,7 @@ function renderShop() {
 }
 function gameOver(won) {
   if (runMode !== 'challenge') { stageResult(won); return; }
-  G.state = 'over'; $('#btnGo').hidden = true;
+  G.state = 'over'; $('#btnGo').hidden = true; sendUsage();
   $('#btnGrow').hidden = true; $('#btnRank').hidden = true; $('#btnRetry').textContent = $t`もう一度`; $('#rWaveL').textContent = $t`たどり着いた夜`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
   if (won) { achieve('challenge'); clearedBy(); }
   const hpBonus = won ? G.hp * 2000 : 0;
@@ -4584,6 +4569,7 @@ function stageResult(won) {
   if (runMode === 'endless') { endlessResult(); return; }
   G.state = 'over'; $('#btnGo').hidden = true;
   if (runMode === 'stage') saveLayout(); // 次のステージ・やり直しで同じ罠の並びから始める
+  sendUsage();
   const n = runStage, stars = won ? 1 + (G.hpLost ? 0 : 1) + (G.bestCombo >= 8 + Math.floor(n / 5) ? 1 : 0) : 0;
   let newBest = false, gain = 0;
   if (runMode === 'stage') {
@@ -4618,7 +4604,7 @@ function stageResult(won) {
   else setTimeout(() => showOv('ovOver'), won ? 300 : 700);
 }
 function endlessResult() {
-  G.state = 'over'; $('#btnGo').hidden = true;
+  G.state = 'over'; $('#btnGo').hidden = true; sendUsage();
   const newC = G.bestCombo > endlessRec.combo, newS = G.score > endlessRec.score;
   endlessRec = { combo: Math.max(endlessRec.combo, G.bestCombo), score: Math.max(endlessRec.score, G.score) };
   try { localStorage.setItem('trapoflily-endless', JSON.stringify(endlessRec)); } catch (e) {}
@@ -4633,7 +4619,7 @@ function endlessResult() {
   $('#rOiuchi').textContent = $t`${G.oiuchi || 0}回`; $('#rMulti').textContent = $t`${G.multiHits || 0}回`; $('#rCrash').textContent = $t`${G.crashes || 0}回`; $('#rItems').textContent = $t`${G.itemsGot || 0}個`; $('#rKills').textContent = G.kills;
   $('#rBest').textContent = $t`最高得点 ${endlessRec.score.toLocaleString(NUM)}${newS ? $t`（更新！）` : ''}　侵入者は倒れないので、罠をつなげて連続を伸ばす`;
   G.goNext = false; $('#btnGrow').hidden = true; $('#btnRetry').textContent = $t`もう一度`; $('#btnRetry2').hidden = false; $('#btnRetry2').textContent = $t`タイトルへ`;
-  rankPending = rankOn() && G.score > 0 ? rankPayload() : null; $('#btnRank').hidden = !rankOn(); $('#btnRank').classList.toggle('new', !!rankPending);
+  rankPending = rankOn() && G.score > 0 ? { score: G.score, details: rankDetails() } : null; $('#btnRank').hidden = !rankOn(); $('#btnRank').classList.toggle('new', !!rankPending);
   if (bgmBuf.dawn) { bgmKey = null; playBgm('dawn'); } else sfx.dawn();
   setTimeout(() => showOv('ovOver'), 300);
 }
@@ -4780,6 +4766,7 @@ $('#btnRankT').addEventListener('click', () => { audio(); rankPending = null; op
 $('#btnRank').addEventListener('click', () => openRank('ovOver'));
 $('#btnRankBack').addEventListener('click', () => showOv(rankBack));
 $('#rankForm').addEventListener('submit', sendRank);
+$('#rankTabs').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (b && b.dataset.k !== rankKind) { rankKind = b.dataset.k; loadRank(); } });
 function refreshTitle() { $('#btnEndless').hidden = !endlessOpen(); $('#btnRankT').hidden = !(endlessOpen() && rankOn()); $('#btnTrain').classList.toggle('new', !lessonDoneRec.guide); $('#btnStory').classList.toggle('new', !!storySeen.ending && !storySeen.endA && !storySeen.endB); $('#btnStory').classList.add('story'); }
 refreshTitle();
 $('#btnRetry').addEventListener('click', () => {

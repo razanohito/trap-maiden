@@ -11,10 +11,11 @@
   "scripts": {
     "prepare-game": "node prepare.js",
     "start": "node prepare.js && electron .",
-    "dist": "node prepare.js && electron-builder --win --x64",
-    "dist:dir": "node prepare.js && electron-builder --win --x64 --dir"
+    "dist": "node prepare.js && npm install --no-save --force @koromix/koffi-win32-x64@3.3.2 && electron-builder --win --x64",
+    "dist:dir": "node prepare.js && npm install --no-save --force @koromix/koffi-win32-x64@3.3.2 && electron-builder --win --x64 --dir"
   },
   "dependencies": {
+    "koffi": "3.3.2",
     "steamworks.js": "0.4.0"
   },
   "devDependencies": {
@@ -37,7 +38,14 @@
       "package.json",
       "!node_modules/steamworks.js/dist/linux64/**",
       "!node_modules/steamworks.js/dist/osx/**",
-      "!node_modules/steamworks.js/dist/win64/*.lib"
+      "!node_modules/steamworks.js/dist/win64/*.lib",
+      "leaderboard.js",
+      "!node_modules/@koromix/koffi-linux-*/**",
+      "!node_modules/@koromix/koffi-darwin-*/**",
+      "!node_modules/koffi/src/**/*.cc",
+      "!node_modules/koffi/vendor/**",
+      "!node_modules/koffi/lib/**",
+      "!node_modules/koffi/doc/**"
     ],
     "extraFiles": [
       {
@@ -50,7 +58,9 @@
       }
     ],
     "asarUnpack": [
-      "node_modules/steamworks.js/**/*"
+      "node_modules/steamworks.js/**/*",
+      "node_modules/koffi/**/*",
+      "node_modules/@koromix/koffi-win32-x64/**/*"
     ],
     "win": {
       "target": [
