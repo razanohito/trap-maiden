@@ -1497,15 +1497,17 @@ function bus() {
 }
 function send(node, wet) { node.connect(sfxBus); if (wet) node.connect(verb); }
 
-// ---------- BGM（Gemini に作ってもらった曲。ビルドで data URI に埋め込む） ----------
+// ---------- BGM（yuruge/trap-of-lily の曲。tools/import_bgm.py でそろえ、ビルドで data URI に埋め込む） ----------
 const BGM = {
-  title: '../art/bgm/bgm_title.mp3', prep: '../art/bgm/bgm_prep.mp3', night: '../art/bgm/bgm_night.mp3', library: '../art/bgm/bgm_library.mp3',
-  phase3: '../art/bgm/bgm_phase3.mp3', lastnight: '../art/bgm/bgm_lastnight.mp3', shop: '../art/bgm/bgm_shop.mp3',
+  title: '../art/bgm/bgm_title.mp3', story: '../art/bgm/bgm_story.mp3',
+  room0: '../art/bgm/bgm_room0.mp3', room1: '../art/bgm/bgm_room1.mp3', room2: '../art/bgm/bgm_room2.mp3', room3: '../art/bgm/bgm_room3.mp3',
+  room4: '../art/bgm/bgm_room4.mp3', room5: '../art/bgm/bgm_room5.mp3', room6: '../art/bgm/bgm_room6.mp3', room7: '../art/bgm/bgm_room7.mp3',
   dawn: '../art/bgm/jingle_dawn.mp3', over: '../art/bgm/jingle_over.mp3',
-  story: '../art/bgm/bgm_story.mp3', baron: '../art/bgm/bgm_baron.mp3', ending: '../art/bgm/bgm_ending.mp3', // おはなし用（まだ無ければ下の代わりの曲）
 };
-const BGM_ALT = { story: 'title', baron: 'prep', ending: 'title' }; // 曲のファイルが無いときに流す曲
+// 台本やほかの場面が呼ぶ曲の名前 → 実際に流す曲（部屋の曲は MAPS の順）
+const BGM_ALT = { prep: 'story', night: 'story', baron: 'story', shop: 'title', ending: 'title', library: 'room1', phase3: 'room6', lastnight: 'room7' };
 const bgmFor = k => (k && !BGM[k] && BGM_ALT[k]) ? BGM_ALT[k] : k;
+const roomBgm = () => 'room' + (mapIdx < 8 ? mapIdx : 0); // 自作の部屋は大広間の曲
 const BGM_VOL = .42, BGM_XF = 1.2; // 効果音より小さめ。ループのつなぎ目は 1.2 秒かけて重ねる
 const bgmBuf = {}, bgmLoading = {};
 let bgmBus = null, bgmKey = null, bgmVoice = null, bgmTimer = 0;
@@ -1557,20 +1559,14 @@ function playBgm(key) {
 // 今の場面に合う曲（毎フレーム呼ぶ）
 function sceneBgm() {
   if (!AC || AC.state !== 'running') return;
-  for (const k of ['title', 'prep', 'night']) bgmLoad(k); // よく使う曲は先にほどいておく
+  for (const k of ['title', 'story', roomBgm()]) bgmLoad(k); // よく使う曲は先にほどいておく
   let want = null;
   if (storyOn) want = bgmFor(storyBgm);
   else if (G.state === 'title') want = 'title';
-  else if (G.state === 'edit') want = 'prep';
-  else if (G.state === 'shop') want = 'shop';
+  else if (G.state === 'edit') want = roomBgm();
+  else if (G.state === 'shop') want = 'title';
   else if (G.state === 'over') want = bgmKey === 'dawn' || bgmKey === 'over' ? bgmKey : null;
-  else if (G.state === 'play') {
-    if (G.clearT >= 0) want = 'dawn';
-    else if (G.phase === 0 || G.intro) want = G.wave >= LAST_NIGHT && G.phase > 0 ? 'lastnight' : 'prep';
-    else if (G.wave >= LAST_NIGHT) want = 'lastnight';
-    else if (G.phase === 3) want = 'phase3';
-    else want = G.wave >= 6 ? 'library' : 'night';
-  }
+  else if (G.state === 'play') want = G.clearT >= 0 ? 'dawn' : roomBgm(); // 夜のあいだは部屋ごとの曲
   if (want !== bgmKey) { if (want) bgmLoad(want); playBgm(want); }
 }
 function tone(type, f0, f1, dur, vol = .15, delay = 0, wet = true) {
