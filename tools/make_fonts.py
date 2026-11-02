@@ -11,6 +11,7 @@ import urllib.request
 from pathlib import Path
 
 from fontTools import subset
+from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC_DIR = ROOT / "art-src" / "fonts"
@@ -21,7 +22,12 @@ FONTS = {  # 新しい絵柄の版は丸ゴシックだけを使う（500・700�
     "zenmaru-700": "zenmarugothic/ZenMaruGothic-Bold.ttf",
     "zenmaru-900": "zenmarugothic/ZenMaruGothic-Black.ttf",
 }
-LICENSES = {"OFL-ZenMaruGothic.txt": "zenmarugothic/OFL.txt"}
+LICENSES = {"OFL-ZenMaruGothic.txt": "zenmarugothic/OFL.txt", "OFL-CinzelDecorative.txt": "cinzeldecorative/OFL.txt",
+            "OFL-ShipporiMinchoB1.txt": "shipporiminchob1/OFL.txt"}
+LOGO = {  # タイトル画面のロゴだけに使う書体（ロゴの字だけに絞るので小さい）
+    "logo-latin": ("cinzeldecorative/CinzelDecorative-Bold.ttf", None),  # 名前を予約した書体（RFN）なので絞らずにそのまま woff2 にする
+    "logo-mincho": ("shipporiminchob1/ShipporiMinchoB1-ExtraBold.ttf", "トラップオブリリー"),
+}
 
 
 def fetch(rel: str) -> Path:
@@ -50,6 +56,23 @@ for name, rel in FONTS.items():
     font = subset.load_font(str(fetch(rel)), opts)
     sub = subset.Subsetter(opts)
     sub.populate(unicodes=unicodes)
+    sub.subset(font)
+    out = OUT_DIR / f"{name}.woff2"
+    subset.save_font(font, str(out), opts)
+    print(out.relative_to(ROOT).as_posix(), out.stat().st_size // 1024, "KB")
+for name, (rel, logo_chars) in LOGO.items():
+    if logo_chars is None:
+        font = TTFont(str(fetch(rel)))
+        font.flavor = "woff2"
+        out = OUT_DIR / f"{name}.woff2"
+        font.save(str(out))
+        print(out.relative_to(ROOT).as_posix(), out.stat().st_size // 1024, "KB")
+        continue
+    opts = subset.Options()
+    opts.flavor = "woff2"
+    font = subset.load_font(str(fetch(rel)), opts)
+    sub = subset.Subsetter(opts)
+    sub.populate(unicodes=sorted({ord(c) for c in logo_chars}))
     sub.subset(font)
     out = OUT_DIR / f"{name}.woff2"
     subset.save_font(font, str(out), opts)
