@@ -395,6 +395,8 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .trapinfo p{margin:0;font-size:13px;line-height:1.55}
 .trapinfo .aff{color:#7e2a39;font-weight:700;font-size:12px}
 .trapinfo .fvl{font-size:12px;color:var(--gold-dk);font-weight:700}
+.trapinfo .fus{font-size:12px;line-height:1.5;color:var(--ink-soft)}.trapinfo .fus span.on{color:var(--berry);font-weight:700}
+.trapinfo .fusbtn{font:700 11px var(--f-ui,inherit);padding:1px 8px;margin-left:4px;border-radius:10px;border:1px solid rgba(165,117,52,.6);background:rgba(224,196,126,.18);color:var(--gold-dk);cursor:pointer}
 .selhint{margin:0;font-size:12px;color:var(--ink-soft)}
 .selhint b{color:var(--berry)}
 #selNote{min-height:0}
@@ -1724,7 +1726,6 @@ window.TRAP_EN = {
  "ステージを進めると見られる": "Unlocks as you clear stages",
  "・向きあり": " · has direction",
  "<p class=\"fvl\">★{0}の得意「{1}」: {2}</p>": "<p class=\"fvl\">★{0}'s specialty \"{1}\": {2}</p>",
- "<div class=\"hd\"><div><b>{0}</b><div class=\"t\">魔力 {1}・再装填 {2}秒{3}</div></div></div><p>{4}</p>{5}{6}": "<div class=\"hd\"><div><b>{0}</b><div class=\"t\">Mana {1} · Reload {2}s{3}</div></div></div><p>{4}</p>{5}{6}",
  "<li class=\"{0}\" data-t=\"{1}\"><div><b>{2}{3}</b><small>魔力 {4}・再装填 {5}秒</small></div></li>": "<li class=\"{0}\" data-t=\"{1}\"><div><b>{2}{3}</b><small>Mana {4} · Reload {5}s</small></div></li>",
  "<p class=\"fvline\">★得意「<b>{0}</b>」：{1}</p>": "<p class=\"fvline\">★Specialty \"<b>{0}</b>\": {1}</p>",
  "<p class=\"fvline warn\">得意な罠（{0}）を持っていないので、得意の力は使えない</p>": "<p class=\"fvline warn\">You're not bringing her specialty trap ({0}), so her special power is off</p>",
@@ -1877,7 +1878,25 @@ window.TRAP_EN = {
  "止まらない！": "Unstoppable!",
  "見事な連鎖！": "Splendid chain!",
  "いい流れ！": "Nice flow!",
- "{0}連続 フィニッシュ": "{0} Combo Finish"
+ "{0}連続 フィニッシュ": "{0} Combo Finish",
+ "罠は組み合わせるとつながる。跳ね床や氷床で飛ばした先に罠、トラバサミの先に落石など。おすすめのつなぎ方と、セシルの「合成」の組み合わせ一覧は、光っている ≡（メニュー）→「遊び方」でいつでも見られる": "Traps chain when you combine them: a trap where a Spring or Ice Floor sends an intruder, a Falling Rock right past a Bear Trap, and so on. Recommended chains and the list of Cecil's Fusion combos are always under the glowing ≡ (menu) → \"How to Play\"",
+ "つながる罠の組み合わせ": "Trap combos that chain",
+ "罠は組み合わせで連続がつながる。左の罠に当たった侵入者が、右の罠まで運ばれる。トラバサミ→落石（抜けた先に落ちる）、跳ね床→どの罠でも（矢印の先の3マス目）、氷床→どの罠でも（滑る途中の罠で止まる）、つむじ風の陣→火柱（集めて焼く）、捕獲の檻→跳ね床（檻に飛ばして大玉突き）、火薬樽→どの罠でも（周りへ2マス吹き飛ぶ）。飛んでいる・滑っている・檻の中・火薬樽や落石を待つ間は、連続の時計が止まる。": "Combining traps keeps the combo going: an intruder hit by the left trap is carried to the right one. Bear Trap → Falling Rock (it drops where they break free), Spring → any trap (3 tiles along the arrow), Ice Floor → any trap (they stop at a trap on the way), Whirlwind → Fire Pillar (gather, then burn), Capture Cage → Spring (throw someone into the cage for a Mega Collision), Powder Keg → any trap (the blast throws 2 tiles). The combo timer stops while an intruder is flying, sliding or caged, and while a keg or rock is on its way.",
+ "合成の組み合わせ一覧（セシル）": "Fusion combos (Cecil)",
+ "セシルだけは、置いてある罠の上に別の罠を置くと「合成」になる。1マスで2つの罠が続けて作動し、威力は1.3倍、罠の数は1つのまま。上の14組には名前があり、作動すると名前が出る。ほかの組み合わせも「Ａ＋Ｂ」として合成できる（強さは同じ）。順番は関係ない。": "Only Cecil can place a trap on top of another to Fuse them. Both traps fire one after the other on the same tile, with 1.3x power, and it still counts as one trap. The 14 pairs above have names that show when they fire. Any other pair can be fused too, as \"A+B\" (same strength). Order doesn't matter.",
+ "どの罠": "Any trap",
+ "でも": "(any)",
+ "抜けた先": "Where it breaks free",
+ "矢印の先": "Arrow's end",
+ "途中で止まる": "Stops on it",
+ "集めて焼く": "Gather & burn",
+ "大玉突き": "Mega Collision",
+ "2マス飛ぶ": "Flies 2 tiles",
+ "<p class=\"fus\">合成: {0} <button type=\"button\" class=\"fusbtn\">一覧</button></p>": "<p class=\"fus\">Fusion: {0} <button type=\"button\" class=\"fusbtn\">List</button></p>",
+ "<p class=\"fvline\">合成できる組み合わせ: {0}</p>": "<p class=\"fvline\">Fusions you can make: {0}</p>",
+ "<p class=\"fvline\">この支度に名前つきの合成はない（「Ａ＋Ｂ」の合成はできる）</p>": "<p class=\"fvline\">No named Fusions with these traps (you can still fuse any two as \"A+B\")</p>",
+ "名前つきの組み合わせはない（どの罠とも「Ａ＋Ｂ」で合成できる）": "no named pairs (it can still fuse with any trap as \"A+B\")",
+ "<div class=\"hd\"><div><b>{0}</b><div class=\"t\">魔力 {1}・再装填 {2}秒{3}</div></div></div><p>{4}</p>{5}{6}{7}": "<div class=\"hd\"><div><b>{0}</b><div class=\"t\">Mana {1} · Reload {2}s{3}</div></div></div><p>{4}</p>{5}{6}{7}"
 };
 </script>
 <script>
@@ -2053,6 +2072,8 @@ function affText(type) { // 罠カード用: 「効く: 盗賊／効きにくい
 }
 // 罠の合成（置いてある罠の上に別の罠を置くと合成）。名前のある組み合わせ以外は「Ａ＋Ｂ」
 const FUSION_NAMES = { 'fire+rock': $t`溶岩落とし`, 'bear+caltrop': $t`鉄の茨`, 'ice+spring': $t`氷のばね`, 'blade+vortex': $t`刃の竜巻`, 'bell+warp': $t`呼び戻しの鐘`, 'fire+ice': $t`霧の陣`, 'bear+rock': $t`押し潰し`, 'fire+keg': $t`大爆発`, 'caltrop+vortex': $t`針の嵐`, 'spring+warp': $t`空の門`, 'bear+blade': $t`断頭台`, 'bell+fire': $t`灯籠`, 'keg+rock': $t`爆岩`, 'bell+keg': $t`鳴る火薬` };
+const FUSION_LIST = Object.entries(FUSION_NAMES).map(([k, name]) => { const [a, b] = k.split('+'); return { a, b, name }; }); // 名前のある合成の一覧（遊び方・罠の説明で見せる）
+const fusionsWith = id => FUSION_LIST.filter(f => f.a === id || f.b === id);
 const fusionName = (a, b) => FUSION_NAMES[[a, b].sort().join('+')] || `${TRAPS[a].name}＋${TRAPS[b].name}`;
 const TRAPS = {
   bear:   { name:$t`トラバサミ`, cost:20, cd:4, desc:$t`挟んで2秒ほど足止め。抜け出すと前へ1歩よろける` },
@@ -2284,6 +2305,7 @@ const GUIDE = [
   { text: $t`準備ができた。「侵入者を迎える」を押そう`, hl: { go: 1 }, ok: () => G.guide.spawned > 0 },
   { text: $t`トラバサミで止めて、抜けた先の落石が当たれば「連続」。罠を続けて当てると得点が増える`, hl: { tile: 'rock' }, ok: () => G.bestCombo >= 2 },
   { text: $t`うまい！ 光っているシャンデリアを押してみよう。館の仕掛けは魔力いらずで、周り3x3に落ちる`, hl: { ch: 1 }, ok: () => G.devices.some(d => d.type === 'chandelier' && d.cd > 0) },
+  { text: $t`罠は組み合わせるとつながる。跳ね床や氷床で飛ばした先に罠、トラバサミの先に落石など。おすすめのつなぎ方と、セシルの「合成」の組み合わせ一覧は、光っている ≡（メニュー）→「遊び方」でいつでも見られる`, hl: { pause: 1 }, ok: () => G.guide.t > 6 },
   { text: $t`これで基本はおしまい。罠の合成や奈落など、ほかの技は練習の一覧で覚えよう`, hl: {}, ok: () => G.guide.t > 3.5 },
 ];
 function doorSide([x, y]) { return x === 0 ? $t`左` : x === COLS - 1 ? $t`右` : y === 0 ? $t`上` : $t`下`; }
@@ -2300,6 +2322,7 @@ function updateGuide(dt) {
   document.querySelectorAll('.guide-hl').forEach(e => e.classList.remove('guide-hl'));
   if (cur.hl.slot) { const b = document.querySelector(`.slot[data-type="${cur.hl.slot}"]`); if (b) b.classList.add('guide-hl'); }
   if (cur.hl.go) $('#btnGo').classList.add('guide-hl');
+  if (cur.hl.pause) $('#btnPause').classList.add('guide-hl');
   $('#goText').textContent = $t`侵入者を迎える`; $('#goSec').textContent = g.i < 3 ? '…' : '!';
   $('#dockHint').textContent = $t`チュートリアル`;
 }
@@ -4774,6 +4797,41 @@ function miniLabel(g, x, y, text, color = '#ebd99e') {
   hc.font = '800 26px "Zen Maru Gothic", sans-serif'; hc.textAlign = 'center'; hc.textBaseline = 'middle';
   hc.lineWidth = 6; hc.strokeStyle = '#130b0f'; hc.strokeText(text, cx, cy); hc.fillStyle = color; hc.fillText(text, cx, cy);
 }
+function helpBg() { hc.setTransform(1, 0, 0, 1, 0, 0); hc.fillStyle = '#110e15'; hc.fillRect(0, 0, 880, 440); }
+function helpText(text, x, y, size, color = '#fdf4e5', align = 'left') {
+  hc.font = `800 ${size}px "Zen Maru Gothic", sans-serif`; hc.textAlign = align; hc.textBaseline = 'middle';
+  hc.lineWidth = 5; hc.strokeStyle = '#130b0f'; hc.strokeText(text, x, y); hc.fillStyle = color; hc.fillText(text, x, y);
+}
+// 名前のある合成14組を 2列×7段で並べる
+function drawFusionTable() {
+  helpBg();
+  FUSION_LIST.forEach((f, i) => {
+    const col = i % 2, row = Math.floor(i / 2), x = 24 + col * 432, y = 32 + row * 62;
+    hc.fillStyle = row % 2 ? 'rgba(95,89,151,.22)' : 'rgba(95,89,151,.36)'; hc.fillRect(x - 10, y - 28, 420, 56);
+    drawTrapUI(hc, f.a, x + 24, y, 46); helpText('＋', x + 62, y, 22, '#c8c0da', 'center');
+    drawTrapUI(hc, f.b, x + 100, y, 46); helpText('＝', x + 138, y, 22, '#c8c0da', 'center');
+    helpText(f.name, x + 160, y - 8, 22, '#ebd99e');
+    helpText(`${TRAPS[f.a].name}＋${TRAPS[f.b].name}`, x + 160, y + 15, 13, '#b6aac3');
+  });
+}
+// おすすめのつなぎ方（左の罠 → 右の罠）
+const LINKS = [['bear', 'rock'], ['spring', '*'], ['ice', '*'], ['vortex', 'fire'], ['cage', 'spring'], ['keg', '*']];
+function drawLinkTable() {
+  helpBg();
+  LINKS.forEach(([a, b], i) => {
+    const col = i % 2, row = Math.floor(i / 2), x = 30 + col * 430, y = 74 + row * 146;
+    hc.fillStyle = 'rgba(95,89,151,.3)'; hc.fillRect(x - 12, y - 58, 404, 128);
+    drawTrapUI(hc, a, x + 50, y, 74);
+    hc.strokeStyle = '#ebd99e'; hc.fillStyle = '#ebd99e'; hc.lineWidth = 5; hc.beginPath(); hc.moveTo(x + 100, y); hc.lineTo(x + 170, y); hc.stroke();
+    hc.beginPath(); hc.moveTo(x + 186, y); hc.lineTo(x + 166, y - 12); hc.lineTo(x + 166, y + 12); hc.closePath(); hc.fill();
+    if (b === '*') { hc.strokeStyle = '#c8c0da'; hc.setLineDash([8, 6]); hc.lineWidth = 3; hc.strokeRect(x + 200, y - 36, 72, 72); hc.setLineDash([]); helpText($t`どの罠`, x + 236, y, 16, '#c8c0da', 'center'); }
+    else drawTrapUI(hc, b, x + 236, y, 74);
+    helpText(TRAPS[a].name, x + 50, y + 50, 14, '#fdf4e5', 'center');
+    helpText(b === '*' ? $t`でも` : TRAPS[b].name, x + 236, y + 50, 14, '#fdf4e5', 'center');
+    helpText(LINK_NOTE[i], x + 290, y, 15, '#ebd99e');
+  });
+}
+const LINK_NOTE = [$t`抜けた先`, $t`矢印の先`, $t`途中で止まる`, $t`集めて焼く`, $t`大玉突き`, $t`2マス飛ぶ`];
 function miniTile(g, x, y, kind) {
   const [cx, cy] = g.at(x, y), s = g.s;
   if (kind === 'pit') { hc.fillStyle = '#000000'; hc.beginPath(); hc.arc(cx, cy, 30, 0, 7); hc.fill(); hc.strokeStyle = 'rgba(157,140,233,.4)'; hc.lineWidth = 2; hc.stroke(); }
@@ -4790,8 +4848,12 @@ const HELP = [
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'spring', 2, 1, 1); miniTrap(g, 'blade', 4, 1, 2); miniLabel(g, 2, 0, $t`向き →`); miniLabel(g, 4, 0, $t`向き ↓`); miniLabel(g, 6, 1, $t`押して置く`, '#fdf4e5'); } },
   { t: $t`連続で得点アップ`, d: $t`罠を3秒半以内に続けて当てると「連続」。続くほど得点と魂が増え、3連続からは魔力も少し戻る。罠に当たった侵入者はよろけて動く（火柱・まきびしは1歩前、落石は1歩後ろ、トラバサミは抜け出したあと1歩前、振り子刃は刃の向き、槍の石像は外へ）。動いた先に罠を置いておけば連鎖する。侵入者が飛んでいる・滑っている間、檻に入っている間、火薬樽や落石を待つ間は、連続の時計が止まる。5連続ごとにごほうび、5連続以上で途切れるとしめくくりのボーナス。`,
     draw() { const g = miniGrid(7, 3); miniFoe(g, 1, 1); miniTrap(g, 'bear', 3, 1); miniTrap(g, 'rock', 5, 1); miniArrow(g, [1, 1], [3, 1]); miniArrow(g, [3, 1], [5, 1]); miniLabel(g, 3, 0, '1'); miniLabel(g, 5, 0, $t`2連続！`); } },
+  { t: $t`つながる罠の組み合わせ`, id: 'links', d: $t`罠は組み合わせで連続がつながる。左の罠に当たった侵入者が、右の罠まで運ばれる。トラバサミ→落石（抜けた先に落ちる）、跳ね床→どの罠でも（矢印の先の3マス目）、氷床→どの罠でも（滑る途中の罠で止まる）、つむじ風の陣→火柱（集めて焼く）、捕獲の檻→跳ね床（檻に飛ばして大玉突き）、火薬樽→どの罠でも（周りへ2マス吹き飛ぶ）。飛んでいる・滑っている・檻の中・火薬樽や落石を待つ間は、連続の時計が止まる。`,
+    draw() { drawLinkTable(); } },
   { t: $t`敵との相性・合成・火薬樽`, d: $t`侵入者には罠との相性がある。騎士は火柱に弱く、振り子刃とまきびしに強い。盗賊はまきびし・トラバサミ・火薬樽に弱く、落石に強い。重装兵は火柱と火薬樽に弱く、落石・振り子刃・まきびしに強い。弱点に当てると「効いた！」。金の鎧の結界騎士は、3連続以上になった罠でないと結界に弾かれる（足止めや飛ばしは効く）。頭の上の菱形が連続の数。セシルだけは、置いてある罠の上に別の罠を置くと「合成」になり、2つの罠が1マスで続けて作動する（少し強くなり、罠の数は1つのまま）。ほかの子が別の罠を重ねると置き換えになる。火薬樽は踏まれて0.8秒後に爆発する。踏んだ侵入者は樽につまずいて止まるので、後ろに続く侵入者もまとめて巻き込める。`,
     draw() { const g = miniGrid(7, 3); miniTrap(g, 'fire', 1, 1); miniTrap(g, 'rock', 2, 1); miniArrow(g, [1, 1], [3.3, 1]); miniTrap(g, 'fire', 4, 1); miniTrap(g, 'rock', 4.5, 1.4); miniLabel(g, 4.3, 0, $t`合成「溶岩落とし」`); miniFoe(g, 6, 1); miniLabel(g, 6, 2, $t`効いた！`, '#eea06d'); } },
+  { t: $t`合成の組み合わせ一覧（セシル）`, id: 'fusion', d: $t`セシルだけは、置いてある罠の上に別の罠を置くと「合成」になる。1マスで2つの罠が続けて作動し、威力は1.3倍、罠の数は1つのまま。上の14組には名前があり、作動すると名前が出る。ほかの組み合わせも「Ａ＋Ｂ」として合成できる（強さは同じ）。順番は関係ない。`,
+    draw() { drawFusionTable(); } },
   { t: $t`巻き込み・玉突き・追い打ち`, d: $t`1回の罠で2体以上に当てると「ダブルヒット」（3体なら「トリプル」）。2体目からは連続にも数える。跳ね床や氷床などで飛ばした侵入者を、他の侵入者にぶつけると「玉突き」。ぶつけられた方も2マス飛んで、その先の罠や奈落につながる。ダブルヒットと玉突きは得点が大きく増える。倒した侵入者も3秒ほどその場に倒れたまま残り、罠に当てると「追い打ち」で連続が続く（逃げる子には当たらない）。捕獲の檻で閉じ込めた侵入者に、飛ばした侵入者や振り子刃を当てると、檻ごと遠くまで転がって「大玉突き」になる（威力も得点も大きい）。`,
     draw() { const g = miniGrid(9, 3); miniTrap(g, 'spring', 1, 1, 1); miniFoe(g, 1, 1); miniFoe(g, 4, 1); miniTile(g, 7, 1, 'pit'); miniArrow(g, [1, 1], [4, 1]); miniArrow(g, [4, 1], [7, 1], '#f2b797'); miniLabel(g, 4, 0, $t`玉突き！`, '#f2b797'); miniLabel(g, 7, 0, $t`奈落へ！`); miniLabel(g, 2.5, 2, $t`飛ばして、ぶつける`, '#fdf4e5'); } },
   { t: $t`跳ね床と奈落`, d: $t`跳ね床は踏んだ侵入者を矢印の向きへ3マス（重装兵は2マス）飛ばす。飛んだ先に罠があれば「連鎖」ボーナス。奈落に落とせば一撃で倒せる。壁にぶつけても追加ダメージ。`,
@@ -4825,12 +4887,12 @@ function renderHelp() {
   $('#helpPrev').disabled = helpPage === 0;
   $('#helpNext').textContent = helpPage === HELP.length - 1 ? $t`最初へ` : $t`次へ`;
 }
-function openHelp() {
+function openHelp(pageId) {
   if (!$('#ovHelp').hidden) return;
   audio();
   if (G.state === 'play' && !paused) { paused = true; $('#btnGo').hidden = true; helpBack = 'resume'; }
   else helpBack = OVS.find(o => !$('#' + o).hidden) || null;
-  helpPage = 0; renderHelp(); showOv('ovHelp');
+  helpPage = Math.max(0, typeof pageId === 'string' ? HELP.findIndex(h => h.id === pageId) : 0); renderHelp(); showOv('ovHelp');
 }
 function closeHelp() {
   if (helpBack === 'resume') { paused = false; $('#btnGo').hidden = G.phase !== 0; showOv(null); }
@@ -4839,8 +4901,8 @@ function closeHelp() {
 $('#helpPrev').addEventListener('click', () => { if (helpPage > 0) { helpPage--; renderHelp(); } });
 $('#helpNext').addEventListener('click', () => { helpPage = (helpPage + 1) % HELP.length; renderHelp(); });
 $('#helpClose').addEventListener('click', closeHelp);
-$('#btnHowto').addEventListener('click', openHelp);
-$('#btnHelp').addEventListener('click', openHelp);
+$('#btnHowto').addEventListener('click', () => openHelp());
+$('#btnHelp').addEventListener('click', () => openHelp());
 function bestText() { return best > 0 ? $t`これまでの最高得点 ${best.toLocaleString(NUM)}` : ''; }
 // 前回の支度を覚えておく（この端末だけ）
 let sel = { char: 'lily', traps: DEFAULT_LOADOUT.slice() };
@@ -5584,8 +5646,14 @@ function setSelStep(n) {
 let trapInfoId = null;
 function showTrapInfo(id) { // 罠の説明（選択画面の詳細欄）
   const d = TRAPS[id], ch = CHARS[sel.char], fv = ch.fav === id, box = $('#trapInfo'); if (!box || !d) return;
-  box.innerHTML = $t`<div class="hd"><div><b>${d.name}</b><div class="t">魔力 ${fv && ch.passive.cost || d.cost}・再装填 ${fv && ch.passive.cd || d.cd}秒${d.dir ? $t`・向きあり` : ''}</div></div></div><p>${d.desc}</p>${affText(id) ? `<p class="aff">${affText(id)}</p>` : ''}${fv ? $t`<p class="fvl">★${ch.name}の得意「${ch.passive.name}」: ${ch.passive.desc}</p>` : ''}`;
+  box.innerHTML = $t`<div class="hd"><div><b>${d.name}</b><div class="t">魔力 ${fv && ch.passive.cost || d.cost}・再装填 ${fv && ch.passive.cd || d.cd}秒${d.dir ? $t`・向きあり` : ''}</div></div></div><p>${d.desc}</p>${affText(id) ? `<p class="aff">${affText(id)}</p>` : ''}${fv ? $t`<p class="fvl">★${ch.name}の得意「${ch.passive.name}」: ${ch.passive.desc}</p>` : ''}${sel.char === 'cecil' ? fusionLine(id) : ''}`;
   box.querySelector('.hd').prepend(trapIconCanvas(id, 40));
+  const fb = box.querySelector('.fusbtn'); if (fb) fb.onclick = () => openHelp('fusion');
+}
+// セシルの罠の説明に出す「この罠でできる名前つきの合成」
+function fusionLine(id) {
+  const list = fusionsWith(id).map(f => { const o = f.a === id ? f.b : f.a, have = sel.traps.includes(o) && sel.traps.includes(id); return `<span class="${have ? 'on' : ''}">${f.name}（${TRAPS[o].name}）</span>`; }).join('、');
+  return $t`<p class="fus">合成: ${list || $t`名前つきの組み合わせはない（どの罠とも「Ａ＋Ｂ」で合成できる）`} <button type="button" class="fusbtn">一覧</button></p>`;
 }
 function renderConfirm() {
   const ch = CHARS[sel.char], box = $('#selConfirm'), has = sel.traps.includes(ch.fav);
@@ -5595,7 +5663,9 @@ function renderConfirm() {
     return $t`<li class="${fv ? 'fav' : ''}" data-t="${t}"><div><b>${fv ? '★' : ''}${d.name}</b><small>魔力 ${fv && ch.passive.cost || d.cost}・再装填 ${fv && ch.passive.cd || d.cd}秒</small></div></li>`;
   }).join('');
   const fvline = has ? $t`<p class="fvline">★得意「<b>${ch.passive.name}</b>」：${ch.passive.desc}</p>` : $t`<p class="fvline warn">得意な罠（${TRAPS[ch.fav].name}）を持っていないので、得意の力は使えない</p>`;
-  box.innerHTML = `<div class="cf-ph">${pic ? `<img alt="" src="${pic}">` : ''}<div class="nm">${ch.name}</div></div><div><p class="say">${ch.ready}</p><ul>${items}</ul>${fvline}</div>`;
+  const fus = sel.char === 'cecil' ? FUSION_LIST.filter(f => sel.traps.includes(f.a) && sel.traps.includes(f.b)) : null;
+  const fusline = !fus ? '' : fus.length ? $t`<p class="fvline">合成できる組み合わせ: ${fus.map(f => `<b>${f.name}</b>（${TRAPS[f.a].name}＋${TRAPS[f.b].name}）`).join('、')}</p>` : $t`<p class="fvline">この支度に名前つきの合成はない（「Ａ＋Ｂ」の合成はできる）</p>`;
+  box.innerHTML = `<div class="cf-ph">${pic ? `<img alt="" src="${pic}">` : ''}<div class="nm">${ch.name}</div></div><div><p class="say">${ch.ready}</p><ul>${items}</ul>${fvline}${fusline}</div>`;
   box.querySelectorAll('li').forEach(li => li.prepend(trapIconCanvas(li.dataset.t, 30)));
 }
 function openSelect() { audio(); renderSelect(); showOv('ovSelect'); setSelStep(1); $('#selMode').textContent = runMode === 'stage' ? $t`ステージ${runStage}（${MAPS[stageMap(runStage)].name}）` : runMode === 'edit' ? $t`自作の部屋を試す` : runMode === 'training' ? $t`トレーニング` : runMode === 'endless' ? $t`無限の夜` : $t`チャレンジ（全10夜）`; $('#btnBack1').textContent = runMode === 'stage' ? $t`ステージ一覧` : runMode === 'edit' ? $t`部屋づくり` : runMode === 'training' ? $t`練習の一覧` : $t`タイトルへ`; }
