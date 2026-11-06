@@ -3959,6 +3959,15 @@ function drawTrapIcon(c, type, cx, cy, s, dir, t, closed) {
       c.fillStyle = '#8c857e'; c.beginPath(); c.moveTo(ox, oy - 5); c.lineTo(ox + 4.5, oy + 3); c.lineTo(ox - 4.5, oy + 3); c.closePath(); c.fill();
       c.fillStyle = '#cdc6bb'; c.beginPath(); c.moveTo(ox, oy - 5); c.lineTo(ox + 1.5, oy + 3); c.lineTo(ox - 1.5, oy + 1); c.closePath(); c.fill();
     }
+  } else if (type === 'cage') { // 捕獲の檻（床の印と、天井から吊った檻の影）
+    const sw = Math.sin((t || 0) * 2.2) * 1.2; // 吊った檻が少し揺れる
+    c.fillStyle = '#2b272f'; c.beginPath(); c.arc(0, 2, 15, 0, 7); c.fill();
+    c.strokeStyle = '#8b8580'; c.lineWidth = 2; c.beginPath(); c.arc(0, 2, 13.5, 0, 7); c.stroke();
+    c.fillStyle = '#bba26d'; for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; c.beginPath(); c.arc(Math.cos(a) * 13.5, 2 + Math.sin(a) * 13.5, 1.8, 0, 7); c.fill(); }
+    c.translate(sw, 0);
+    c.strokeStyle = '#1d1a21'; c.lineWidth = 2.6; const cg = () => { c.beginPath(); for (let i = 0; i <= 4; i++) { const x = -8 + i * 4; c.moveTo(x, -6); c.lineTo(x, 9); } c.moveTo(-9, 9); c.lineTo(9, 9); c.stroke(); c.beginPath(); c.ellipse(0, -6, 8, 6, 0, Math.PI, 0); c.stroke(); c.beginPath(); c.moveTo(0, -12); c.lineTo(0, -19); c.stroke(); };
+    cg(); c.strokeStyle = '#cfccd6'; c.lineWidth = 1.2; c.translate(-.6, -.6); cg();
+    c.fillStyle = '#e7d9ab'; c.fillRect(3, 1, 3.5, 3.5);
   } else if (type === 'vortex') {
     c.fillStyle = '#223835'; c.beginPath(); c.arc(0, 0, 15, 0, 7); c.fill();
     c.strokeStyle = '#8cd0c2'; c.lineWidth = 2;
