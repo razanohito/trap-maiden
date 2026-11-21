@@ -9,7 +9,7 @@ const path = require('path');
     const p = await ctx.newPage();
     p.on('pageerror', e => errors.push(String(e)));
     await p.goto(process.env.GAME_URL || 'http://127.0.0.1:8766/index.html');
-    await p.tap('#btnStart'); await p.tap('#btnNext1'); await p.tap('#btnNext2'); await p.tap('#btnBegin'); await p.waitForTimeout(500);
+    await p.tap('#btnStart'); await p.tap('#pick-lily'); await p.tap('#btnNext1'); await p.tap('#btnNext2'); await p.tap('#btnBegin'); await p.waitForTimeout(500);
     await p.tap('#btnPause'); const helpVisible = await p.isVisible('#btnHelp'); // 遊び方はメニューの中
     await p.tap('#btnHelp');
     await p.waitForTimeout(200);

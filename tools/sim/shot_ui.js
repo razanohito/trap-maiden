@@ -34,6 +34,7 @@ const VPS = [['p', 393, 852, true], ['s', 320, 568, true], ['l', 852, 393, true]
     await shot('title');
     await click('#btnStage'); await shot('stages');
     await click('#stg-7'); await shot('sel1');
+    await click('#pick-lily'); await shot('sel1dlg');
     await click('#btnNext1'); await shot('sel2');
     await click('#btnNext2'); await shot('sel3');
     await click('#btnBegin'); await p.waitForTimeout(600);
