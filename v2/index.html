@@ -665,6 +665,247 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .overlay.story.rewind .sbg{animation:srewind 2.2s ease-in-out}
 @keyframes srewind{0%{filter:none}30%{filter:hue-rotate(-40deg) blur(2px) brightness(.7)}60%{filter:invert(.15) hue-rotate(40deg) blur(3px)}100%{filter:none}}
 @media (prefers-reduced-motion:reduce){.sbg.rain,.overlay.story.rewind .sbg,.overlay.story.shake .sbg,.overlay.story.shake .scast,.scast .cm.float img{animation:none}}
+/* ==========================================================================
+   ソシャゲ風のUI（2026-11-22「画面UIをモンスト・パズドラ・ウマ娘を参考に」）
+   取り入れたのは一般的な作り方だけ: 厚みのある丸いボタン（押すと沈む）、帯の見出し、
+   重ねたパネル、宝石のような数値バッジ、出てくるときの弾み、結果の★と数字の演出。
+   色は初期のゴシック（夜・胡桃・羊皮紙・金・ワイン）。紫＋ピンクは使わない。魔力はサファイア色。
+   ========================================================================== */
+:root{
+  --edge:#271914; --gem:#4b7db2; --gem-hi:#b0d0eb; --gem-dk:#233e63;
+  --cta1:#fcf2ce; --cta2:#e9cf8b; --cta3:#bf984f; --cta4:#917034; --cta-edge:#57401d; --cta-ink:#362110;
+  --wine1:#b05264; --wine2:#7e2a39; --wine3:#511926; --wine-edge:#330e16;
+  --pop:cubic-bezier(.18,1.35,.4,1);
+  --mana:#5b8dc4;
+}
+/* ---- ボタン: 厚み・つや・押すと沈む ---- */
+.btn{position:relative;border-radius:999px;border:2px solid var(--wine-edge);padding:10px 24px;
+  background:linear-gradient(180deg,rgba(255,255,255,.26) 0 46%,rgba(255,255,255,0) 54%),linear-gradient(180deg,var(--wine1),var(--wine2) 55%,var(--wine3));
+  color:#fef8ed;text-shadow:0 1px 0 var(--wine-edge),0 -1px 0 var(--wine-edge),1px 0 0 var(--wine-edge),-1px 0 0 var(--wine-edge),0 2px 2px rgba(0,0,0,.35);
+  box-shadow:inset 0 0 0 2px rgba(247,215,165,.35),0 4px 0 var(--wine-edge),0 7px 12px rgba(0,0,0,.4);
+  transition:transform .08s,box-shadow .08s,filter .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(3px);box-shadow:inset 0 0 0 2px rgba(247,215,165,.3),0 1px 0 var(--wine-edge),0 2px 4px rgba(0,0,0,.35)}
+.btn.sub{border:2px solid #755f44;color:var(--ink);text-shadow:0 1px 0 rgba(255,255,255,.6);
+  background:linear-gradient(180deg,rgba(255,255,255,.5) 0 46%,rgba(255,255,255,0) 54%),linear-gradient(180deg,#f9f3e3,#e6dac0 55%,#cebd9c);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.4),0 4px 0 #755f44,0 6px 10px rgba(0,0,0,.3)}
+.btn.sub:active{box-shadow:inset 0 0 0 2px rgba(255,255,255,.4),0 1px 0 #755f44}
+/* いちばん押してほしいボタン（決定・次へ・開始）は金色 */
+#btnStage,#btnBegin,#btnNext1,#btnNext2,#btnRetry,#btnNext,#btnResume,#btnGrowDone,#rfSend,#editTest,#comicNext{
+  border-color:var(--cta-edge);color:var(--cta-ink);
+  text-shadow:0 1px 0 rgba(254,250,230,.85);
+  background:linear-gradient(180deg,rgba(255,255,255,.55) 0 44%,rgba(255,255,255,0) 54%),linear-gradient(180deg,var(--cta1),var(--cta2) 40%,var(--cta3) 70%,var(--cta4));
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.45),0 4px 0 var(--cta-edge),0 7px 14px rgba(0,0,0,.45),0 0 18px rgba(234,208,141,.35);overflow:hidden}
+#btnStage:active,#btnBegin:active,#btnNext1:active,#btnNext2:active,#btnRetry:active,#btnNext:active,#btnResume:active,#btnGrowDone:active,#rfSend:active,#editTest:active,#comicNext:active{
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.45),0 1px 0 var(--cta-edge),0 2px 4px rgba(0,0,0,.4)}
+#btnBegin::after,#btnNext1::after,#btnNext2::after,#btnRetry::after,#btnNext::after,#btnStage::after,#btnGrowDone::after{content:"";position:absolute;top:-10%;bottom:-10%;left:-40%;width:26%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-20deg);animation:ctashine 3.2s ease-in-out infinite;transition:none}
+@keyframes ctashine{0%,62%{left:-40%}100%{left:130%}}
+.btn:disabled{filter:grayscale(.85) brightness(.75)}
+.btn:disabled::after{animation:none!important;display:none}
+/* 戻る: 丸い金具のボタン */
+.back{gap:8px;color:var(--ink);font-weight:800}
+.back::before{width:30px;height:30px;flex:none;border:2px solid var(--edge);
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M12 5l-5 5 5 5' fill='none' stroke='%233b200a' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/17px no-repeat,linear-gradient(180deg,var(--cta1),var(--cta2) 45%,var(--cta3));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 2px 0 var(--edge)}
+.back:active::before{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
+
+/* ---- 重なる画面: 金の額縁＋ワイン色の帯の見出し、開くときに弾む ---- */
+.panel{border-radius:20px;
+  background:radial-gradient(ellipse at 25% 12%,rgba(255,255,255,.35),transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(187,162,109,.18),transparent 60%),linear-gradient(180deg,#efe7d6,var(--parch) 40%,var(--parch-dk));
+  box-shadow:0 0 0 2px var(--edge),0 0 0 5px var(--gold),0 0 0 6px var(--gold-hi),0 0 0 8px var(--edge),0 18px 44px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.5)}
+.panel::before,.panel::after{width:30px;height:30px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 46'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M3 43V15Q3 3 15 3h28' stroke='%23a07a2c' stroke-width='2.5'/%3E%3Cpath d='M9 43V18Q9 9 18 9h25' stroke='%23c9a24a' stroke-width='1.2'/%3E%3Cpath d='M15 15c6-8 14 0 6 6s-14-2-6-6z' stroke='%238e2335' stroke-width='1.6'/%3E%3Ccircle cx='15' cy='15' r='2.4' fill='%238e2335'/%3E%3C/g%3E%3C/svg%3E") no-repeat}
+.panel::before{top:auto;bottom:8px;left:8px;transform:rotate(-90deg)}
+.panel::after{bottom:8px;right:8px;transform:rotate(180deg)}
+.panel > .phead{position:relative;margin:-14px -18px 2px;padding:6px 16px 6px 14px;min-height:54px;
+  background:linear-gradient(180deg,rgba(255,255,255,.16) 0 45%,rgba(255,255,255,0) 55%),linear-gradient(180deg,#934050,var(--wine2) 55%,#531b28);
+  border-bottom:3px solid var(--gold);box-shadow:0 1px 0 var(--edge),0 4px 8px rgba(0,0,0,.25),inset 0 -1px 0 var(--gold-hi)}
+.panel > .phead::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:3px;background:linear-gradient(90deg,var(--gold-dk),var(--gold-hi) 50%,var(--gold-dk))}
+.panel > .phead h2{color:#fcf3db;text-shadow:0 1px 0 var(--wine-edge),0 -1px 0 var(--wine-edge),1px 0 0 var(--wine-edge),-1px 0 0 var(--wine-edge),0 3px 3px rgba(0,0,0,.4)}
+.panel > .phead h2::before{content:"❦";margin-right:.4em;font-size:.75em;color:var(--gold-hi);vertical-align:.08em}
+.panel > .phead .meta,.panel > .phead .selmode{color:#efe2be}
+.panel > .phead .back{color:#fcf3db;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.panel > .phead .back:hover{color:#ffffff}
+.comicbtn{border:2px solid var(--edge);background:linear-gradient(180deg,#fef8ec,#e9dcc0);color:var(--berry);font-weight:800;box-shadow:0 2px 0 var(--edge)}
+.comicbtn:active{transform:translateY(2px);box-shadow:none}
+.soulpill{display:inline-flex;align-items:center;gap:6px;padding:3px 12px 3px 6px;border-radius:999px;color:#fcf3db;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(234,208,141,.6)}
+.soulpill::before{content:"";width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffffff,var(--gem-hi) 25%,var(--gem) 60%,var(--gem-dk));box-shadow:0 0 6px rgba(131,178,224,.8)}
+.overlay:not(.story):not(.op):not(.comic):not([hidden]) > .panel{animation:panelpop .3s var(--pop) both}
+@keyframes panelpop{0%{transform:scale(.9) translateY(10px);opacity:0}100%{transform:none;opacity:1}}
+.dlgcard{border-radius:18px;box-shadow:0 0 0 2px var(--edge),0 0 0 5px var(--gold),0 0 0 7px var(--edge),0 14px 32px rgba(0,0,0,.55);animation:panelpop .26s var(--pop) both}
+
+/* ---- 支度: 手順のタブ ---- */
+.selsteps{gap:4px}
+.selsteps li{padding:3px 12px 3px 8px;border-radius:999px;background:rgba(76,56,45,.1);color:rgba(76,56,49,.55);font-weight:800}
+.selsteps li::before{width:8px;height:8px}
+.selsteps li.on{background:linear-gradient(180deg,var(--wine1),var(--wine2));color:#fcf3db;box-shadow:0 2px 0 var(--wine-edge)}
+.selsteps li.on::before{background:var(--gold-hi);border-color:var(--gold-hi)}
+.selsteps li.done{background:linear-gradient(180deg,#eedca8,#caae6e);color:var(--cta-ink)}
+.selsteps li.done::before{background:var(--cta-ink);border-color:var(--cta-ink)}
+.selsteps li+li{margin-left:2px}
+/* キャラのカード: 金の額縁・名前の帯・選ぶと光が走る */
+.cpick{border-radius:14px;border:0;padding:0;box-shadow:0 0 0 2px var(--edge),inset 0 0 0 3px var(--gold),inset 0 0 0 4px var(--edge),0 4px 0 var(--edge),0 8px 14px rgba(0,0,0,.35);transition:transform .15s var(--pop),box-shadow .15s}
+.cpick .ph{margin:4px 4px 0;border-radius:10px 10px 0 0}
+.cpick .n{margin:0 4px 4px;padding:3px 4px 4px;border-radius:0 0 10px 10px;color:#fcf3db;
+  background:linear-gradient(180deg,var(--wine1),var(--wine2) 55%,var(--wine3));border-top:2px solid var(--gold);
+  text-shadow:0 1px 0 var(--wine-edge),0 -1px 0 var(--wine-edge),1px 0 0 var(--wine-edge),-1px 0 0 var(--wine-edge)}
+.cpick .fv{bottom:auto;top:8px;left:8px;border-radius:999px;padding:1px 8px 1px 3px;border:1px solid var(--gold);background:linear-gradient(180deg,rgba(55,32,24,.9),rgba(23,16,13,.9))}
+.cpick:hover{transform:translateY(-2px)}
+.cpick.on{transform:translateY(-4px) scale(1.02);box-shadow:0 0 0 2px var(--edge),inset 0 0 0 3px var(--gold-hi),inset 0 0 0 4px var(--edge),0 6px 0 var(--edge),0 0 22px 4px rgba(234,208,141,.6)}
+.cpick.on::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%) -100% 0/250% 100% no-repeat;animation:cardshine 2.6s ease-in-out infinite}
+@keyframes cardshine{0%,55%{background-position:160% 0}100%{background-position:-100% 0}}
+/* 罠のタイル: 宝石の魔力バッジ */
+.pick{border-radius:12px;border:0;padding:7px 3px 6px;background:linear-gradient(180deg,rgba(255,255,255,.1) 0 40%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#49424e,#2b272e);
+  box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px rgba(193,162,94,.6),0 3px 0 var(--edge);transition:transform .12s var(--pop)}
+.pick .t{color:var(--gem-hi);font-weight:700}
+.pick.on{transform:translateY(-2px);box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold-hi),0 3px 0 var(--edge),0 0 14px 2px rgba(234,208,141,.55);background:linear-gradient(180deg,rgba(252,240,209,.18) 0 40%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#584b40,#332b28)}
+.pick.on::after{content:"✓";top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font:900 12px/1 var(--f-body);color:var(--cta-ink);
+  background:linear-gradient(180deg,var(--cta1),var(--cta3));box-shadow:0 0 0 2px var(--edge);z-index:2}
+.pick.favt{box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold),0 3px 0 var(--edge)}
+.pick.favt.on{box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold-hi),0 3px 0 var(--edge),0 0 14px 2px rgba(234,208,141,.55)}
+.trapinfo,.chardetail{border-radius:14px;border:0;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.25));box-shadow:inset 0 0 0 1px rgba(152,123,62,.55),0 2px 0 rgba(85,61,38,.2)}
+.dlgbody .chardetail{box-shadow:none;background:none}
+.confirm li{border-radius:12px;box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px rgba(193,162,94,.5),0 3px 0 var(--edge)}
+.confirm li.fav{box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold-hi),0 3px 0 var(--edge)}
+.confirm .cf-ph{border-radius:14px;border:0;background:radial-gradient(ellipse at 50% 45%,#765d4e,#28201c 75%);box-shadow:0 0 0 2px var(--edge),inset 0 0 0 3px var(--gold),0 4px 0 var(--edge)}
+.confirm .cf-ph .nm{background:linear-gradient(transparent,rgba(83,27,40,.95) 60%);border-top:0}
+
+/* ---- ステージ選択: 立体のメダル ---- */
+.stg{box-shadow:inset 0 0 0 3px var(--walnut-dk),inset 0 0 0 4px rgba(187,162,109,.55),inset 0 10px 14px rgba(255,255,255,.08),0 4px 0 var(--edge),0 8px 14px rgba(0,0,0,.4);transition:transform .14s var(--pop)}
+.stg:not(.lock):hover{transform:translateY(-2px) scale(1.04)}
+.stg:not(.lock):active{transform:scale(.94)}
+.stg.next::before{content:"NEXT";position:absolute;top:-8px;padding:0 7px;border-radius:999px;font:900 10px/16px var(--f-body);letter-spacing:.06em;color:var(--cta-ink);background:linear-gradient(180deg,var(--cta1),var(--cta3));box-shadow:0 0 0 2px var(--edge);animation:nextbob 1.2s ease-in-out infinite}
+@keyframes nextbob{50%{transform:translateY(-3px)}}
+.roomcard h3{color:#fcf3db;background:linear-gradient(180deg,var(--wine1),var(--wine2) 60%,var(--wine3));border-radius:6px;padding:3px 26px;box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px var(--gold),0 3px 0 var(--edge);
+  text-shadow:0 1px 0 var(--wine-edge),0 -1px 0 var(--wine-edge),1px 0 0 var(--wine-edge),-1px 0 0 var(--wine-edge)}
+.chapnav button{border:2px solid var(--edge);background:linear-gradient(180deg,var(--cta1),var(--cta2) 45%,var(--cta3));color:var(--cta-ink);box-shadow:0 3px 0 var(--edge)}
+.chapnav button:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+
+/* ---- ショップ・育成・トレーニング・実績のカード ---- */
+.up,.lesson{border-radius:14px;border:0;box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px rgba(193,162,94,.55),inset 0 1px 0 rgba(255,255,255,.12),0 4px 0 var(--edge),0 7px 12px rgba(0,0,0,.3);transition:transform .12s var(--pop)}
+.up:hover:not(:disabled),.lesson:hover{box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold-hi),0 4px 0 var(--edge),0 0 14px rgba(234,208,141,.45)}
+.up:active:not(:disabled),.lesson:active{transform:translateY(3px);box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold-hi),0 1px 0 var(--edge)}
+.up .c{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;padding:1px 10px 1px 4px;border-radius:999px;background:rgba(0,0,0,.35);color:var(--gem-hi)}
+.up .c::before{content:"";width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffffff,var(--gem-hi) 25%,var(--gem) 60%,var(--gem-dk))}
+.achlist li{border-radius:12px}
+.achlist li.on{box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px var(--gold),0 3px 0 var(--edge)}
+.ranklist li{border-radius:10px;box-shadow:0 0 0 2px var(--edge),0 2px 0 var(--edge)}
+.howto canvas{border-radius:10px;border:0;box-shadow:0 0 0 2px var(--edge),0 0 0 4px var(--gold)}
+.howto .dots i.on{background:var(--wine2);box-shadow:0 0 6px rgba(126,42,57,.6)}
+.setrow{border-bottom:1px dashed rgba(126,42,57,.3)}
+.setrow input[type=range]{accent-color:var(--wine2)}
+.rankform,.achinfo{border-radius:12px}
+
+/* ---- タイトル ---- */
+.tmenu{gap:12px}
+.tmenu .btn{min-height:60px;font-size:21px;border-radius:999px}
+.tmenu .btn small{color:inherit;opacity:.82;text-shadow:none}
+#btnStage small{color:#553b1c;opacity:1}
+#btnStage{min-height:66px;font-size:23px}
+.tmenu .btn.endless{border-color:#13233b;color:#f3f8fd;background:linear-gradient(180deg,rgba(255,255,255,.28) 0 46%,rgba(255,255,255,0) 54%),linear-gradient(180deg,#6898c8,var(--gem) 55%,var(--gem-dk));
+  text-shadow:0 1px 0 #13233b,0 -1px 0 #13233b,1px 0 0 #13233b,-1px 0 0 #13233b;box-shadow:inset 0 0 0 2px rgba(205,229,248,.35),0 4px 0 #13233b,0 0 18px rgba(91,141,196,.45)}
+.tminor{gap:10px}
+.tminor button{gap:5px;color:#efe2be;font-weight:800;text-shadow:0 1px 2px #000000;transition:transform .12s var(--pop)}
+.tminor button i{width:48px;height:48px;border-radius:14px;font-size:21px;color:var(--gold-hi);border:2px solid var(--edge);
+  background:linear-gradient(180deg,rgba(255,255,255,.18) 0 45%,rgba(255,255,255,0) 55%),linear-gradient(180deg,#573c41,#362428 60%,#22161a);
+  box-shadow:inset 0 0 0 1px rgba(234,208,141,.6),0 3px 0 var(--edge),0 6px 10px rgba(0,0,0,.45)}
+.tminor button:hover i{color:#fcf3db;box-shadow:inset 0 0 0 2px var(--gold-hi),0 3px 0 var(--edge),0 0 14px rgba(234,208,141,.5)}
+.tminor button:active{transform:translateY(2px)}
+.tminor button.new::after{border-radius:999px;padding:0 8px;background:linear-gradient(180deg,var(--wine1),var(--wine2));box-shadow:0 0 0 1px var(--gold)}
+@media (max-width:430px){.tminor{gap:4px}.tminor button i{width:42px;height:42px;font-size:18px;border-radius:12px}}
+@media (max-width:340px){.tminor button i{width:36px;height:36px}}
+@media (orientation:landscape) and (max-height:500px){.tminor button i{width:38px;height:38px;font-size:16px;border-radius:10px}.tmenu .btn,#btnStage{min-height:50px;font-size:18px}}
+.langbtn{border:2px solid var(--edge);border-radius:999px;font-weight:800;color:#efe2be;background:linear-gradient(180deg,rgba(255,255,255,.14) 0 45%,rgba(255,255,255,0) 55%),linear-gradient(180deg,#463438,#231719);box-shadow:inset 0 0 0 1px rgba(234,208,141,.5),0 3px 0 var(--edge)}
+.langbtn:active{transform:translateY(2px);box-shadow:inset 0 0 0 1px rgba(234,208,141,.5)}
+
+/* ---- 遊ぶ画面: 状態帯・魔力・罠ボタン ---- */
+.hud{border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.07) 0 40%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#3a2c2f,#22191a 55%,#150f10);
+  box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px rgba(193,162,94,.7),inset 0 2px 0 rgba(251,235,200,.15),0 4px 0 var(--edge),0 8px 16px rgba(0,0,0,.45)}
+.hbtn{border:2px solid var(--edge);color:var(--cta-ink);background:linear-gradient(180deg,var(--cta1),var(--cta2) 45%,var(--cta3));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 0 var(--edge)}
+.hbtn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 1px 0 var(--edge)}
+.facewin{box-shadow:0 0 0 2px var(--edge),0 0 0 4px var(--gold),0 0 0 5px var(--edge),0 3px 6px rgba(0,0,0,.5)}
+.hearts{padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.4);box-shadow:inset 0 1px 2px rgba(0,0,0,.6),0 0 0 1px rgba(193,162,94,.4)}
+.hearts span{color:#ca5768;text-shadow:0 1px 0 #330e16,0 0 6px rgba(202,87,104,.55)}
+.bar{height:14px;border-radius:999px;background:linear-gradient(180deg,#0b0a11,#1d1a24);box-shadow:inset 0 2px 3px rgba(0,0,0,.8),0 0 0 2px var(--edge),0 0 0 3px rgba(193,162,94,.6)}
+.bar i{position:relative;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.55) 0 30%,rgba(255,255,255,0) 50%),linear-gradient(180deg,#98c1e5,var(--gem) 55%,var(--gem-dk));box-shadow:0 0 10px rgba(91,141,196,.85);overflow:hidden}
+.bar i::after{content:"";position:absolute;top:0;bottom:0;width:30%;left:-30%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:manaflow 2.4s linear infinite}
+@keyframes manaflow{to{left:110%}}
+.vial b{color:var(--gem-hi);text-shadow:0 1px 0 #000000}
+.where #sWaveBox{padding:1px 10px;border-radius:999px;background:linear-gradient(180deg,var(--wine1),var(--wine2) 60%,var(--wine3));color:#fcf3db;box-shadow:0 0 0 1px var(--gold),0 2px 0 var(--edge)}
+.where #sWaveBox small{color:#eedac7}
+.where #sWaveBox b{color:#ffffff}
+.score b{color:#fdf6e2;text-shadow:0 2px 0 var(--edge),0 -1px 0 var(--edge),1px 0 0 var(--edge),-1px 0 0 var(--edge),0 0 10px rgba(234,208,141,.5)}
+.score.bump b{animation:scorebump .25s var(--pop)}
+@keyframes scorebump{0%{transform:scale(1.25)}100%{transform:none}}
+.score b{display:inline-block}
+.dockhead b{color:#fcf3db}
+.slot{border-radius:16px;border:0;background:linear-gradient(180deg,rgba(255,255,255,.12) 0 40%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#4b4046,#2c2429 60%,#1e181b);
+  box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px rgba(193,162,94,.6),inset 0 2px 0 rgba(251,235,200,.12),0 4px 0 var(--edge),0 7px 10px rgba(0,0,0,.4);transition:transform .12s var(--pop),box-shadow .12s}
+.slot:active{transform:translateY(3px) scale(.97)}
+.slot .n{color:#fcf3db;text-shadow:0 1px 0 #000000}
+.slot .c{border-radius:999px;padding:1px 6px;color:#ffffff;text-shadow:0 1px 0 var(--gem-dk);background:radial-gradient(circle at 35% 30%,#d8eafa,#89b3dc 35%,var(--gem) 65%,var(--gem-dk));box-shadow:0 0 0 1.5px var(--edge),0 1px 0 var(--edge)}
+.slot.sel{transform:translateY(-4px);background:linear-gradient(180deg,rgba(252,240,209,.22) 0 40%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#664e41,#3b2c27 60%,#261a1b);
+  box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold-hi),0 5px 0 var(--edge),0 0 18px 3px rgba(234,208,141,.55);animation:slotsel 1.4s ease-in-out infinite}
+@keyframes slotsel{50%{box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold-hi),0 5px 0 var(--edge),0 0 8px 1px rgba(234,208,141,.3)}}
+.slot.poor .c{background:radial-gradient(circle at 35% 30%,#a79a9a,#654c4c 60%,#372727);color:#eccbbf}
+.slot.fav .n::before{text-shadow:0 0 6px rgba(234,208,141,.9)}
+.go{border:2px solid var(--cta-edge);color:var(--cta-ink);text-shadow:0 1px 0 rgba(254,250,230,.85);overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.55) 0 44%,rgba(255,255,255,0) 54%),linear-gradient(180deg,var(--cta1),var(--cta2) 40%,var(--cta3) 70%,var(--cta4));
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.45),0 4px 0 var(--cta-edge),0 7px 14px rgba(0,0,0,.5),0 0 20px rgba(234,208,141,.45);transition:transform .08s}
+.go:active{transform:translateY(3px);box-shadow:inset 0 0 0 2px rgba(255,255,255,.45),0 1px 0 var(--cta-edge)}
+.go::after{content:"";position:absolute;top:-10%;bottom:-10%;left:-40%;width:22%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-20deg);animation:ctashine 2.6s ease-in-out infinite}
+.go .ring{background:conic-gradient(var(--wine2) var(--p,100%),rgba(54,33,16,.25) 0)}
+.go .ringwrap span{color:var(--wine3)}
+.frame{border-radius:16px;box-shadow:0 0 0 2px var(--edge),0 0 0 4px rgba(193,162,94,.35),0 12px 30px rgba(0,0,0,.65)}
+.guidebox{border-radius:14px;border:0;box-shadow:0 0 0 2px var(--edge),inset 0 0 0 2px var(--gold),0 4px 0 var(--edge),0 10px 20px rgba(0,0,0,.5)}
+.guidebox .gstep{background:linear-gradient(180deg,var(--wine1),var(--wine2));color:#fcf3db}
+
+/* ---- 結果: クリアの帯・★がひとつずつ・数字が数え上がる ---- */
+#ovOver .result-top h2{display:inline-block}
+#ovOver.win .result-top h2{padding:2px 22px;border-radius:8px;color:var(--cta-ink);text-shadow:0 1px 0 rgba(254,250,230,.9);
+  background:linear-gradient(180deg,rgba(255,255,255,.5) 0 45%,rgba(255,255,255,0) 55%),linear-gradient(180deg,var(--cta1),var(--cta2) 40%,var(--cta3));
+  box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px rgba(255,255,255,.7),0 4px 0 var(--edge),0 0 24px rgba(234,208,141,.6);animation:stamp .5s .15s var(--pop) both}
+#ovOver.lose .result-top h2{padding:2px 18px;border-radius:8px;color:#e7dfd8;background:linear-gradient(180deg,#584b51,#2e272b);box-shadow:0 0 0 2px var(--edge),0 3px 0 var(--edge);text-shadow:0 1px 0 #000000;animation:stamp .45s .15s ease-out both}
+@keyframes stamp{0%{transform:scale(1.8);opacity:0}100%{transform:none;opacity:1}}
+#ovOver .rsay{animation:rise .4s .45s ease-out both}
+.rbig > div,.confirm li{border-radius:14px}
+.rbig > div{background:linear-gradient(180deg,rgba(255,255,255,.1) 0 40%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#3a2c2f,#1e1617);box-shadow:0 0 0 2px var(--edge),inset 0 0 0 1px rgba(193,162,94,.7),0 4px 0 var(--edge)}
+#ovOver:not([hidden]) .rbig > div{animation:rise .4s var(--pop) both}
+#ovOver:not([hidden]) .rbig > div:nth-child(1){animation-delay:.35s}
+#ovOver:not([hidden]) .rbig > div:nth-child(2){animation-delay:.47s}
+#ovOver:not([hidden]) .rbig > div:nth-child(3){animation-delay:.59s}
+#ovOver:not([hidden]) .result > div{animation:rise .35s ease-out both}
+#ovOver:not([hidden]) .result > div:nth-child(n){animation-delay:calc(.7s + var(--i,0) * .05s)}
+.result div{border-bottom:1px dashed rgba(126,42,57,.3)}
+@keyframes rise{0%{transform:translateY(14px);opacity:0}100%{transform:none;opacity:1}}
+.rbig b{color:#fdf6e2;text-shadow:0 2px 0 var(--edge),0 0 10px rgba(234,208,141,.45)}
+.rbig .st{display:inline-block;color:#f6d67f;text-shadow:0 0 10px rgba(246,214,127,.8),0 2px 0 var(--edge);animation:starpop .45s var(--pop) both}
+.rbig .st.off{color:#5a5156;text-shadow:0 2px 0 var(--edge)}
+@keyframes starpop{0%{transform:scale(0) rotate(-90deg);opacity:0}100%{transform:none;opacity:1}}
+@property --cnt{syntax:'<integer>';inherits:false;initial-value:0}
+.rbig b.counting{position:relative;color:transparent!important;text-shadow:none!important}
+.rbig b.counting::after{content:counter(c);counter-reset:c var(--cnt);position:absolute;left:0;right:0;top:0;text-align:center;color:#fdf6e2;text-shadow:0 2px 0 var(--edge);animation:countup var(--dur,1s) cubic-bezier(.2,.7,.3,1) both;animation-delay:.6s}
+@keyframes countup{from{--cnt:0}to{--cnt:var(--to)}}
+@media (orientation:landscape) and (max-height:430px){.hearts{padding:0;background:none;box-shadow:none}.bar{height:12px}.where #sWaveBox{padding:0 8px}}
+.panel > .phead h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:480px){.panel > .phead h2::before{display:none}.panel > .phead{gap:6px}}
+#ovOver .result-top h2{word-break:keep-all}
+#ovOver .result-top > div{flex:1;min-width:0}
+@media (orientation:portrait){#ovOver .result-top .kv{height:clamp(90px,22vh,200px)}}
+@media (orientation:portrait){#ovOver.win .result-top h2,#ovOver.lose .result-top h2{padding:2px 12px;font-size:clamp(18px,5.4vw,30px)}}
+.rbig .st{font-size:1.2em}
+@media (max-width:380px){.panel > .phead .back{font-size:0;gap:0;padding-right:4px}}
+@media (orientation:portrait) and (max-height:640px){.tmenu{gap:8px}.tmenu .btn{min-height:50px;font-size:18px}#btnStage{min-height:54px;font-size:20px}.tminor button i{width:38px;height:38px;font-size:16px}}
+.dlgacts .btn{padding:8px 14px;min-height:44px}
+/* 押したところに金の輪 */
+.tapfx{position:fixed;z-index:200;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;pointer-events:none;border:3px solid rgba(249,230,175,.95);box-shadow:0 0 10px rgba(234,208,141,.9);animation:tapfx .42s ease-out forwards}
+@keyframes tapfx{to{transform:scale(4.2);opacity:0;border-width:1px}}
+@media (prefers-reduced-motion:reduce){
+  .overlay > .panel,.dlgcard,.cpick.on::after,.stg.next::before,.slot.sel,.go::after,.bar i::after,#ovOver *,.tapfx,
+  #btnBegin::after,#btnNext1::after,#btnNext2::after,#btnRetry::after,#btnNext::after,#btnStage::after,#btnGrowDone::after{animation:none!important}
+  .rbig b.counting{color:inherit!important}.rbig b.counting::after{display:none}
+}
 </style>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -4766,7 +5007,37 @@ function showOv(id) {
   OVS.forEach(o => $('#' + o).hidden = o !== id);
   if (id === 'ovTitle') refreshTitle();
   document.body.classList.toggle('scene', !!id);
+  if (id === 'ovOver') resultFx();
 }
+// ---------- ソシャゲ風の手ごたえ（2026-11-22）: 押したところの金の輪と小さな音、結果の★と数え上げ、得点の弾み ----------
+const TAP_SEL = '.btn, .back, .slot, .pick, .cpick, .stg, .up, .lesson, .tminor button, .hbtn, .langbtn, .chapnav button, .comicbtn, .achlist li, .go';
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest && e.target.closest(TAP_SEL);
+  if (!el || el.disabled) return;
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const fx = document.createElement('i'); fx.className = 'tapfx'; fx.style.left = e.clientX + 'px'; fx.style.top = e.clientY + 'px';
+    document.body.append(fx); setTimeout(() => fx.remove(), 450);
+  }
+  if (!el.matches('.slot, .go')) { try { if (actxReady()) { const gold = el.matches('#btnStage, #btnBegin, #btnNext1, #btnNext2, #btnRetry, #btnNext, #btnResume, #btnGrowDone'); pluck(gold ? 1568 : 1175, .035, 0, .25); if (gold) pluck(2093, .03, .06, .3); } } catch (er) {} }
+}, { capture: true, passive: true });
+function actxReady() { try { return !!AC && AC.state === 'running' && !!bus(); } catch (e) { return false; } }
+function resultFx() {
+  const ov = $('#ovOver'), won = $('#kvOver').classList.contains('joy') || /★/.test($('#rWave').textContent);
+  ov.classList.toggle('win', won); ov.classList.toggle('lose', !won);
+  [...ov.querySelectorAll('.result > div')].forEach((d, i) => d.style.setProperty('--i', i));
+  const w = $('#rWave'), t = w.textContent;
+  if (/^[★☆]+$/.test(t)) { w.innerHTML = [...t].map((c, i) => `<span class="st${c === '☆' ? ' off' : ''}" style="animation-delay:${.55 + i * .22}s">${c}</span>`).join(''); }
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for (const id of ['rScore', 'rCombo']) {
+    const b = $('#' + id), n = parseInt(b.textContent.replace(/[^0-9]/g, ''), 10);
+    if (!(n > 0)) continue;
+    const dur = id === 'rScore' ? 1.1 : .6;
+    b.style.setProperty('--to', n); b.style.setProperty('--dur', dur + 's'); b.classList.remove('counting'); void b.offsetWidth; b.classList.add('counting');
+    clearTimeout(b._cnt); b._cnt = setTimeout(() => b.classList.remove('counting'), (dur + .65) * 1000);
+  }
+}
+{ const sc = $('#sScore'); let last = sc.textContent;
+  new MutationObserver(() => { if (sc.textContent === last) return; last = sc.textContent; const box = sc.parentElement; box.classList.remove('bump'); void box.offsetWidth; box.classList.add('bump'); }).observe(sc, { childList: true, characterData: true, subtree: true }); }
 // ---------- 遊び方（図つきのページ） ----------
 const hc = $('#helpCv').getContext('2d');
 function miniGrid(cols, rows) { // 図の床。1マス 80px（キャンバスは 880x440）
