@@ -579,6 +579,10 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 :lang(en) .tminor button.new.story::after{content:"NEW"}
 
 /* ---------- おはなし（アドベンチャー） ---------- */
+/* エンディング（スタッフロール） */
+.overlay.ed{z-index:46;display:block;background:#000;padding:0}
+#edCv{position:absolute;inset:0;width:100%;height:100%;cursor:pointer;touch-action:manipulation}
+#edSkip{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));opacity:.6;z-index:1}
 .overlay.story{z-index:45;display:block;padding:0;background:var(--night);backdrop-filter:none;overflow:hidden;cursor:pointer;user-select:none;-webkit-user-select:none}
 .sbg{position:absolute;inset:0;--sky1:#2c2532;--sky2:#120d16;--floor1:#6f66b4;--floor2:#4a4054;--win:rgba(255,240,200,.18);--glow:rgba(241,217,142,.18);
   background:radial-gradient(ellipse at 50% 18%,var(--glow),transparent 60%),linear-gradient(180deg,var(--sky1),var(--sky2) 62%);transition:background 1s}
@@ -1152,6 +1156,10 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
   </div>
 </div>
 
+<div class="overlay ed" id="ovED" role="dialog" aria-label="エンディング" hidden>
+  <canvas id="edCv" aria-hidden="true"></canvas>
+  <button class="btn sub" id="edSkip" type="button">スキップ</button>
+</div>
 <div class="overlay story" id="ovStory" role="dialog" aria-label="おはなし" hidden>
   <div class="sbg" id="storyBg"></div>
   <div class="scast" id="storyCast" aria-hidden="true"></div>
@@ -1427,6 +1435,8 @@ Object.assign(ART, {
   px_lily: '../art/pixel48/lily.png', px_mina: '../art/pixel48/mina.png', px_noel: '../art/pixel48/noel.png', px_cecil: '../art/pixel48/cecil.png',
   px_foe_knight: '../art/pixel48/foe_knight.png', px_foe_thief: '../art/pixel48/foe_thief.png', px_foe_heavy: '../art/pixel48/foe_heavy.png', px_foe_ward: '../art/pixel48/foe_ward.png',
   px_room_hall: '../art/pixel/room_hall.png', px_room_library: '../art/pixel/room_library.png', px_room_gallery: '../art/pixel/room_gallery.png', px_room_greenhouse: '../art/pixel/room_greenhouse.png',
+  op1: '../art/op/op1.webp', op2: '../art/op/op2.webp', op4: '../art/op/op4.webp', op6: '../art/op/op6.webp', op7: '../art/op/op7.webp', op8: '../art/op/op8.webp', // エンディングの一枚絵（スマホ版の OP と同じ絵）
+  opb3: '../art/op/opb3.webp', opb4: '../art/op/opb4.webp', opb5: '../art/op/opb5.webp', opb6: '../art/op/opb6.webp', opb7: '../art/op/opb7.webp', opb8: '../art/op/opb8.webp',
   px_room_dungeon: '../art/pixel/room_dungeon.png', px_room_chapel: '../art/pixel/room_chapel.png', px_room_attic: '../art/pixel/room_attic.png', px_room_clock: '../art/pixel/room_clock.png',
 });
 const IMG = {};
@@ -1876,7 +1886,8 @@ function sceneBgm() {
   if (!AC || AC.state !== 'running') return;
   for (const k of ['title', 'story', roomBgm()]) bgmLoad(k); // よく使う曲は先にほどいておく
   let want = null;
-  if (storyOn) want = bgmFor(storyBgm);
+  if (edOn) want = 'title';
+  else if (storyOn) want = bgmFor(storyBgm);
   else if (G.state === 'title') want = 'title';
   else if (G.state === 'edit') want = roomBgm();
   else if (G.state === 'shop') want = 'title';
@@ -4650,6 +4661,7 @@ const STORY = {
     ['lily', 'h', $t`館さま。四十の夜、ありがとうございました。これからも、どうかわたしたちを見守っていてくださいね`],
     { fx: 'flash' },
     ['', '', $t`――おしまい。`],
+    { ed: 'main' },
     { bg: 'morning dark', bgm: 'over', clear: 1 },
     ['rosa', '', $t`……リリィ。あなた、鍵穴に差したのね`],
     ['', '', $t`おばあさまの笑顔が、止まった。タイトルの「おはなし」に『さかさまの夜』が増えた。`],
@@ -4708,6 +4720,7 @@ const STORY = {
     ['noel', 'h', $t`お茶が冷めないうちに、どうぞ`],
     ['chirin', 'p', $t`チリン♪`],
     ['', '', $t`――お客さまエンド`],
+    { ed: 'A' },
   ] },
   endB: { title: $t`結末B　見守る人`, true: 1, lines: [
     { bg: 'outside morning', bgm: 'ending', clear: 1 },
@@ -4717,6 +4730,7 @@ const STORY = {
     ['rosa', '', $t`封印はわたしが結び直すわ。今度は閉じ込めるためじゃない。帰ってこられる窓として、ね`],
     ['chirin', 'n', $t`……ありがと、リリィ`],
     ['', '', $t`――見守りエンド`],
+    { ed: 'B' },
   ] },
 };
 // おはなしの一覧に並べる順（導入はマンガ＋intro1＋intro2）
@@ -4743,6 +4757,312 @@ function markSeen(id) {
 }
 let textSpeed = 2; // 1 ゆっくり 2 ふつう 3 すぐ
 try { const v = +localStorage.getItem('trapoflily-textspeed'); if (v >= 1 && v <= 3) textSpeed = v; } catch (e) {}
+// ---------- エンディング用: スマホ版（yuruge/trap-of-lily）の OP の描き方を持ってきたもの（ストア版には OP の動画が無いので） ----------
+let OP_CUTS = [], opDrops = [], opParts = [];
+let oc = null;
+function ocSwap(c) { const p = oc; oc = c; return p; }
+// 一枚絵を置く枠（横長の画面はいっぱいに、縦長の画面は上下に帯を入れて 16:9 を保つ）
+function opFrameRect(W, H) {
+  if (W / H < 1.25) { const h = W * 9 / 16; return { x: 0, y: (H - h) / 2, w: W, h }; }
+  const s = Math.max(W / 16, H / 9); return { x: (W - 16 * s) / 2, y: (H - 9 * s) / 2, w: 16 * s, h: 9 * s };
+}
+const opEase = p => p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
+function opDrawCut(i, lt, alpha, R) {
+  const cut = OP_CUTS[i], im = IMG[cut.img]; if (!im || !im.complete || !im.naturalWidth) return;
+  const p = opEase(Math.min(1, lt / cut.t)), z = cut.z[0] + (cut.z[1] - cut.z[0]) * p;
+  const cx = cut.c[0][0] + (cut.c[1][0] - cut.c[0][0]) * p, cy = cut.c[0][1] + (cut.c[1][1] - cut.c[0][1]) * p;
+  let sx = 0, sy = 0;
+  if (cut.fx.includes('bounce')) for (const b of [.9, 2.5, 4.1, 5.7]) { const k = lt - b; if (k > 0 && k < .35) { const a = (1 - k / .35) * R.w * .012; sx += Math.sin(k * 90) * a; sy += Math.cos(k * 70) * a; } } // ドタバタの揺れ
+  const w = R.w * z, h = R.h * z;
+  let x = R.x + R.w / 2 - w * cx, y = R.y + R.h / 2 - h * cy;
+  x = Math.min(R.x, Math.max(R.x + R.w - w, x)); y = Math.min(R.y, Math.max(R.y + R.h - h, y)); // 端が見えないように
+  oc.save(); oc.globalAlpha = alpha; oc.beginPath(); oc.rect(R.x, R.y, R.w, R.h); oc.clip();
+  oc.drawImage(im, x + sx, y + sy, w, h);
+  const W = R.w, H = R.h, d = W / 1000;
+  if (cut.fx.includes('candle')) { oc.fillStyle = `rgba(255,190,110,${.05 + .04 * Math.sin(lt * 11) * Math.sin(lt * 7.3)})`; oc.fillRect(R.x, R.y, W, H); }
+  if (cut.fx.includes('rain')) {
+    oc.strokeStyle = 'rgba(200,215,235,.32)'; oc.lineWidth = 1.2 * d; oc.beginPath();
+    for (const r of opDrops) { const yy = ((r.y + lt * r.v * .9) % 1.1) - .05, xx = (r.x + yy * .08) % 1; oc.moveTo(R.x + xx * W, R.y + yy * H); oc.lineTo(R.x + (xx + r.l * .08) * W, R.y + (yy + r.l) * H); }
+    oc.stroke();
+  }
+  if (cut.fx.includes('bolt')) for (const b of [2.6, 3.0, 5.4]) { const k = lt - b; if (k > 0 && k < .25) { oc.fillStyle = `rgba(225,232,255,${.55 * (1 - k / .25)})`; oc.fillRect(R.x, R.y, W, H); } }
+  if (cut.fx.includes('glint')) for (let k = 0; k < 14; k++) { // 磨いた床のきらめき
+    const gx = R.x + ((k * 0.618 + .07) % 1) * W, gy = R.y + (.62 + ((k * 0.377) % 1) * .34) * H, ph = (lt * 1.6 + k * .37) % 1.6;
+    if (ph > .9) continue; const a = Math.sin(ph / .9 * Math.PI), r = W * .012 * (.6 + (k % 3) * .3) * a;
+    oc.save(); oc.globalAlpha = alpha * a * .9; oc.fillStyle = '#fffbe8'; oc.shadowColor = '#ffffff'; oc.shadowBlur = r * 2;
+    oc.beginPath(); oc.moveTo(gx, gy - r * 2); oc.lineTo(gx + r * .35, gy - r * .35); oc.lineTo(gx + r * 2, gy); oc.lineTo(gx + r * .35, gy + r * .35); oc.lineTo(gx, gy + r * 2); oc.lineTo(gx - r * .35, gy + r * .35); oc.lineTo(gx - r * 2, gy); oc.lineTo(gx - r * .35, gy - r * .35); oc.closePath(); oc.fill(); oc.restore();
+  }
+  if (cut.fx.includes('torch')) { oc.fillStyle = `rgba(255,140,60,${.05 + .03 * Math.sin(lt * 13)})`; oc.fillRect(R.x, R.y, W, H); }
+  if (cut.fx.includes('dawn')) { const g = oc.createLinearGradient(0, R.y, 0, R.y + H); g.addColorStop(0, `rgba(255,214,150,${.18 * p})`); g.addColorStop(.6, 'rgba(255,214,150,0)'); oc.fillStyle = g; oc.fillRect(R.x, R.y, W, H); }
+  oc.restore();
+}
+function opDrawLogo(R, k) { // 夜明けのカットに重ねるタイトルロゴ
+  if (k <= 0) return;
+  const W = R.w, a = Math.min(1, k), cx = R.x + W / 2, cy = R.y + R.h * .2, fs = Math.round(W * .072);
+  oc.save(); oc.globalAlpha = a; oc.textAlign = 'center'; oc.textBaseline = 'middle';
+  oc.shadowColor = 'rgba(20,12,24,.85)'; oc.shadowBlur = fs * .35;
+  const g = oc.createLinearGradient(0, cy - fs / 2, 0, cy + fs / 2); g.addColorStop(0, '#fff3d0'); g.addColorStop(.55, '#e8c472'); g.addColorStop(1, '#b8873c');
+  oc.fillStyle = g; oc.font = `800 ${fs}px "TOL Logo Mincho","TOL Logo Latin",serif`;
+  const band = oc.createRadialGradient(cx, cy + fs * .3, 0, cx, cy + fs * .3, W * .42); band.addColorStop(0, 'rgba(24,14,22,.5)'); band.addColorStop(.55, 'rgba(24,14,22,.28)'); band.addColorStop(1, 'rgba(24,14,22,0)'); // 明るい空でも読めるように、ロゴの後ろを少し暗くする
+  oc.save(); oc.shadowBlur = 0; oc.fillStyle = band; oc.translate(cx, cy + fs * .3); oc.scale(1, .38); oc.translate(-cx, -(cy + fs * .3)); oc.fillRect(R.x, R.y - R.h, W, R.h * 3); oc.restore();
+  oc.save(); oc.translate(cx, cy); const sc = 1.06 - .06 * Math.min(1, k); oc.scale(sc, sc); oc.lineJoin = 'round'; oc.strokeStyle = 'rgba(40,22,30,.8)'; oc.lineWidth = fs * .08; oc.strokeText($t`トラップオブリリー`, 0, 0); oc.fillText($t`トラップオブリリー`, 0, 0); oc.restore();
+  oc.shadowBlur = fs * .2; oc.fillStyle = '#f2dfae'; oc.font = `700 ${Math.round(fs * .3)}px "TOL Logo Latin",serif`;
+  oc.fillText(LANG === 'en' ? '❦' : '❦  TRAP OF LILY  ❦', cx, cy + fs * .82); // 英語ではロゴがもう英字なので飾りだけ
+  oc.restore();
+}
+// ---------- エンディング（スタッフロール。タイトル曲「おやすみ、夜明けの館」の頭から約2分） ----------
+// 左（縦長の画面では上）に思い出の一枚絵と部屋、右（下）に流れるスタッフロール、その下を4人と侵入者のドット絵が歩く。最後は夜明けの一枚絵を画面いっぱいに
+const ED_MEM = [ // 思い出のカット（OP の一枚絵を、少し色あせた思い出の色で）
+  { img: 'op1', z: [1.12, 1], c: [[.5, .4], [.5, .5]], fx: ['rain'] },
+  { img: 'op2', z: [1, 1.12], c: [[.5, .5], [.42, .5]], fx: ['candle'] },
+  { img: 'op4', z: [1.14, 1.02], c: [[.5, .55], [.5, .5]], fx: ['candle'] },
+  { img: 'op6', z: [1.18, 1.04], c: [[.3, .55], [.5, .5]], fx: ['rain', 'torch'] },
+  { img: 'opb3', z: [1.02, 1.14], c: [[.5, .5], [.62, .45]], fx: ['glint'] },
+  { img: 'opb4', z: [1.14, 1.02], c: [[.35, .45], [.5, .5]], fx: ['torch'] },
+  { img: 'opb5', z: [1.02, 1.14], c: [[.5, .5], [.55, .4]], fx: [] },
+  { img: 'opb6', z: [1.14, 1.02], c: [[.4, .45], [.5, .5]], fx: ['candle'] },
+  { img: 'op7', z: [1.04, 1.12], c: [[.5, .5], [.5, .55]], fx: ['bounce'] },
+  { img: 'opb7', z: [1.12, 1], c: [[.4, .55], [.5, .5]], fx: [] },
+];
+const ED_T0 = 3, ED_MEM_T = 7, ED_ROOM_T = 3; // 思い出は 3秒目から1カット7秒、続いて8つの部屋を3秒ずつ
+const ED_ROOM0 = ED_T0 + ED_MEM.length * ED_MEM_T, ED_FIN = ED_ROOM0 + 8 * ED_ROOM_T; // 97秒目から最後の一枚絵
+const ED_FIN_IMG = { main: 'op8', A: 'opb8', B: 'opb8' };
+const ED_XF = 1.2;
+let edOn = false, edT0 = 0, edRaf = 0, edDone = null, edVer = 'main', edRoll = null, edRoomCv = [], edPetals = [], edEndAt = 0;
+const edCv = $('#edCv'), ec = edCv.getContext('2d');
+// スタッフロールの中身（クレジット画面の文言をそのまま使う。言語を切り替えても合う）
+function edRollItems() {
+  const it = [{ k: 'logo' }, { k: 'gap', h: 2.2 }, { k: 'h', text: $t`登場人物` }];
+  for (const id of ['lily', 'mina', 'noel', 'cecil']) it.push({ k: 'role', text: CHARS[id].title }, { k: 'name', text: CHARS[id].name, px: `px_${id}` });
+  it.push({ k: 'gap', h: .6 }, { k: 'role', text: $t`鍵束の精` }, { k: 'name', text: SPEAKER.chirin.name() });
+  it.push({ k: 'role', text: $t`館のあるじ（旅行中）` }, { k: 'name', text: SPEAKER.rosa.name() });
+  it.push({ k: 'role', text: $t`年に一度の勝負相手` }, { k: 'name', text: SPEAKER.baron.name() });
+  it.push({ k: 'role', text: $t`お堀に落ちた人たち` }, { k: 'name', text: SPEAKER.knight.name(), px: 'px_foe_knight' }, { k: 'name', text: SPEAKER.thief.name(), px: 'px_foe_thief' }, { k: 'name', text: SPEAKER.heavy.name(), px: 'px_foe_heavy' });
+  it.push({ k: 'gap', h: 2 }, { k: 'h', text: $t`舞台` });
+  for (const mi of STAGE_MAPS) it.push({ k: 'small', text: MAPS[mi].name });
+  it.push({ k: 'gap', h: 2 }, { k: 'h', text: $t`スタッフ` });
+  const dl = $('#ovCredits .credits');
+  if (dl) for (const dt of dl.querySelectorAll('dt')) { const dd = dt.nextElementSibling; it.push({ k: 'role', text: dt.textContent.trim() }, { k: dd && dd.textContent.length > 40 ? 'small' : 'name', text: dd ? dd.textContent.trim() : '' }); }
+  it.push({ k: 'gap', h: 2 }, { k: 'h', text: $t`そして` }, { k: 'name', text: $t`四十の夜を見守ってくれた` }, { k: 'big', text: $t`館さま` });
+  return it;
+}
+// 画面の割り付け（F: 絵の枠、S: ドット絵が歩く帯、L: スタッフロールの欄）
+function edLayout(W, H) {
+  let F, S, L;
+  if (W / H >= 1.25) {
+    const fw = Math.min(W * .58, H * .7 * 16 / 9), fh = fw * 9 / 16, fx = W * .035, fy = Math.max(H * .07, (H - fh - H * .2) / 2);
+    F = { x: fx, y: fy, w: fw, h: fh }; S = { x: fx, y: fy + fh + H * .03, w: fw, h: Math.min(H * .17, H - (fy + fh + H * .05)) };
+    L = { x: fx + fw + W * .03, y: H * .05, w: W - (fx + fw + W * .03) - W * .03, h: H * .9 };
+  } else {
+    const fw = W * .92, fh = fw * 9 / 16, fx = W * .04, fy = Math.max(H * .04, 10);
+    F = { x: fx, y: fy, w: fw, h: fh }; S = { x: fx, y: fy + fh + H * .01, w: fw, h: Math.min(H * .11, fw * .2) };
+    L = { x: W * .06, y: S.y + S.h + H * .015, w: W * .88, h: H - (S.y + S.h + H * .015) - H * .03 };
+  }
+  return { F, S, L };
+}
+const edWrap = (s, maxW) => { // 1行に収まるよう折り返す（日本語は字ごと、英語は語ごと）
+  const out = []; let line = '';
+  for (const tok of s.match(/[\x21-\x7e -ɏ'’]+\s*|\s+|./gu) || []) {
+    if (line && ec.measureText(line + tok).width > maxW) { out.push(line.trimEnd()); line = tok.trimStart(); } else line += tok;
+  }
+  if (line) out.push(line); return out;
+};
+function edMeasureRoll(L) { // 項目ごとの高さと行を決める（大きさが変わったときだけ）
+  const u = Math.max(12, Math.min(L.w * .055, 26 * (window.devicePixelRatio || 1)));
+  const font = { h: `700 ${u * .95}px "Zen Maru Gothic",sans-serif`, role: `500 ${u * .72}px "Zen Maru Gothic",sans-serif`, name: `700 ${u * 1.08}px "Zen Maru Gothic",sans-serif`, small: `500 ${u * .78}px "Zen Maru Gothic",sans-serif`, big: `800 ${u * 1.5}px "Zen Maru Gothic",sans-serif` };
+  const lh = { h: u * 1.5, role: u * 1.1, name: u * 1.5, small: u * 1.15, big: u * 2.1 };
+  let y = 0; const rows = [];
+  for (const it of edRoll.items) {
+    if (it.k === 'gap') { y += it.h * u; continue; }
+    if (it.k === 'logo') { rows.push({ it, y, h: u * 4.2 }); y += u * 4.2; continue; }
+    ec.font = font[it.k]; const lines = edWrap(it.text, L.w * (it.px ? .74 : .96));
+    const h = lines.length * lh[it.k] + (it.k === 'h' ? u * .5 : it.k === 'name' ? u * .45 : 0) + (it.px ? u * .5 : 0);
+    rows.push({ it, y, h, lines, font: font[it.k], lh: lh[it.k] }); y += h;
+  }
+  edRoll.u = u; edRoll.rows = rows; edRoll.total = y; edRoll.key = `${L.w}x${L.h}`;
+}
+function edRecord() { // 遊んだ記録（星・最大連続・実績）
+  let stars = 0; for (const r of Object.values(stageRec.rec)) stars += r.stars || 0;
+  let bc = 0; try { bc = +localStorage.getItem('wanakan-bestcombo') || 0; } catch (e) {}
+  const ach = ACH.filter(a => achSaved[a.id]).length;
+  return $t`集めた★ ${stars}／${STAGE_COUNT * 3}　・　最大 ${bc}連続　・　実績 ${ach}／${ACH.length}`;
+}
+function playED(ver, then) {
+  edVer = ED_FIN_IMG[ver] ? ver : 'main'; edDone = then || null; edOn = true; edEndAt = 0;
+  edRoll = { items: edRollItems(), key: '' };
+  edRoomCv = STAGE_MAPS.map(mi => { const c = document.createElement('canvas'); drawRoomThumb(c, mi); return c; });
+  edPetals = Array.from({ length: 26 }, () => ({ x: Math.random(), y: Math.random(), v: .018 + Math.random() * .02, s: .5 + Math.random(), w: Math.random() * 7, r: Math.random() * 7 }));
+  opDrops = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), v: .9 + Math.random() * .8, l: .03 + Math.random() * .04 })); // 雨（OP と同じもの）
+  $('#ovED').hidden = false; edSize(); audio();
+  bgmKey = null; playBgm('title'); // 曲の頭から
+  edT0 = performance.now();
+  cancelAnimationFrame(edRaf); edRaf = requestAnimationFrame(edFrame);
+  try { $('#edSkip').focus({ preventScroll: true }); } catch (e) {}
+}
+function edEnd() {
+  if (!edOn) return; edOn = false; cancelAnimationFrame(edRaf);
+  $('#ovED').hidden = true; edRoomCv = [];
+  const f = edDone; edDone = null; if (f) f();
+}
+function edSize() {
+  const r = edCv.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+  edCv.width = Math.max(1, Math.round(r.width * d)); edCv.height = Math.max(1, Math.round(r.height * d));
+}
+// 一枚絵を枠 R にカメラを動かしながら描く（OP の描き方を使う。mem: 思い出の色にする）
+function edDrawImg(cut, lt, dur, alpha, R, mem) {
+  const save = OP_CUTS, prev = ocSwap(ec); OP_CUTS = [Object.assign({ t: dur }, cut)]; // opDrawCut は OP のキャンバス（oc）に描くので、ここだけ ED のキャンバスに差し替える
+  try { opDrawCut(0, lt, alpha, R); } finally { ocSwap(prev); OP_CUTS = save; }
+  if (mem) { ec.save(); ec.globalAlpha = alpha; ec.beginPath(); ec.rect(R.x, R.y, R.w, R.h); ec.clip(); ec.fillStyle = 'rgba(255,226,180,.13)'; ec.fillRect(R.x, R.y, R.w, R.h); const g = ec.createRadialGradient(R.x + R.w / 2, R.y + R.h / 2, R.h * .35, R.x + R.w / 2, R.y + R.h / 2, R.w * .62); g.addColorStop(0, 'rgba(30,18,26,0)'); g.addColorStop(1, 'rgba(30,18,26,.45)'); ec.fillStyle = g; ec.fillRect(R.x, R.y, R.w, R.h); ec.restore(); }
+}
+function edFrameBox(R, a) { // 金の額縁
+  ec.save(); ec.globalAlpha = a; const d = Math.max(1, R.w / 500);
+  ec.strokeStyle = 'rgba(232,196,114,.85)'; ec.lineWidth = 2 * d; ec.strokeRect(R.x - 4 * d, R.y - 4 * d, R.w + 8 * d, R.h + 8 * d);
+  ec.strokeStyle = 'rgba(232,196,114,.35)'; ec.lineWidth = 1 * d; ec.strokeRect(R.x - 8 * d, R.y - 8 * d, R.w + 16 * d, R.h + 16 * d);
+  ec.fillStyle = '#e8c472'; ec.font = `${12 * d}px serif`; ec.textAlign = 'center'; ec.textBaseline = 'middle';
+  for (const [x, y] of [[R.x - 8 * d, R.y - 8 * d], [R.x + R.w + 8 * d, R.y - 8 * d], [R.x - 8 * d, R.y + R.h + 8 * d], [R.x + R.w + 8 * d, R.y + R.h + 8 * d]]) ec.fillText('❦', x, y);
+  ec.restore();
+}
+function edDrawRoom(i, lt, alpha, R) { // 思い出の部屋（盤面のドット絵）と、その部屋で取った★
+  const c = edRoomCv[i]; if (!c) return;
+  ec.save(); ec.globalAlpha = alpha; ec.beginPath(); ec.rect(R.x, R.y, R.w, R.h); ec.clip();
+  ec.fillStyle = '#191210'; ec.fillRect(R.x, R.y, R.w, R.h);
+  const z = 1.02 + .06 * Math.min(1, lt / ED_ROOM_T), s = Math.max(R.w / c.width, R.h / c.height) * z;
+  ec.imageSmoothingEnabled = false; ec.drawImage(c, R.x + (R.w - c.width * s) / 2, R.y + (R.h - c.height * s) / 2, c.width * s, c.height * s); ec.imageSmoothingEnabled = true;
+  const g = ec.createLinearGradient(0, R.y + R.h * .62, 0, R.y + R.h); g.addColorStop(0, 'rgba(18,10,16,0)'); g.addColorStop(1, 'rgba(18,10,16,.85)'); ec.fillStyle = g; ec.fillRect(R.x, R.y, R.w, R.h);
+  let st = 0; for (let n = i * 5 + 1; n <= i * 5 + 5; n++) st += (stageRec.rec[n] && stageRec.rec[n].stars) || 0;
+  const fs = R.h * .075; ec.textAlign = 'center'; ec.textBaseline = 'middle'; ec.shadowColor = 'rgba(0,0,0,.8)'; ec.shadowBlur = fs * .3;
+  ec.fillStyle = '#f2dfae'; ec.font = `700 ${fs}px "Zen Maru Gothic",sans-serif`; ec.fillText(MAPS[STAGE_MAPS[i]].name, R.x + R.w / 2, R.y + R.h - fs * 2.1);
+  ec.font = `700 ${fs * .8}px "Zen Maru Gothic",sans-serif`; ec.fillStyle = '#e8c472';
+  ec.fillText($t`ステージ${i * 5 + 1}〜${i * 5 + 5}　★ ${st}／15`, R.x + R.w / 2, R.y + R.h - fs * .9);
+  ec.restore();
+}
+// 下の帯を歩くドット絵（20秒ごとに顔ぶれと向きを変える）
+const ED_PARADE = [
+  { dir: 1, sp: .11, who: ['px_lily', 'px_noel', 'px_mina', 'px_cecil', null, 'px_foe_knight', 'px_foe_thief', 'px_foe_heavy'] },  // 追いかけられる4人
+  { dir: -1, sp: .13, who: ['px_foe_knight', 'px_foe_knight', 'px_foe_thief', null, 'px_cecil', 'px_mina'] },                       // 今度は追いかける
+  { dir: 1, sp: .07, who: ['px_foe_heavy', null, 'px_noel', 'px_lily', 'px_cecil', 'px_mina'] },                                     // のんびり
+  { dir: -1, sp: .1, who: ['px_mina', 'px_cecil', 'px_lily', 'px_noel', null, null, 'px_foe_knight'] },
+];
+function edDrawParade(t, S, a) {
+  if (a <= 0 || S.h < 8) return;
+  ec.save(); ec.globalAlpha = a; ec.beginPath(); ec.rect(S.x, S.y - S.h * .3, S.w, S.h * 1.3); ec.clip();
+  ec.fillStyle = 'rgba(232,196,114,.35)'; ec.fillRect(S.x, S.y + S.h * .9, S.w, Math.max(1, S.h * .015));
+  const pt = t - 4; if (pt < 0) { ec.restore(); return; }
+  const P = ED_PARADE[Math.floor(pt / 22) % ED_PARADE.length], lt = pt % 22, D = S.h * .95, gap = D * .72;
+  const span = S.w + P.who.length * gap + D, head = -D + Math.min(1, lt / (21 * (.09 / P.sp))) * span; // 先頭の位置（帯の端から）。遅い組は途中までしか進まない
+  ec.imageSmoothingEnabled = false;
+  P.who.forEach((k, j) => {
+    if (!k || !imgReady(k)) return;
+    const im = IMG[k], cs = im.naturalWidth / 4, pos = head - j * gap; if (pos < -D || pos > S.w + D) return;
+    const x = P.dir > 0 ? S.x + pos - D : S.x + S.w - pos, row = P.dir > 0 ? 2 : 1, col = Math.floor(t * (k.includes('foe') ? 6 : 8) + j) % 4;
+    const bob = Math.abs(Math.sin(t * 8 + j)) * D * .02;
+    ec.fillStyle = 'rgba(0,0,0,.3)'; ec.beginPath(); ec.ellipse(x + D / 2, S.y + S.h * .9, D * .16, D * .04, 0, 0, 7); ec.fill();
+    ec.drawImage(im, col * cs, row * cs, cs, cs, Math.round(x), Math.round(S.y + S.h * .9 - D * 15 / 16 - bob), D, D);
+  });
+  ec.imageSmoothingEnabled = true; ec.restore();
+}
+function edDrawRoll(t, L, a) {
+  if (a <= 0) return;
+  if (edRoll.key !== `${L.w}x${L.h}`) edMeasureRoll(L);
+  const u = edRoll.u, span = edRoll.total + L.h, k = Math.max(0, Math.min(1, (t - ED_T0) / (ED_FIN - 1 - ED_T0))), off = L.y + L.h - k * span;
+  ec.save(); ec.globalAlpha = a; ec.beginPath(); ec.rect(L.x - u, L.y, L.w + 2 * u, L.h); ec.clip();
+  ec.textAlign = 'center'; ec.textBaseline = 'top'; const cx = L.x + L.w / 2;
+  for (const r of edRoll.rows) {
+    const y = off + r.y; if (y > L.y + L.h || y + r.h < L.y) continue;
+    const fadeA = Math.min(1, (y + r.h - L.y) / (u * 3), (L.y + L.h - y) / (u * 3)); ec.globalAlpha = a * Math.max(0, fadeA); // 欄の上下でにじむ
+    if (r.it.k === 'logo') {
+      const fs = u * 1.9, g = ec.createLinearGradient(0, y, 0, y + fs); g.addColorStop(0, '#fff3d0'); g.addColorStop(.55, '#e8c472'); g.addColorStop(1, '#b8873c');
+      ec.font = `800 ${fs}px "TOL Logo Mincho","TOL Logo Latin",serif`; ec.lineJoin = 'round'; ec.strokeStyle = 'rgba(40,22,30,.8)'; ec.lineWidth = fs * .08; ec.strokeText($t`トラップオブリリー`, cx, y + u * .4); ec.fillStyle = g; ec.fillText($t`トラップオブリリー`, cx, y + u * .4);
+      ec.font = `700 ${u * .62}px "TOL Logo Latin",serif`; ec.fillStyle = '#f2dfae'; ec.fillText(LANG === 'en' ? '❦' : '❦  TRAP OF LILY  ❦', cx, y + u * .6 + fs); continue;
+    }
+    let yy = y;
+    ec.font = r.font;
+    if (r.it.px && imgReady(r.it.px)) { const im = IMG[r.it.px], cs = im.naturalWidth / 4, D = u * 2.6, tw = ec.measureText(r.lines[0]).width; ec.imageSmoothingEnabled = false; ec.drawImage(im, Math.floor(t * 3) % 4 * cs, 0, cs, cs, cx - tw / 2 - D * .95, yy + r.lh * .45 - D * .62, D, D); ec.imageSmoothingEnabled = true; } // 名前の左に、盤面のドット絵
+    ec.fillStyle = r.it.k === 'h' ? '#e8c472' : r.it.k === 'role' ? 'rgba(242,223,174,.7)' : r.it.k === 'big' ? '#fff3d0' : '#fbf3e4';
+    if (r.it.k === 'h') { const w = Math.min(L.w * .4, ec.measureText(r.lines[0]).width * .6 + u * 2); ec.save(); ec.strokeStyle = 'rgba(232,196,114,.5)'; ec.lineWidth = Math.max(1, u * .05); const tw = ec.measureText(r.lines[0]).width; ec.beginPath(); ec.moveTo(cx - tw / 2 - u * .6, yy + r.lh * .38); ec.lineTo(cx - tw / 2 - u * .6 - w * .5, yy + r.lh * .38); ec.moveTo(cx + tw / 2 + u * .6, yy + r.lh * .38); ec.lineTo(cx + tw / 2 + u * .6 + w * .5, yy + r.lh * .38); ec.stroke(); ec.restore(); }
+    if (r.it.k === 'big') { ec.shadowColor = 'rgba(255,214,140,.7)'; ec.shadowBlur = u * .8; }
+    r.lines.forEach((ln, j) => ec.fillText(ln, cx, yy + j * r.lh));
+    ec.shadowBlur = 0;
+  }
+  ec.restore();
+}
+function edDrawPetals(W, H, dt, a) { // 舞い落ちる百合の花びら
+  ec.save(); ec.globalAlpha = a * .75; ec.fillStyle = '#fbf3e4';
+  for (const p of edPetals) {
+    p.y += p.v * dt; p.x += Math.sin(p.w + p.y * 6) * .0006; p.r += dt * 1.3; if (p.y > 1.05) { p.y = -.05; p.x = Math.random(); }
+    const s = Math.min(W, H) * .007 * p.s; ec.save(); ec.translate(p.x * W, p.y * H); ec.rotate(p.r); ec.scale(1, .45 + .35 * Math.sin(p.r * 1.7)); ec.beginPath(); ec.ellipse(0, 0, s * 1.6, s, 0, 0, 7); ec.fill(); ec.restore();
+  }
+  ec.restore();
+}
+let edLast = 0;
+function edFrame(now) {
+  if (!edOn) return;
+  const t = (now - edT0) / 1000, dt = Math.min(.05, Math.max(0, (now - (edLast || now)) / 1000)); edLast = now;
+  const W = edCv.width, H = edCv.height, { F, S, L } = edLayout(W, H);
+  ec.setTransform(1, 0, 0, 1, 0, 0);
+  const dawn = Math.max(0, Math.min(1, (t - 20) / (ED_FIN - 20))); // 夜の色から少しずつ夜明けの色へ
+  const bg = ec.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, `rgb(${18 + 40 * dawn | 0},${12 + 18 * dawn | 0},${26 + 20 * dawn | 0})`); bg.addColorStop(1, `rgb(${12 + 70 * dawn | 0},${9 + 34 * dawn | 0},${16 + 18 * dawn | 0})`);
+  ec.fillStyle = bg; ec.fillRect(0, 0, W, H);
+  edDrawPetals(W, H, dt, Math.min(1, t / 3));
+  const fin = t - ED_FIN, grow = opEase(Math.max(0, Math.min(1, fin / 2.5))), side = 1 - Math.max(0, Math.min(1, fin / 1.5)); // 最後: 枠が画面いっぱいへ広がり、ロールと帯は消える
+  const FR = edFinRect(W, H), R = { x: F.x + (FR.x - F.x) * grow, y: F.y + (FR.y - F.y) * grow, w: F.w + (FR.w - F.w) * grow, h: F.h + (FR.h - F.h) * grow };
+  const fadeIn = Math.max(0, Math.min(1, (t - 1) / 2));
+  if (t < ED_ROOM0 + ED_XF) { // 思い出のカット
+    const mt = Math.max(0, t - ED_T0), i = Math.min(ED_MEM.length - 1, Math.floor(mt / ED_MEM_T)), lt = mt - i * ED_MEM_T;
+    edDrawImg(ED_MEM[i], lt, ED_MEM_T + ED_XF, fadeIn, R, true);
+    if (i > 0 && lt < ED_XF) edDrawImg(ED_MEM[i - 1], ED_MEM_T + lt, ED_MEM_T + ED_XF, 1 - lt / ED_XF, R, true);
+  }
+  if (t >= ED_ROOM0 && t < ED_FIN + ED_XF) { // 8つの部屋
+    const rt = t - ED_ROOM0, i = Math.min(7, Math.floor(rt / ED_ROOM_T)), lt = rt - i * ED_ROOM_T;
+    edDrawRoom(i, lt, Math.min(1, rt / ED_XF), R);
+    if (i > 0 && lt < ED_XF * .6) edDrawRoom(i - 1, ED_ROOM_T + lt, 1 - lt / (ED_XF * .6), R);
+  }
+  if (fin >= 0) { // 夜明けの一枚絵
+    const cut = { img: ED_FIN_IMG[edVer], z: [1.12, 1], c: [[.5, .62], [.5, .5]], fx: ['dawn'] };
+    edDrawImg(cut, fin, 12, Math.min(1, fin / ED_XF), R, false);
+    if (edVer === 'main' && fin > 4) { if (Math.random() < .5) opParts.push({ x: .33 + (Math.random() - .5) * .06, y: .42, vx: (Math.random() - .5) * .03, vy: -.05 - Math.random() * .06, t: 0, life: 1.4 + Math.random(), s: 1.5 + Math.random() * 2.5 }); }
+    ec.save(); ec.beginPath(); ec.rect(R.x, R.y, R.w, R.h); ec.clip();
+    for (const q of opParts) { q.t += 1 / 60; q.x += q.vx / 60; q.y += q.vy / 60; const qa = Math.max(0, 1 - q.t / q.life); ec.fillStyle = `rgba(255,224,140,${qa})`; ec.shadowColor = '#ffd27a'; ec.shadowBlur = 8; ec.beginPath(); ec.arc(R.x + q.x * R.w, R.y + q.y * R.h, q.s * R.w / 1000 * 1.6, 0, 7); ec.fill(); }
+    ec.restore(); opParts = opParts.filter(q => q.t < q.life);
+    edDrawFinal(fin, R, W, H);
+  }
+  if (side > 0) edFrameBox(R, side * fadeIn);
+  edDrawRoll(t, L, side * Math.min(1, t / 2));
+  edDrawParade(t, S, side * fadeIn);
+  if (t < 1.2) { ec.fillStyle = `rgba(0,0,0,${1 - t / 1.2})`; ec.fillRect(0, 0, W, H); } // 黒から
+  if (edEndAt) { const k = (now - edEndAt) / 900; ec.fillStyle = `rgba(0,0,0,${Math.min(1, k)})`; ec.fillRect(0, 0, W, H); if (k >= 1) { edEnd(); return; } }
+  else if (fin > 40) edClose(); // 何も押されなければ、しばらくして自動で次へ
+  edRaf = requestAnimationFrame(edFrame);
+}
+function edFinRect(W, H) { // 最後の一枚絵の枠。縦長の画面では 16:9 のまま横にはみ出させ、4人のいるあたりを真ん中に
+  if (W / H >= 1.25) return opFrameRect(W, H);
+  const h = Math.min(H * .62, edVer === 'main' ? W * .9 : W * 9 / 16), w = h * 16 / 9, fx = edVer === 'main' ? .35 : .5; // 4人が全員入る幅まで
+  return { x: Math.min(0, Math.max(W - w, W / 2 - w * fx)), y: Math.max(H * .04, (H - h) / 2 - H * .07), w, h };
+}
+function edDrawFinal(fin, R, W, H) { // 最後の一枚絵に重ねる言葉と記録
+  const V = { x: Math.max(0, R.x), y: R.y, w: Math.min(W, R.x + R.w) - Math.max(0, R.x), h: R.h }; // 画面に見えている部分
+  const fs = Math.round(Math.min(V.w * (W / H >= 1.25 ? .042 : .062), H * .065)), cx = V.x + V.w / 2;
+  const say = { main: $t`四十の夜を、ありがとう。`, A: $t`ようこそ、百合の館へ。`, B: $t`これからも、上から見守っていてね。` }[edVer];
+  const a1 = Math.max(0, Math.min(1, (fin - 3) / 1.5)), a2 = Math.max(0, Math.min(1, (fin - 6) / 1.5)), a3 = Math.max(0, Math.min(1, (fin - 9) / 1.5));
+  if (a1 <= 0) return;
+  ec.save(); ec.textAlign = 'center'; ec.textBaseline = 'middle';
+  const tall = W / H < 1.25, by = tall ? R.y + R.h + fs * 2.2 : R.y + R.h * .82, band = ec.createLinearGradient(0, by - fs * 2.6, 0, R.y + R.h); band.addColorStop(0, 'rgba(24,14,22,0)'); band.addColorStop(.35, 'rgba(24,14,22,.55)'); band.addColorStop(1, 'rgba(24,14,22,.75)');
+  ec.globalAlpha = a1; ec.fillStyle = band; if (!tall) ec.fillRect(R.x, by - fs * 2.6, R.w, R.y + R.h - (by - fs * 2.6));
+  ec.shadowColor = 'rgba(20,12,24,.9)'; ec.shadowBlur = fs * .4; ec.fillStyle = '#fff3d0'; ec.font = `700 ${fs}px "Zen Maru Gothic",sans-serif`;
+  const fit = (txt, px, y) => { ec.font = `700 ${px}px "Zen Maru Gothic",sans-serif`; const w = ec.measureText(txt).width, mw = Math.min(V.w, W) * .92; if (w > mw) ec.font = `700 ${Math.floor(px * mw / w)}px "Zen Maru Gothic",sans-serif`; ec.fillText(txt, cx, y); }; // 画面の幅に収まるように縮める
+  fit(say, fs, by - fs * .7);
+  ec.globalAlpha = a2; ec.fillStyle = '#e8c472'; fit(edRecord(), Math.round(fs * .52), by + fs * .55);
+  ec.globalAlpha = a3 * (.55 + .3 * Math.sin(fin * 3)); ec.fillStyle = '#f2dfae'; ec.font = `700 ${Math.round(fs * .42)}px "Zen Maru Gothic",sans-serif`;
+  ec.fillText($t`タップで次へ`, cx, tall ? by + fs * 2.4 : Math.min(R.y + R.h, H) - fs * .7);
+  ec.restore();
+  if (fin > 5) { const prev = ocSwap(ec); try { opDrawLogo(V, (fin - 5) / 1.6); } finally { ocSwap(prev); } }
+}
+function edClose() { if (edOn && !edEndAt) edEndAt = performance.now(); } // 黒へ溶かしてから閉じる
+$('#edSkip').addEventListener('click', e => { e.stopPropagation(); audio(); edEnd(); });
+edCv.addEventListener('click', () => { if ((performance.now() - edT0) / 1000 > ED_FIN + 3) edClose(); }); // 最後の一枚絵になったら、タップで次へ（途中の誤タップでは飛ばない）
+addEventListener('keydown', e => { if (!edOn) return; if (e.code === 'Escape' || e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); e.stopImmediatePropagation(); if (e.code === 'Escape') edEnd(); else if ((performance.now() - edT0) / 1000 > ED_FIN + 3) edClose(); } }, true);
+addEventListener('resize', () => { if (edOn) edSize(); });
 let storyOn = false, storyBgm = null, story = null, storyTut = false;
 // 台本を流す。ids は1つか配列（続けて流す）。done(skipped) は最後に呼ぶ。replay: 一覧から見直すとき（選択肢のあとも続けない）
 function playStory(ids, done, opt = {}) {
@@ -4772,6 +5092,7 @@ function storyNext() {
     }
     const ln = sc.lines[story.li];
     if (Array.isArray(ln)) { storySay(ln); return; }
+    if (ln.ed) { storyED(ln.ed); return; }
     storyDirect(ln);
     if (ln.choice) return;
   }
@@ -4802,6 +5123,11 @@ function storyDirect(d) {
     }));
     try { box.querySelector('button').focus({ preventScroll: true }); } catch (e) {}
   }
+}
+// エンディング（スタッフロール）を流し、終わったら台本の続きへ
+function storyED(ver) {
+  story.wait = true; clearTimeout(story.autoT); $('#ovStory').hidden = true;
+  playED(ver, () => { if (!story) return; $('#ovStory').hidden = false; story.wait = false; storyNext(); });
 }
 function storyClearCast() { story.cast = []; $('#storyCast').innerHTML = ''; }
 function storySay([who, face, text]) {
@@ -4853,6 +5179,8 @@ function storySkip() {
     const sc = STORY[story.ids[si]];
     for (let k = si === story.si ? story.li + 1 : 0; k < sc.lines.length; k++) {
       const ln = sc.lines[k]; if (Array.isArray(ln)) continue;
+      if (ln.ed && !storySeen[story.ids[si]]) { story.si = si; story.li = k; storyED(ln.ed); return; } // はじめて見る結末は、飛ばしてもエンディングは流す（エンディング側でも飛ばせる）
+      if (ln.ed) continue;
       if (ln.choice) { story.si = si; story.li = k; storyDirect(ln); return; }
       storyDirect(Object.assign({}, ln, { fx: null }));
     }

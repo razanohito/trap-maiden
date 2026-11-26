@@ -41,7 +41,7 @@ def mute_rgb(m: re.Match) -> str:
     return f"{m.group(1)}({r},{g},{b}{m.group(5)}"
 
 
-def mute_image(data: bytes, ext: str) -> bytes:
+def mute_image(data: bytes, ext: str, quality: int = 90) -> bytes:
     if SAT == 1:
         return data
     im = Image.open(io.BytesIO(data))
@@ -52,7 +52,7 @@ def mute_image(data: bytes, ext: str) -> bytes:
         out.putalpha(alpha)
     buf = io.BytesIO()
     if ext == "webp":
-        out.save(buf, "WEBP", quality=90, method=4)
+        out.save(buf, "WEBP", quality=quality, method=4)
     else:
         out.save(buf, "PNG", optimize=True)
     return buf.getvalue()
@@ -66,7 +66,7 @@ def embed(m: re.Match) -> str:
     data = path.read_bytes()
     ext = m.group(1).rsplit(".", 1)[1]
     if ext in ("webp", "png"):
-        data = mute_image(data, ext)
+        data = mute_image(data, ext, 72 if m.group(1).startswith("op/") else 90)  # エンディングの一枚絵（大きい）は軽めに
     mime = {"png": "image/png", "webp": "image/webp", "mp3": "audio/mpeg", "woff2": "font/woff2"}[ext]
     return f"'data:{mime};base64," + base64.b64encode(data).decode() + "'"
 
