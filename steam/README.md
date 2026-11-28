@@ -5,11 +5,13 @@
 | パス | 中身 |
 |---|---|
 | `store_text.md` | ストアページの文章（日本語・英語）、AI 生成コンテンツの開示文、タグ、システム要件 |
+| `store_text_zh.md` | ストアページの文章（簡体字・繁体字の中国語） |
 | `achievements.md` | 実績 23 個の API 名・名前・説明（日本語・英語） |
+| `achievements_zh.md` | 実績 23 個の名前・説明（簡体字・繁体字の中国語） |
 | `leaderboard.md` | 無限の夜のランキング（自動で作られる）と、任意の遊び方の統計 |
 | `achievements/` | 実績アイコン（256×256、取った絵と灰色の絵）。`python tools/make_ach_icons.py` で作り直せる |
 | `capsules/` | ストアとライブラリの画像（下の表）。`python tools/make_capsules.py` で作り直せる |
-| `screenshots/` | スクリーンショット 1920×1080（`en_*` 英語・`ja_*` 日本語、9 枚ずつ。9 枚目はおはなし）。`python tools/build.py` のあと `node tools/sim/shot_store.js` で撮り直せる（ビルドした v2/index.html を撮る） |
+| `screenshots/` | スクリーンショット 1920×1080（`en_*` 英語・`ja_*` 日本語・`zh-Hans_*` 簡体字・`zh-Hant_*` 繁体字、9 枚ずつ。9 枚目はおはなし）。`python tools/build.py` のあと `node tools/sim/shot_store.js` で撮り直せる（ビルドした v2/index.html を撮る） |
 | `steampipe/` | ビルドを Steam に上げるスクリプト（`app_build.vdf`・`upload.bat`） |
 
 ゲーム本体の Windows 版は `desktop/`（Electron）。
@@ -34,7 +36,7 @@
   - ルート: `WinAppDataRoaming`、サブディレクトリ: `TrapOfLily`、パターン: `save.json`、OS: Windows
   - （ゲームは `%APPDATA%\TrapOfLily\save.json` にセーブを書く。`desktop/main.js`）
 - **起動オプション**: 実行ファイル `TrapOfLily.exe`、OS は Windows
-- **言語**: 日本語と英語の「インターフェース」「字幕」にチェック（音声はなし）。ゲームは Steam の言語設定で始まり、タイトルや設定画面で切り替えられる
+- **言語**: 日本語・英語・簡体字中国語・繁体字中国語の「インターフェース」「字幕」にチェック（音声はなし）。ゲームは Steam の言語設定で始まり、タイトルや設定画面で切り替えられる
 - **ストアページ**: 文章は `store_text.md`、画像は下の表、スクリーンショットは `screenshots/`（5 枚以上）
 - **AI 生成コンテンツの開示**: 「コンテンツ調査」で「事前生成された AI コンテンツがある」を選び、`store_text.md` の開示文を貼る
 - **年齢区分**: 暴力表現は「ファンタジーの軽い暴力（罠で侵入者を倒す、血の表現なし）」

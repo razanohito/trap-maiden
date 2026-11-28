@@ -23,7 +23,7 @@ const launch = () => electron.launch({ args: [path.join(__dirname, '..'), '--no-
   const f = saveFile(); r.セーブの場所 = f && f.replace(home, '~');
   r.セーブに音量 = f && JSON.parse(fs.readFileSync(f, 'utf8')).data['trapoflily-vol'];
   // 言語を切り替える（読み込み直す直前に必ず書く）
-  await w.click('#btnSetBack'); await Promise.all([w.waitForEvent('load'), w.click('#btnLang')]);
+  await w.click('#btnSetBack'); await w.click('#btnLang'); await Promise.all([w.waitForEvent('load'), w.click('#langMenu [data-lang="en"]')]); // 言語ボタンは一覧を開く
   r.切り替え後の言語 = await w.evaluate(() => document.documentElement.lang);
   r.セーブに言語 = JSON.parse(fs.readFileSync(saveFile(), 'utf8')).data['trapoflily-lang'];
   await app.close();

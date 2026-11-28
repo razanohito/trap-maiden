@@ -1,10 +1,11 @@
-"""英語の訳の抜けを調べる。
+"""英語・中国語（簡体字 zh-Hans・繁体字 zh-Hant）の訳の抜けを調べる。
 
   python tools/i18n_check.py           … 訳のない文言と、使われていない訳を表示（抜けがあれば終了コード 1）
-  python tools/i18n_check.py --add     … 訳のない文言を src/lang/en.js の末尾に null で足す（あとで訳を書く）
+  python tools/i18n_check.py --add     … 訳のない文言を src/lang/en.js・zh-Hans.js・zh-Hant.js の末尾に null で足す（あとで訳を書く）
 
 ゲームの文言は src/game.html の $t`…`（${} は {0} {1} … になる）と、ページの HTML（tools/i18n_lib.py の html_keys）。
-訳は src/lang/en.js（window.TRAP_EN = { "日本語": "English", … }; の JSON）。
+訳は src/lang/en.js（window.TRAP_EN = { "日本語": "English", … }; の JSON）と、同じ形の zh-Hans.js（TRAP_ZHS）・zh-Hant.js（TRAP_ZHT）。
+中国語の訳が無い文言はゲームでは英語で出る。
 """
 import json
 import re
@@ -24,6 +25,24 @@ def load_en():
         return {}
     t = EN_PATH.read_text(encoding="utf-8")
     return json.loads(t[t.index("= {") + 2:t.rindex("}") + 1])
+
+
+ZH = {"zh-Hans": ("TRAP_ZHS", "简体中文"), "zh-Hant": ("TRAP_ZHT", "繁體中文")}
+KANA = re.compile(r"[\u3040-\u30ff\uff66-\uff9f]")  # 中国語の訳に残ってはいけない仮名
+
+
+def load_lang(name):
+    p = ROOT / "src" / "lang" / f"{name}.js"
+    if not p.exists():
+        return {}
+    t = p.read_text(encoding="utf-8")
+    return json.loads(t[t.index("= {") + 2:t.rindex("}") + 1])
+
+
+def save_lang(name, d):
+    var, label = ZH[name]
+    head = f"// {label}の訳。キーは src/game.html の日本語の文言（${{}} は {{0}} {{1}} …）。tools/i18n_check.py で抜けを調べる\nwindow.{var} = "
+    (ROOT / "src" / "lang" / f"{name}.js").write_text(head + json.dumps(d, ensure_ascii=False, indent=1) + ";\n", encoding="utf-8")
 
 
 def save_en(d):
@@ -61,6 +80,13 @@ def main():
             en.setdefault(k, None)
         save_en(en)
         print(f"{len(miss)} 件を足しました（訳は null。書くまでは日本語のまま出る）")
+        for name in ZH:
+            zd = load_lang(name)
+            zm = [k for k in keys if zd.get(k) is None]
+            for k in zm:
+                zd.setdefault(k, None)
+            save_lang(name, zd)
+            print(f"{name}: {len(zm)} 件を足しました（書くまでは英語で出る）")
         return 0
     print(f"文言 {len(keys)} 件・訳 {len(en)} 件")
     for k in miss:
@@ -76,6 +102,24 @@ def main():
                 miss.append(k)
             if JP.search(v):
                 print("訳に日本語が残っている:", v)
+    tags = lambda t: sorted(re.findall(r"<[a-z/][^>]*>", re.sub(r'aria-label="[^"]*"', "", t)))
+    for name in ZH:
+        zd = load_lang(name)
+        zmiss = [k for k in keys if zd.get(k) is None]
+        print(f"{name}: 訳 {len(zd)} 件・抜け {len(zmiss)} 件")
+        for k in zmiss:
+            print(f"{name} の訳がない:", k)
+        for k in keys:
+            v = zd.get(k)
+            if v is None:
+                continue
+            if sorted(set(re.findall(r"\{\d+\}", k))) != sorted(set(re.findall(r"\{\d+\}", v))):
+                print(f"{name} の {{n}} が合わない:", k, "→", v); zmiss.append(k)
+            if tags(k) != tags(v):
+                print(f"{name} のタグが合わない:", k, "→", v); zmiss.append(k)
+            if KANA.search(v):
+                print(f"{name} の訳に仮名が残っている:", v); zmiss.append(k)
+        miss += zmiss
     return 1 if miss else 0
 
 

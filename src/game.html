@@ -9,6 +9,13 @@
 @font-face{font-family:"Zen Maru Gothic";font-weight:800 900;font-display:swap;src:url('../art/fonts/zenmaru-900.woff2') format("woff2")}
 @font-face{font-family:"TOL Logo Latin";font-weight:700;font-display:swap;src:url('../art/fonts/logo-latin.woff2') format("woff2")}
 @font-face{font-family:"TOL Logo Mincho";font-weight:800;font-display:swap;src:url('../art/fonts/logo-mincho.woff2') format("woff2")}
+/* 中国語の字体（丸ゴシックに簡体字・繁体字が無いので Noto Sans SC / TC。訳に出てくる字だけ。その言語のときだけ読み込まれる） */
+@font-face{font-family:"TOL Hans";font-weight:400 500;font-display:swap;src:url('../art/fonts/zh-hans-500.woff2') format("woff2")}
+@font-face{font-family:"TOL Hans";font-weight:600 700;font-display:swap;src:url('../art/fonts/zh-hans-700.woff2') format("woff2")}
+@font-face{font-family:"TOL Hans";font-weight:800 900;font-display:swap;src:url('../art/fonts/zh-hans-900.woff2') format("woff2")}
+@font-face{font-family:"TOL Hant";font-weight:400 500;font-display:swap;src:url('../art/fonts/zh-hant-500.woff2') format("woff2")}
+@font-face{font-family:"TOL Hant";font-weight:600 700;font-display:swap;src:url('../art/fonts/zh-hant-700.woff2') format("woff2")}
+@font-face{font-family:"TOL Hant";font-weight:800 900;font-display:swap;src:url('../art/fonts/zh-hant-900.woff2') format("woff2")}
 /* 画面全体がゲーム。絵柄「月夜のおかし箱」: ブルーベリー色の夜、はちみつ色の枠、ミルクといちごミルクの紙、ローズピンクのボタン。
    黒は使わず、影もブルーベリーの濃い色にする。重なる画面（タイトル・支度など）はミルク色の一枚もの。どの画面もスクロールせずに1画面に収める */
 :root{
@@ -22,6 +29,9 @@
   --gap:max(8px,env(safe-area-inset-left,0px));
   color-scheme:dark;
 }
+:root:lang(zh-Hans){--f-display:"TOL Hans","Zen Maru Gothic",sans-serif;--f-body:"TOL Hans","Zen Maru Gothic",sans-serif;--f-latin:"TOL Hans","Zen Maru Gothic",sans-serif}
+:root:lang(zh-Hant){--f-display:"TOL Hant","Zen Maru Gothic",sans-serif;--f-body:"TOL Hant","Zen Maru Gothic",sans-serif;--f-latin:"TOL Hant","Zen Maru Gothic",sans-serif}
+[lang="zh-Hans"]{font-family:"TOL Hans","Zen Maru Gothic",sans-serif}[lang="zh-Hant"]{font-family:"TOL Hant","Zen Maru Gothic",sans-serif}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
 html{touch-action:manipulation}
@@ -577,6 +587,13 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 :lang(en) .stg.boss::after{content:"TOUGH"}
 :lang(en) .etool{white-space:normal;line-height:1.05;font-size:11px}
 :lang(en) .tminor button.new.story::after{content:"NEW"}
+:lang(zh-Hans) .tminor button.new::after{content:"开始"}:lang(zh-Hant) .tminor button.new::after{content:"開始"}
+:lang(zh) .tminor button.new.story::after{content:"NEW"}
+:lang(zh-Hans) .stg.boss::after{content:"强敌"}:lang(zh-Hant) .stg.boss::after{content:"強敵"}
+.langmenu{position:absolute;top:calc(100% + 6px);right:0;display:grid;gap:4px;padding:6px;border-radius:14px;border:2px solid var(--edge,#3a2226);background:rgba(26,20,30,.94);box-shadow:0 6px 18px rgba(0,0,0,.5);z-index:5}
+.langmenu[hidden]{display:none}
+.langmenu .langbtn{white-space:nowrap;text-align:left}
+.langmenu .langbtn[aria-pressed="true"]{color:#fff;border-color:var(--gold-hi)}
 
 /* ---------- おはなし（アドベンチャー） ---------- */
 /* エンディング（スタッフロール） */
@@ -984,7 +1001,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
       <p id="bestLine"></p>
     </div>
     <img id="kvTitle" alt="" hidden>
-    <div class="tcorner"><button class="langbtn" id="btnSettings" type="button">⚙ 設定</button><button class="langbtn" id="btnLang" type="button" lang="en" translate="no">English</button></div>
+    <div class="tcorner"><button class="langbtn" id="btnSettings" type="button">⚙ 設定</button><button class="langbtn" id="btnLang" type="button" translate="no" aria-haspopup="true" aria-expanded="false">A/文 ▾</button><div class="langmenu" id="langMenu" hidden><button class="langbtn" type="button" data-lang="ja" lang="ja" translate="no">日本語</button><button class="langbtn" type="button" data-lang="en" lang="en" translate="no">English</button><button class="langbtn" type="button" data-lang="zh-Hans" lang="zh-Hans" translate="no">简体中文</button><button class="langbtn" type="button" data-lang="zh-Hant" lang="zh-Hant" translate="no">繁體中文</button></div></div>
   </div>
 </div>
 
@@ -1132,7 +1149,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
     <div class="setrow"><label for="volBgm">音楽の音量</label><input type="range" id="volBgm" min="0" max="10" step="1"><b id="volBgmV"></b></div>
     <div class="setrow"><label for="volSfx">効果音の音量</label><input type="range" id="volSfx" min="0" max="10" step="1"><b id="volSfxV"></b></div>
     <div class="setrow"><span>文字の速さ</span><div class="setbtns" id="textSpeed"><button class="btn sub" type="button" data-v="1">ゆっくり</button><button class="btn sub" type="button" data-v="2">ふつう</button><button class="btn sub" type="button" data-v="3">すぐ</button></div></div>
-    <div class="setrow"><span>言語</span><div class="setbtns"><button class="btn sub" id="btnLangJa" type="button" lang="ja" translate="no">日本語</button><button class="btn sub" id="btnLangEn" type="button" lang="en" translate="no">English</button></div></div>
+    <div class="setrow"><span>言語</span><div class="setbtns" id="langBtns"><button class="btn sub" id="btnLangJa" type="button" data-lang="ja" lang="ja" translate="no">日本語</button><button class="btn sub" id="btnLangEn" type="button" data-lang="en" lang="en" translate="no">English</button><button class="btn sub" id="btnLangZhs" type="button" data-lang="zh-Hans" lang="zh-Hans" translate="no">简体中文</button><button class="btn sub" id="btnLangZht" type="button" data-lang="zh-Hant" lang="zh-Hant" translate="no">繁體中文</button></div></div>
     <div class="setrow" id="setFullRow" hidden><span>画面</span><div class="setbtns"><button class="btn sub" id="btnSetFull" type="button">全画面の切り替え</button></div></div>
     <div class="setrow" id="setExitRow" hidden><span>ゲーム</span><div class="setbtns"><button class="btn sub" id="btnExit" type="button">ゲームを終了する</button></div></div>
     <div class="pfoot"><button class="btn sub" id="btnCredits" type="button">クレジット</button></div>
@@ -1149,7 +1166,7 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
       <dt>音楽</dt><dd>Gemini（Google）で生成</dd>
       <dt>効果音</dt><dd>ゲームの中で合成（Web Audio）</dd>
       <dt>プログラム・お話</dt><dd>Claude（Anthropic）と制作</dd>
-      <dt>フォント</dt><dd>Zen Maru Gothic — Copyright 2021 The Zen Maru Gothic Project Authors（SIL Open Font License 1.1）</dd>
+      <dt>フォント</dt><dd>Zen Maru Gothic — Copyright 2021 The Zen Maru Gothic Project Authors／Noto Sans SC / TC — Copyright 2014-2021 Adobe, with Reserved Font Name 'Source'（SIL Open Font License 1.1）</dd>
       <dt>ロゴのフォント</dt><dd>Shippori Mincho B1 — Copyright 2021 The Shippori Mincho Project Authors／Cinzel Decorative — Copyright (c) 2012 Natanael Gama, Reserved Font Name 'Cinzel'（SIL Open Font License 1.1）</dd>
     </dl>
     <p class="sm">遊んでくれて、ありがとう。</p>
@@ -1182,31 +1199,42 @@ section.step{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 </div>
 
 <script src="lang/en.js"></script>
+<script src="lang/zh-Hans.js"></script>
+<script src="lang/zh-Hant.js"></script>
 <script>
 (() => {
-// 言語: 日本語（元の文言）と英語。端末の設定で決め、タイトルの切り替えボタンや設定で変えられる（端末に保存）。
-// ゲームの文言は $t`…` で書き、英語のときは src/lang/en.js の訳に置き換える。${} の値は訳では {0} {1} … で入る
+// 言語: 日本語（元の文言）・英語・簡体字中国語・繁体字中国語。端末（ストア版は Steam）の言語で決め、タイトルの言語ボタンや設定で変えられる（端末に保存）。
+// ゲームの文言は $t`…` で書き、日本語以外のときは src/lang/en.js・zh-Hans.js・zh-Hant.js の訳に置き換える。${} の値は訳では {0} {1} … で入る
+// 中国語の訳が無い文言は英語で出す（それも無ければ日本語）
 // host はストア版（Electron。desktop/preload.js）が渡す窓口。ブラウザでは null
 const host = window.trapHost || null;
-const LANG = (() => { try { const v = localStorage.getItem('trapoflily-lang'); if (v === 'ja' || v === 'en') return v; } catch (e) {} const l = (host && host.lang) || navigator.language || 'ja'; return /^ja\b|^japanese$/i.test(l) ? 'ja' : 'en'; })();
+const LANGS = ['ja', 'en', 'zh-Hans', 'zh-Hant'];
+const langOf = l => { l = String(l || ''); if (/^ja\b|^japanese$/i.test(l)) return 'ja'; if (/^tchinese$|^zh[-_](hant|tw|hk|mo)\b/i.test(l)) return 'zh-Hant'; if (/^schinese$|^zh\b|^chinese$/i.test(l)) return 'zh-Hans'; return l ? 'en' : 'ja'; };
+const LANG = (() => { try { const v = localStorage.getItem('trapoflily-lang'); if (LANGS.includes(v)) return v; } catch (e) {} return langOf((host && host.lang) || (navigator.languages && navigator.languages[0]) || navigator.language || 'ja'); })();
 const EN = window.TRAP_EN || {};
+const TR = LANG === 'en' ? EN : LANG === 'zh-Hans' ? (window.TRAP_ZHS || {}) : LANG === 'zh-Hant' ? (window.TRAP_ZHT || {}) : null;
+const trKey = k => TR[k] != null ? TR[k] : EN[k] != null ? EN[k] : null; // 中国語に無ければ英語
+const ZH = LANG === 'zh-Hans' || LANG === 'zh-Hant';
+// 画面（canvas）に字を書くときの書体。中国語のときは Noto（丸ゴシックに無い字が多い）
+const FF = LANG === 'zh-Hans' ? '"TOL Hans", "Zen Maru Gothic"' : LANG === 'zh-Hant' ? '"TOL Hant", "Zen Maru Gothic"' : '"Zen Maru Gothic"';
+if (ZH && document.fonts) for (const w of [500, 700, 800]) document.fonts.load(`${w} 16px ${FF}`, '的').catch(() => {}); // 盤面やマンガ（canvas）で使う前に読み込んでおく
 const missing = new Set();
 function $t(parts, ...vals) {
   let key = parts[0];
   for (let i = 1; i < parts.length; i++) key += '{' + (i - 1) + '}' + parts[i];
   let tpl = key;
-  if (LANG === 'en') { if (EN[key] != null) tpl = EN[key]; else missing.add(key); }
+  if (TR) { const v = trKey(key); if (v != null && (TR[key] != null)) tpl = v; else { missing.add(key); if (v != null) tpl = v; } }
   return vals.length ? tpl.replace(/\{(\d+)\}/g, (m, n) => String(vals[n])) : tpl;
 }
-const NUM = LANG === 'en' ? 'en-US' : 'ja-JP'; // 数字の区切り
+const NUM = LANG === 'en' ? 'en-US' : LANG === 'zh-Hans' ? 'zh-CN' : LANG === 'zh-Hant' ? 'zh-TW' : 'ja-JP'; // 数字の区切り
 // ページに書いてある文言を訳す。子要素が飾り（id のない b・small・em・i・br・span）だけなら中身まるごと、ほかは直下の文字ごと
 function translateStatic() {
   document.documentElement.lang = LANG;
-  if (LANG !== 'en') return;
-  if (EN[document.title]) document.title = EN[document.title];
+  if (!TR) return;
+  if (trKey(document.title)) document.title = trKey(document.title);
   const JP = /[\u3040-\u30ff\u3400-\u9fff\uff66-\uff9f]/, INL = /^(B|SMALL|EM|I|BR|SPAN|STRONG)$/;
   const inlineOnly = el => [...el.children].every(c => INL.test(c.tagName) && !c.id && inlineOnly(c));
-  const tr = k => { k = k.replace(/\s+/g, ' ').trim(); if (EN[k] != null) return EN[k]; missing.add(k); return null; };
+  const tr = k => { k = k.replace(/\s+/g, ' ').trim(); if (TR[k] == null) missing.add(k); return trKey(k); };
   const walk = el => {
     for (const a of ['aria-label', 'title', 'placeholder']) { const v = el.getAttribute(a); if (v && JP.test(v)) { const e = tr(v); if (e != null) el.setAttribute(a, e); } }
     if (/^(SCRIPT|STYLE)$/.test(el.tagName) || el.getAttribute('translate') === 'no') return; // translate="no" は訳さない（言語名・人名）
@@ -2305,7 +2333,7 @@ function drawIntro() {
   ctx.globalAlpha = 1;
   const n = it.steps.length, dw = 10 * TS; // 進み具合の点
   for (let i = 0; i < n; i++) { ctx.fillStyle = i <= it.idx ? '#f1d98e' : 'rgba(241,217,142,.3)'; ctx.beginPath(); ctx.arc(14 * TS + i * dw, 14 * TS, 3 * TS, 0, 7); ctx.fill(); }
-  ctx.font = `800 ${Math.round(14 * TS)}px "Zen Maru Gothic", sans-serif`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  ctx.font = `800 ${Math.round(14 * TS)}px ${FF}, sans-serif`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
   const sw = ctx.measureText($t`押すと飛ばす ▶▶`).width + 16 * TS;
   ctx.fillStyle = 'rgba(14,10,16,.8)'; ctx.fillRect(VW - sw - 6, 3 * TS, sw, 22 * TS); ctx.strokeStyle = 'rgba(201,162,74,.8)'; ctx.lineWidth = 1; ctx.strokeRect(VW - sw - 6, 3 * TS, sw, 22 * TS);
   ctx.fillStyle = `rgba(255,244,224,${.8 + .2 * Math.sin(t * 3)})`; ctx.fillText($t`押すと飛ばす ▶▶`, VW - 6 - 8 * TS, 14 * TS);
@@ -3588,7 +3616,7 @@ function drawJoy(px, top) {
 function drawHeroBubble(px, by) {
   const h = G.hero;
   if (h.bubbleT > 0 && h.bubble) { // 吹き出し
-    ctx.font = `700 ${Math.round(14 * TS)}px "Zen Maru Gothic", sans-serif`;
+    ctx.font = `700 ${Math.round(14 * TS)}px ${FF}, sans-serif`;
     const w = Math.max(24, ctx.measureText(h.bubble).width + 14);
     ctx.fillStyle = '#eadbbd'; ctx.strokeStyle = '#7d5f22'; ctx.lineWidth = 1.5;
     const bh = 22 * TS;
@@ -3832,13 +3860,13 @@ function drawFx() {
 }
 function outlined(text, x, y, size, color, align = 'center') {
   size *= TS;
-  ctx.font = `800 ${size}px "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.font = `800 ${size}px ${FF}, "Hiragino Maru Gothic ProN", sans-serif`; ctx.textAlign = align; ctx.textBaseline = 'middle';
   ctx.lineWidth = Math.max(3, size / 5); ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(52,38,96,.92)'; ctx.strokeText(text, x, y);
   ctx.fillStyle = color; ctx.fillText(text, x, y);
 }
 // 盤面の幅に入らない文は、読点などの区切りで 2 行に分ける
 function wrapText(text, x, y, size, color, up = false) {
-  ctx.font = `800 ${size * TS}px "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif`;
+  ctx.font = `800 ${size * TS}px ${FF}, "Hiragino Maru Gothic ProN", sans-serif`;
   if (ctx.measureText(text).width <= VW - 24) { outlined(text, x, y, size, color); return; }
   const mid = text.length / 2; let cut = -1;
   for (let i = 0; i < text.length; i++) if ('、。：（）・ 　'.includes(text[i]) && (cut < 0 || Math.abs(i - mid) < Math.abs(cut - mid))) cut = i;
@@ -4110,12 +4138,12 @@ function miniArrow(g, a, b, color = '#f1d98e', dash = false) {
 }
 function miniLabel(g, x, y, text, color = '#f1d98e') {
   const [cx, cy] = g.at(x, y);
-  hc.font = '800 26px "Zen Maru Gothic", sans-serif'; hc.textAlign = 'center'; hc.textBaseline = 'middle';
+  hc.font = `800 26px ${FF}, sans-serif`; hc.textAlign = 'center'; hc.textBaseline = 'middle';
   hc.lineWidth = 6; hc.strokeStyle = '#140a10'; hc.strokeText(text, cx, cy); hc.fillStyle = color; hc.fillText(text, cx, cy);
 }
 function helpBg() { hc.setTransform(1, 0, 0, 1, 0, 0); hc.fillStyle = '#120d16'; hc.fillRect(0, 0, 880, 440); }
 function helpText(text, x, y, size, color = '#fff4e0', align = 'left') {
-  hc.font = `800 ${size}px "Zen Maru Gothic", sans-serif`; hc.textAlign = align; hc.textBaseline = 'middle';
+  hc.font = `800 ${size}px ${FF}, sans-serif`; hc.textAlign = align; hc.textBaseline = 'middle';
   hc.lineWidth = 5; hc.strokeStyle = '#140a10'; hc.strokeText(text, x, y); hc.fillStyle = color; hc.fillText(text, x, y);
 }
 // 名前のある合成14組を 2列×7段で並べる
@@ -4188,8 +4216,8 @@ const HELP = [
       miniTile(g, 8, 1, 'spike'); miniLabel(g, 1, 2, $t`押すと落ちる`); miniLabel(g, 5, 2, $t`押すと槍`); miniLabel(g, 8, 2, $t`トゲ床`, '#fff4e0'); } },
   { t: $t`夜の流れとクリア`, d: $t`夜は「準備」（25秒。罠を置いたら「侵入者を迎える」で早く始められる）のあと、フェイズ1〜3と進む。フェイズが進むたびに置ける罠が1つ増え、魔力も補充される。夜明けまで守るか、全滅させればクリア。夜明けには集めた魂で強くなれる。第6夜からは別の部屋（東の書庫）に移り、罠は置き直しになる。`,
     draw() { miniGrid(1, 1); hc.fillStyle = '#120d16'; hc.fillRect(0, 0, 880, 440);
-      const steps = [$t`準備`, $t`フェイズ1`, $t`フェイズ2`, $t`フェイズ3`, $t`夜明け`]; hc.font = '800 30px "Zen Maru Gothic", sans-serif'; hc.textAlign = 'center'; hc.textBaseline = 'middle';
-      steps.forEach((st, i) => { const x = 100 + i * 170; hc.fillStyle = i === 4 ? '#c9a24a' : '#5e56a6'; hc.fillRect(x - 70, 180, 140, 70); hc.fillStyle = i === 4 ? '#2a1a0c' : '#f1d98e'; hc.fillText(st, x, 215); if (i < 4) { hc.fillStyle = '#f1d98e'; hc.fillText('→', x + 85, 215); } if (i >= 2 && i <= 3) { hc.fillStyle = '#ffc0d3'; hc.font = '700 22px "Zen Maru Gothic", sans-serif'; hc.fillText($t`罠 +1`, x, 290); hc.font = '800 30px "Zen Maru Gothic", sans-serif'; } }); } },
+      const steps = [$t`準備`, $t`フェイズ1`, $t`フェイズ2`, $t`フェイズ3`, $t`夜明け`]; hc.font = `800 30px ${FF}, sans-serif`; hc.textAlign = 'center'; hc.textBaseline = 'middle';
+      steps.forEach((st, i) => { const x = 100 + i * 170; hc.fillStyle = i === 4 ? '#c9a24a' : '#5e56a6'; hc.fillRect(x - 70, 180, 140, 70); hc.fillStyle = i === 4 ? '#2a1a0c' : '#f1d98e'; hc.fillText(st, x, 215); if (i < 4) { hc.fillStyle = '#f1d98e'; hc.fillText('→', x + 85, 215); } if (i >= 2 && i <= 3) { hc.fillStyle = '#ffc0d3'; hc.font = `700 22px ${FF}, sans-serif`; hc.fillText($t`罠 +1`, x, 290); hc.font = `800 30px ${FF}, sans-serif`; } }); } },
   { t: $t`逃げる子と得意な罠`, d: $t`4人はそれぞれ能力と弱点が違い、得意な罠を1つずつ持つ（リリィ＝送り返しの陣、ミーナ＝火柱、ノエル＝氷床、セシル＝落石）。得意な罠を持っていくと、その罠がとても強くなる。罠ボタンの★が目印。`,
     draw() { const g = miniGrid(7, 3); ['lily', 'mina', 'noel', 'cecil'].forEach((id, i) => { miniGirl(g, 1 + i * 1.6, 1, id); miniLabel(g, 1 + i * 1.6, 2, CHARS[id].name, '#fff4e0'); }); miniLabel(g, 3.4, 0, $t`得意な罠に★`); } },
 ];
@@ -4331,18 +4359,18 @@ function vertCols(chars, per) { // 縦書きの列分け。列の頭に句読点
   return cols;
 }
 function vertText(c, text, x, y, w, h) { // 戻り値は使った字の大きさ // 吹き出しの中に縦書き（右の列から）。入る一番大きい字で
-  if (LANG !== 'ja') return horzText(c, text, x, y, w, h); // 英語は横書き
+  if (LANG === 'en') return horzText(c, text, x, y, w, h); // 英語は横書き（中国語は日本語と同じ縦書き）
   const chars = [...text];
   let size = Math.floor(Math.min(w, h) / 2), cols;
   for (; size > 6; size--) { const per = Math.floor(h / size); if (per < 1) continue; cols = vertCols(chars, per); if (cols.length * size * 1.18 <= w && Math.max(...cols.map(l => l.length)) * size <= h + size * .6) break; }
   cols = vertCols(chars, Math.max(1, Math.floor(h / size)));
   const total = cols.length * size * 1.18 - size * .18, x0 = x + (w + total) / 2 - size / 2;
   const colH = Math.min(Math.floor(h / size), Math.max(...cols.map(l => l.length))) * size, y0 = y + (h - colH) / 2;
-  c.font = `700 ${size}px "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif`; c.fillStyle = '#4a3434'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.font = `700 ${size}px ${FF}, "Hiragino Maru Gothic ProN", sans-serif`; c.fillStyle = '#4a3434'; c.textAlign = 'center'; c.textBaseline = 'middle';
   cols.forEach((line, col) => line.forEach((ch, row) => {
     const cx = x0 - col * size * 1.18, cy = y0 + row * size + size / 2;
     if (COMIC_ROT.includes(ch)) { c.save(); c.translate(cx, cy); c.rotate(Math.PI / 2); c.fillText(ch, 0, 0); c.restore(); }
-    else if ('、。，．'.includes(ch)) c.fillText(ch, cx + size * .6, cy - size * .58); // 横書き用の字は左下にあるので、縦書きの位置（右上）へ
+    else if ('、。，．'.includes(ch) && LANG !== 'zh-Hant') c.fillText(ch, cx + size * .6, cy - size * .58); // 横書き用の字は左下にあるので、縦書きの位置（右上）へ（繁体字の字体は句読点がまん中にあるのでそのまま）
     else if ('っゃゅょぁぃぅぇぉッャュョァィゥェォ'.includes(ch)) c.fillText(ch, cx + size * .1, cy - size * .08);
     else c.fillText(ch, cx, cy);
   }));
@@ -4352,7 +4380,7 @@ function horzText(c, text, x, y, w, h) { // 英語の吹き出し: 横書きで�
   const words = text.split(/\s+/);
   let size = Math.floor(h / 2), lines = [];
   for (; size > 6; size--) {
-    c.font = `700 ${size}px "Zen Maru Gothic", sans-serif`; lines = [];
+    c.font = `700 ${size}px ${FF}, sans-serif`; lines = [];
     let cur = '';
     for (const wd of words) { const t = cur ? cur + ' ' + wd : wd; if (c.measureText(t).width > w && cur) { lines.push(cur); cur = wd; } else cur = t; }
     if (cur) lines.push(cur);
@@ -4383,7 +4411,7 @@ function drawComic(flip = true) {
   cc.restore();
   cc.setTransform(1, 0, 0, 1, 0, 0); cc.strokeStyle = 'rgba(255,248,240,.9)'; cc.lineWidth = 3 * d; cc.strokeRect(ox, oy, (x1 - x0) * k, (y1 - y0) * k);
   const say = $('#comicSay'), small = fs < 13; // 横長のコマをスマホで見ると吹き出しの字が小さいので、下にも同じセリフを出す
-  say.innerHTML = pn.b.map(b => `<span><b>${esc(b[4])}</b>${LANG === 'ja' ? `「${esc(b[5])}」` : ` “${esc(b[5])}”`}</span>`).join('');
+  say.innerHTML = pn.b.map(b => `<span><b>${esc(b[4])}</b>${LANG === 'en' ? ` “${esc(b[5])}”` : `「${esc(b[5])}」`}</span>`).join('');
   if (say.classList.contains('show') !== small && flip) { say.classList.toggle('show', small); return drawComic(false); }
   $('#comicPg').textContent = $t`${pi + 1} / ${COMIC.length} ページ`;
   $('#comicPrev').disabled = comicI === 0;
@@ -4807,7 +4835,7 @@ function opDrawLogo(R, k) { // 夜明けのカットに重ねるタイトルロ�
   oc.save(); oc.shadowBlur = 0; oc.fillStyle = band; oc.translate(cx, cy + fs * .3); oc.scale(1, .38); oc.translate(-cx, -(cy + fs * .3)); oc.fillRect(R.x, R.y - R.h, W, R.h * 3); oc.restore();
   oc.save(); oc.translate(cx, cy); const sc = 1.06 - .06 * Math.min(1, k); oc.scale(sc, sc); oc.lineJoin = 'round'; oc.strokeStyle = 'rgba(40,22,30,.8)'; oc.lineWidth = fs * .08; oc.strokeText($t`トラップオブリリー`, 0, 0); oc.fillText($t`トラップオブリリー`, 0, 0); oc.restore();
   oc.shadowBlur = fs * .2; oc.fillStyle = '#f2dfae'; oc.font = `700 ${Math.round(fs * .3)}px "TOL Logo Latin",serif`;
-  oc.fillText(LANG === 'en' ? '❦' : '❦  TRAP OF LILY  ❦', cx, cy + fs * .82); // 英語ではロゴがもう英字なので飾りだけ
+  oc.fillText(LANG !== 'ja' ? '❦' : '❦  TRAP OF LILY  ❦', cx, cy + fs * .82); // 日本語以外ではロゴがもう英字なので飾りだけ
   oc.restore();
 }
 // ---------- エンディング（スタッフロール。タイトル曲「おやすみ、夜明けの館」の頭から約2分） ----------
@@ -4869,7 +4897,7 @@ const edWrap = (s, maxW) => { // 1行に収まるよう折り返す（日本語�
 };
 function edMeasureRoll(L) { // 項目ごとの高さと行を決める（大きさが変わったときだけ）
   const u = Math.max(12, Math.min(L.w * .055, 26 * (window.devicePixelRatio || 1)));
-  const font = { h: `700 ${u * .95}px "Zen Maru Gothic",sans-serif`, role: `500 ${u * .72}px "Zen Maru Gothic",sans-serif`, name: `700 ${u * 1.08}px "Zen Maru Gothic",sans-serif`, small: `500 ${u * .78}px "Zen Maru Gothic",sans-serif`, big: `800 ${u * 1.5}px "Zen Maru Gothic",sans-serif` };
+  const font = { h: `700 ${u * .95}px ${FF},sans-serif`, role: `500 ${u * .72}px ${FF},sans-serif`, name: `700 ${u * 1.08}px ${FF},sans-serif`, small: `500 ${u * .78}px ${FF},sans-serif`, big: `800 ${u * 1.5}px ${FF},sans-serif` };
   const lh = { h: u * 1.5, role: u * 1.1, name: u * 1.5, small: u * 1.15, big: u * 2.1 };
   let y = 0; const rows = [];
   for (const it of edRoll.items) {
@@ -4931,8 +4959,8 @@ function edDrawRoom(i, lt, alpha, R) { // 思い出の部屋（盤面のドッ�
   const g = ec.createLinearGradient(0, R.y + R.h * .62, 0, R.y + R.h); g.addColorStop(0, 'rgba(18,10,16,0)'); g.addColorStop(1, 'rgba(18,10,16,.85)'); ec.fillStyle = g; ec.fillRect(R.x, R.y, R.w, R.h);
   let st = 0; for (let n = i * 5 + 1; n <= i * 5 + 5; n++) st += (stageRec.rec[n] && stageRec.rec[n].stars) || 0;
   const fs = R.h * .075; ec.textAlign = 'center'; ec.textBaseline = 'middle'; ec.shadowColor = 'rgba(0,0,0,.8)'; ec.shadowBlur = fs * .3;
-  ec.fillStyle = '#f2dfae'; ec.font = `700 ${fs}px "Zen Maru Gothic",sans-serif`; ec.fillText(MAPS[STAGE_MAPS[i]].name, R.x + R.w / 2, R.y + R.h - fs * 2.1);
-  ec.font = `700 ${fs * .8}px "Zen Maru Gothic",sans-serif`; ec.fillStyle = '#e8c472';
+  ec.fillStyle = '#f2dfae'; ec.font = `700 ${fs}px ${FF},sans-serif`; ec.fillText(MAPS[STAGE_MAPS[i]].name, R.x + R.w / 2, R.y + R.h - fs * 2.1);
+  ec.font = `700 ${fs * .8}px ${FF},sans-serif`; ec.fillStyle = '#e8c472';
   ec.fillText($t`ステージ${i * 5 + 1}〜${i * 5 + 5}　★ ${st}／15`, R.x + R.w / 2, R.y + R.h - fs * .9);
   ec.restore();
 }
@@ -4973,7 +5001,7 @@ function edDrawRoll(t, L, a) {
     if (r.it.k === 'logo') {
       const fs = u * 1.9, g = ec.createLinearGradient(0, y, 0, y + fs); g.addColorStop(0, '#fff3d0'); g.addColorStop(.55, '#e8c472'); g.addColorStop(1, '#b8873c');
       ec.font = `800 ${fs}px "TOL Logo Mincho","TOL Logo Latin",serif`; ec.lineJoin = 'round'; ec.strokeStyle = 'rgba(40,22,30,.8)'; ec.lineWidth = fs * .08; ec.strokeText($t`トラップオブリリー`, cx, y + u * .4); ec.fillStyle = g; ec.fillText($t`トラップオブリリー`, cx, y + u * .4);
-      ec.font = `700 ${u * .62}px "TOL Logo Latin",serif`; ec.fillStyle = '#f2dfae'; ec.fillText(LANG === 'en' ? '❦' : '❦  TRAP OF LILY  ❦', cx, y + u * .6 + fs); continue;
+      ec.font = `700 ${u * .62}px "TOL Logo Latin",serif`; ec.fillStyle = '#f2dfae'; ec.fillText(LANG !== 'ja' ? '❦' : '❦  TRAP OF LILY  ❦', cx, y + u * .6 + fs); continue;
     }
     let yy = y;
     ec.font = r.font;
@@ -5049,11 +5077,11 @@ function edDrawFinal(fin, R, W, H) { // 最後の一枚絵に重ねる言葉と�
   ec.save(); ec.textAlign = 'center'; ec.textBaseline = 'middle';
   const tall = W / H < 1.25, by = tall ? R.y + R.h + fs * 2.2 : R.y + R.h * .82, band = ec.createLinearGradient(0, by - fs * 2.6, 0, R.y + R.h); band.addColorStop(0, 'rgba(24,14,22,0)'); band.addColorStop(.35, 'rgba(24,14,22,.55)'); band.addColorStop(1, 'rgba(24,14,22,.75)');
   ec.globalAlpha = a1; ec.fillStyle = band; if (!tall) ec.fillRect(R.x, by - fs * 2.6, R.w, R.y + R.h - (by - fs * 2.6));
-  ec.shadowColor = 'rgba(20,12,24,.9)'; ec.shadowBlur = fs * .4; ec.fillStyle = '#fff3d0'; ec.font = `700 ${fs}px "Zen Maru Gothic",sans-serif`;
-  const fit = (txt, px, y) => { ec.font = `700 ${px}px "Zen Maru Gothic",sans-serif`; const w = ec.measureText(txt).width, mw = Math.min(V.w, W) * .92; if (w > mw) ec.font = `700 ${Math.floor(px * mw / w)}px "Zen Maru Gothic",sans-serif`; ec.fillText(txt, cx, y); }; // 画面の幅に収まるように縮める
+  ec.shadowColor = 'rgba(20,12,24,.9)'; ec.shadowBlur = fs * .4; ec.fillStyle = '#fff3d0'; ec.font = `700 ${fs}px ${FF},sans-serif`;
+  const fit = (txt, px, y) => { ec.font = `700 ${px}px ${FF},sans-serif`; const w = ec.measureText(txt).width, mw = Math.min(V.w, W) * .92; if (w > mw) ec.font = `700 ${Math.floor(px * mw / w)}px ${FF},sans-serif`; ec.fillText(txt, cx, y); }; // 画面の幅に収まるように縮める
   fit(say, fs, by - fs * .7);
   ec.globalAlpha = a2; ec.fillStyle = '#e8c472'; fit(edRecord(), Math.round(fs * .52), by + fs * .55);
-  ec.globalAlpha = a3 * (.55 + .3 * Math.sin(fin * 3)); ec.fillStyle = '#f2dfae'; ec.font = `700 ${Math.round(fs * .42)}px "Zen Maru Gothic",sans-serif`;
+  ec.globalAlpha = a3 * (.55 + .3 * Math.sin(fin * 3)); ec.fillStyle = '#f2dfae'; ec.font = `700 ${Math.round(fs * .42)}px ${FF},sans-serif`;
   ec.fillText($t`タップで次へ`, cx, tall ? by + fs * 2.4 : Math.min(R.y + R.h, H) - fs * .7);
   ec.restore();
   if (fin > 5) { const prev = ocSwap(ec); try { opDrawLogo(V, (fin - 5) / 1.6); } finally { ocSwap(prev); } }
@@ -5668,7 +5696,7 @@ let setBack = 'ovTitle';
 function openSettings(from) {
   setBack = from;
   for (const k of ['bgm', 'sfx']) { const K = k[0].toUpperCase() + k.slice(1); $('#vol' + K).value = vol[k]; $('#vol' + K + 'V').textContent = vol[k]; }
-  $('#btnLangJa').setAttribute('aria-pressed', LANG === 'ja'); $('#btnLangEn').setAttribute('aria-pressed', LANG === 'en');
+  document.querySelectorAll('#langBtns [data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === LANG));
   $('#textSpeed').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.v === textSpeed));
   $('#setExitRow').hidden = !(host && host.quit); $('#setFullRow').hidden = !(host && host.toggleFullscreen);
   showOv('ovSettings');
@@ -5688,10 +5716,15 @@ $('#textSpeed').querySelectorAll('button').forEach(b => b.addEventListener('clic
 }));
 // 言語の切り替え: 保存して読み込み直す（文言は起動時に決まるため）
 const setLang = l => { if (l === LANG) return; try { localStorage.setItem('trapoflily-lang', l); } catch (e) {} location.reload(); };
-$('#btnLangJa').addEventListener('click', () => setLang('ja'));
-$('#btnLangEn').addEventListener('click', () => setLang('en'));
-$('#btnLang').textContent = LANG === 'en' ? '日本語' : 'English'; $('#btnLang').lang = LANG === 'en' ? 'ja' : 'en';
-$('#btnLang').addEventListener('click', () => setLang(LANG === 'en' ? 'ja' : 'en'));
+document.querySelectorAll('#langBtns [data-lang], #langMenu [data-lang]').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+document.querySelectorAll('#langMenu [data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === LANG));
+{ // タイトル右上の言語ボタン: 押すと4つの言語の一覧が開く
+  const menu = $('#langMenu'), btn = $('#btnLang');
+  btn.setAttribute('aria-label', 'Language / 言語 / 语言 / 語言');
+  const close = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', e => { e.stopPropagation(); menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', String(!menu.hidden)); });
+  document.addEventListener('click', e => { if (!menu.hidden && !menu.contains(e.target)) close(); });
+}
 $('#btnSettings').addEventListener('click', () => { audio(); openSettings('ovTitle'); });
 $('#btnPauseSet').addEventListener('click', () => openSettings('ovPause'));
 $('#btnSetBack').addEventListener('click', () => showOv(setBack));

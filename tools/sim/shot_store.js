@@ -1,18 +1,18 @@
-// Steam のストア用スクリーンショット（1920x1080）を日本語・英語で撮る → steam/screenshots/
+// Steam のストア用スクリーンショット（1920x1080）を日本語・英語・中国語（簡体字・繁体字）で撮る → steam/screenshots/
 // 使い方: python tools/build.py → python -m http.server 8766 --bind 127.0.0.1 → node tools/sim/shot_store.js
 const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
 const path = require('path');
 const OUT = path.join(__dirname, '..', '..', 'steam', 'screenshots');
 const URL = 'http://127.0.0.1:8766/v2/index.html'; // ビルドした版（色を落としたもの）を撮る
 (async () => {
-  const b = await chromium.launch({ channel: 'chrome', headless: true });
+  const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM, headless: true } : { channel: 'chrome', headless: true });
   const errs = [];
-  for (const lang of ['en', 'ja']) {
+  for (const lang of process.argv.length > 2 ? process.argv.slice(2) : ['en', 'ja', 'zh-Hans', 'zh-Hant']) { // 言語を指定すればその言語だけ
     const p = await (await b.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1.5 })).newPage();
     p.on('pageerror', e => errs.push(String(e)));
     await p.goto(URL);
     await p.evaluate(l => { localStorage.clear(); localStorage.setItem('trapoflily-lang', l); localStorage.setItem('trapoflily-stages', JSON.stringify({ open: 23, rec: Object.fromEntries(Array.from({ length: 22 }, (_, i) => [i + 1, { stars: 1 + (i * 7) % 3, best: 5000 + i * 900 }])) })); }, lang);
-    await p.reload(); await p.waitForTimeout(600);
+    await p.reload(); await p.waitForTimeout(3500); // タイトルの登場の演出が終わるまで待つ
     const shot = async name => { await p.screenshot({ path: path.join(OUT, `${lang}_${name}.png`) }); };
     await shot('01_title');
     // 支度

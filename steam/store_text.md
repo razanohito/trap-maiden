@@ -1,6 +1,6 @@
 # Steam ストアページの文章（日本語・英語）
 
-Steamworks の「ストアページを編集」にそのまま貼れる形です。英語を「English」、日本語を「Japanese」の欄に入れます。
+Steamworks の「ストアページを編集」にそのまま貼れる形です。英語を「English」、日本語を「Japanese」の欄に入れます。中国語（簡体字・繁体字）は `store_text_zh.md`。
 画像は `steam/capsules/`（カプセル）と `steam/screenshots/`（スクリーンショット、`en_*` を英語、`ja_*` を日本語に）。
 
 ---
@@ -36,10 +36,10 @@ Steamworks の「ストアページを編集」にそのまま貼れる形です
 - **チャレンジ** 全10夜を続けて守り抜き、ハイスコアを競う。夜明けごとに集めた魂で館と少女を強くできる
 - **エディット** 床・壁・奈落・トゲ床・シャンデリア・石像・扉を置いて、自分だけの部屋を作って試せる
 - 実績23種類（Steam 実績に対応）、Steam クラウドでセーブを同期
-- 日本語・英語に対応。音量・文字の速さの設定
+- 日本語・英語・中国語（簡体字・繁体字）に対応。音量・文字の速さの設定
 
 ### AI で作ったコンテンツについて（Steamworks の「AI 生成コンテンツの開示」欄）
-このゲームのキャラクター・おはなしのイラストは画像生成 AI（Nano Banana / Google Gemini）、罠のアイコン・エフェクトの絵は画像生成 AI（ChatGPT）で作り、開発者が選んで手で調整したものです。BGM は音楽生成 AI（Gemini）で作りました。おはなしの文章・英語の訳・プログラムは、AI（Claude）の手を借りて作り、開発者が確認しています。ゲームの中で AI が新しく絵や文章を作ることはありません（すべて事前に作ったものです）。
+このゲームのキャラクター・おはなしのイラストは画像生成 AI（Nano Banana / Google Gemini）、罠のアイコン・エフェクトの絵は画像生成 AI（ChatGPT）で作り、開発者が選んで手で調整したものです。BGM は音楽生成 AI（Gemini）で作りました。おはなしの文章・英語と中国語の訳・プログラムは、AI（Claude）の手を借りて作り、開発者が確認しています。ゲームの中で AI が新しく絵や文章を作ることはありません（すべて事前に作ったものです）。
 
 ---
 
@@ -74,10 +74,10 @@ On her 14th birthday, Lily inherits the manor. With it come a letter from her gr
 - **Challenge**: survive 10 nights in a row and chase a high score. Spend souls at each dawn to strengthen the manor and your runner
 - **Editor**: place floors, walls, pits, spikes, chandeliers, statues and doors to build and test your own room
 - 23 achievements (Steam Achievements), Steam Cloud saves
-- English and Japanese, with volume and text speed settings
+- English, Japanese, Simplified Chinese and Traditional Chinese, with volume and text speed settings
 
 ### AI Generated Content Disclosure (Steamworks "Content Survey")
-The character and story illustrations were created with an image-generation AI (Nano Banana / Google Gemini), and the trap icons and effect graphics with an image-generation AI (ChatGPT); all were selected and adjusted by the developer. The background music was created with a music-generation AI (Gemini). The story text, English translation and program were written with help from an AI (Claude) and reviewed by the developer. The game does not generate any new content with AI while you play; everything was made in advance.
+The character and story illustrations were created with an image-generation AI (Nano Banana / Google Gemini), and the trap icons and effect graphics with an image-generation AI (ChatGPT); all were selected and adjusted by the developer. The background music was created with a music-generation AI (Gemini). The story text, English and Chinese translations and program were written with help from an AI (Claude) and reviewed by the developer. The game does not generate any new content with AI while you play; everything was made in advance.
 
 ---
 
