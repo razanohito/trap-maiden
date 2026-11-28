@@ -5,7 +5,7 @@
 
 前の絵柄の版（index.html と dist-artifact/trap-maiden.html）は別の版として残してあり、このビルドでは書き換えない。
 
-art/ の画像（webp・png）と BGM（mp3）とフォント（woff2）は data URI にして埋め込む。英語の訳（src/lang/en.js）も中に書き込む。
+art/ の画像（webp・png）と BGM（mp3）とフォント（woff2）は data URI にして埋め込む。英語・中国語の訳（src/lang/*.js）も中に書き込む。
 
 彩度（SAT）: 絵も画面の色も、ここでまとめて同じ割合だけ落とす（ユーザーの希望 2026-10-21「ギャルゲーっぽい」ので少し落ち着かせる）。
 src/game.html と art/ の元の色はそのまま。1.0 にすると元の鮮やかさに戻る。
@@ -75,9 +75,12 @@ def embed(m: re.Match) -> str:
 src = re.sub(r"#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b", mute_hex, src)
 src = re.sub(r"\b(rgba?)\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*([,)])", mute_rgb, src)
 
-# 英語の訳（src/lang/en.js）を中に書き込む
-en_js = (ROOT / "src" / "lang" / "en.js").read_text(encoding="utf-8")
-src = src.replace('<script src="lang/en.js"></script>', "<script>\n" + en_js.strip() + "\n</script>")
+# 訳（src/lang/en.js・zh-Hans.js・zh-Hant.js）を中に書き込む
+for lang_name in ("en", "zh-Hans", "zh-Hant"):
+    lang_js = (ROOT / "src" / "lang" / f"{lang_name}.js").read_text(encoding="utf-8")
+    tag = f'<script src="lang/{lang_name}.js"></script>'
+    assert tag in src, tag
+    src = src.replace(tag, "<script>\n" + lang_js.strip() + "\n</script>")
 
 src = re.sub(r"'\.\./art/([\w/-]+\.(?:webp|png|mp3|woff2))'", embed, src)
 

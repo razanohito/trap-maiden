@@ -1,3 +1,15 @@
+# 引き継ぎメモ（更新: 2026-11-28, ブランチ i18n/chinese）
+仕事: 中国語（簡体字・繁体字）に対応する（英語はもう全部訳がある）
+終わったこと:
+- src/lang/zh-Hans.js（簡体字、979件すべて）と zh-Hant.js（繁体字。簡体字から台湾の言い回しに変換）。訳が無い文言は英語で出る
+- 言語は ja / en / zh-Hans / zh-Hant の4つ。端末（ストア版は Steam: schinese・tchinese）の言語で決まり、タイトル右上の「A/文」ボタン（一覧が開く）と設定で切り替え
+- 中国語の字体は Noto Sans SC / TC（丸ゴシックに簡体字・繁体字が無いため）。tools/make_fonts.py が訳の字だけに絞って art/fonts/zh-han{s,t}-{500,700,900}.woff2 を作る。canvas の字は FF（書体の並び）を使う
+- 導入マンガは中国語も縦書き（繁体字は句読点がまん中の字体なのでずらさない）。ロゴは英語と同じ英字
+- tools/i18n_check.py が3つの訳の抜け・{n}・タグ・仮名の残りを調べる。tools/sim/test_lang.js [src|index] [en|zh-Hans|zh-Hant] で全画面を開いて調べる
+- steam/store_text_zh.md・achievements_zh.md、スクリーンショット zh-Hans_*・zh-Hant_*（shot_store.js に言語を渡せる）
+テスト: i18n_check（抜けなし）、test_lang src zh-Hans / en（仮名の残りなし・pageerror なし。はみ出しは英語と同じ既存のもの）
+残った課題: 中国語の訳は Claude が書いたもの。発売前にネイティブの確認があると安心
+
 # 引き継ぎメモ（更新: 2026-10-23, ブランチ finish/release-ready）
 仕事: 作った絵・マンガ・UI を全部ゲームに入れて、Steam に出せる形に仕上げる（release/english-steam を合流）
 終わったこと:
