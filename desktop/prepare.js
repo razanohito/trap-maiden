@@ -14,6 +14,7 @@ fs.writeFileSync(path.join(lic, 'README.txt'), [
   'Trap of Lily - third-party notices',
   '',
   'Font: Zen Maru Gothic, SIL Open Font License 1.1 (OFL-ZenMaruGothic.txt).',
+  'Font: Noto Sans SC / Noto Sans TC (Chinese), SIL Open Font License 1.1 (OFL-NotoSansSC.txt).',
   'Electron / Chromium: see LICENSE.electron.txt and LICENSES.chromium.html in the game folder.',
   'steamworks.js: MIT License (steamworks.js-LICENSE.txt). Steamworks SDK (steam_api64.dll) (c) Valve Corporation.',
   '',
